@@ -1,0 +1,93 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# ## グループ化について
+# - Dependabot に Renovate の「プリセット」相当の共有ライブラリはない。公式は `groups` で名前パターンを列挙する方式。
+# - 依存名が複数グループにマッチする場合は「先に定義したグループ」に入る（順序が重要）。
+# - マッチしない依存は従来どおり「1依存 = 1 PR」。
+# - 既存の分割 PR（例: react と react-dom を別 PR）をやめたい場合は、設定マージ後に古い PR を閉じ、次回スケジュールでグループ PR が出るのを待つか手動で「Dependabot を再実行」する。
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    # open-pull-requests-limit:
+    # - 0 にするとバージョン更新を無効化できる（公式: Disabling Dependabot version updates）
+    #   https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates#disabling-dependabot-version-updates
+    # - 大きな整数で実質的にオープン PR 上限を外せる（公式: open-pull-requests-limit）
+    #   https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
+    open-pull-requests-limit: 1000
+    versioning-strategy: "increase"
+    cooldown:
+      default-days: 3
+      include:
+        - "*"
+    groups:
+      # react / react-dom / @types/* を同一 PR に（旧 #264 + #261 の分離を解消）
+      react-core:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      emotion:
+        patterns:
+          - "@emotion/*"
+      mui:
+        patterns:
+          - "@mui/*"
+      dnd-kit:
+        patterns:
+          - "@dnd-kit/*"
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+      i18next:
+        patterns:
+          - "i18next"
+          - "i18next-*"
+          - "react-i18next"
+      jest:
+        patterns:
+          - "jest"
+          - "ts-jest"
+          - "ts-jest-*"
+          - "@types/jest"
+          - "@testing-library/*"
+      biome:
+        patterns:
+          - "@biomejs/biome"
+      markuplint:
+        patterns:
+          - "markuplint"
+          - "@markuplint/*"
+      typescript:
+        patterns:
+          - "typescript"
+      three:
+        patterns:
+          - "three"
+          - "@types/three"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 1000
+    cooldown:
+      default-days: 3
+      include:
+        - "*"
+    groups:
+      github-actions-core:
+        patterns:
+          - "actions/*"
+      github-actions-third-party:
+        patterns:
+          - "flatt-security/*"
+          - "dependabot/*"

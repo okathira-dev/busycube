@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "vite.config.ts",
+    "eslint.config.js",
+    "jest.config.js",
+    "jest.setup.ts",
+    "commitlint.config.ts"
+  ]
+}

@@ -1,0 +1,260 @@
+// @ts-nocheck -- This standalone file executes in ServiceWorkerGlobalScope, while
+// the repository TypeScript project intentionally targets the Window DOM library.
+const workerUrl = new URL(self.location.href);
+const developmentMode = workerUrl.searchParams.get("mode") === "development";
+const cachePrefix = "busycube-";
+const cacheVersion = "v4";
+const shellCacheName = `${cachePrefix}shell-${cacheVersion}`;
+const assetCacheName = `${cachePrefix}assets-${cacheVersion}`;
+const scopeUrl = new URL(self.registration.scope);
+const shellUrl = new URL("./index.html", scopeUrl).href;
+const assetPath = new URL("../assets/", scopeUrl).pathname;
+const shellFiles = [
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./licenses/index.html",
+  "./licenses/jsqr-Apache-2.0.txt",
+  "./licenses/mediabunny-MPL-2.0.txt",
+  "./licenses/unifont-OFL-1.1.txt",
+];
+const mutableShellUrls = new Set(
+  shellFiles.map((path) => new URL(path, scopeUrl).href),
+);
+const immutableAssetPattern =
+  /\/[A-Za-z0-9_.-]+-[A-Za-z0-9_-]{6,}\.(?:css|js|json|wasm)$/;
+
+function isImmutableBuildAsset(url) {
+  return (
+    url.origin === self.location.origin &&
+    url.pathname.startsWith(assetPath) &&
+    immutableAssetPattern.test(url.pathname)
+  );
+}
+
+function canStore(response) {
+  return response.ok && response.type !== "opaque";
+}
+
+async function networkFirst(request, cacheName, fallbackUrl = request.url) {
+  try {
+    const response = await fetch(request);
+    if (canStore(response)) {
+      const cache = await caches.open(cacheName);
+      await cache.put(fallbackUrl, response.clone());
+    }
+    return response;
+  } catch (error) {
+    const cache = await caches.open(cacheName);
+    const cached = await cache.match(fallbackUrl);
+    if (cached) return cached;
+    throw error;
+  }
+}
+
+async function cacheFirst(request) {
+  const cache = await caches.open(assetCacheName);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (canStore(response)) {
+    await cache.put(request, response.clone());
+  }
+  return response;
+}
+
+async function precacheProductionShell() {
+  const shellCache = await caches.open(shellCacheName);
+  await shellCache.addAll(shellFiles);
+
+  // Vite writes content-hashed entry scripts, modulepreloads, and styles into
+  // index.html. Discovering them at install time keeps the first offline reload
+  // usable without coupling this static worker to a particular build hash.
+  const shellResponse = await shellCache.match(shellUrl);
+  if (!shellResponse) throw new Error("Busycube shell was not cached");
+  const html = await shellResponse.text();
+  const references = Array.from(
+    html.matchAll(/\b(?:src|href)=["']([^"']+)["']/g),
+    (match) => new URL(match[1], shellUrl),
+  );
+  const entryAssets = [
+    ...new Set(
+      references
+        .filter((url) => isImmutableBuildAsset(url))
+        .map((url) => url.href),
+    ),
+  ];
+  const assetCache = await caches.open(assetCacheName);
+  if (entryAssets.length > 0) await assetCache.addAll(entryAssets);
+}
+
+self.addEventListener("install", (event) => {
+  if (developmentMode) {
+    // The development worker exists for notification/PWA stage APIs, but it must
+    // replace an old cache-first worker immediately and never precache Vite source.
+    event.waitUntil(self.skipWaiting());
+    return;
+  }
+  event.waitUntil(precacheProductionShell());
+});
+
+self.addEventListener("activate", (event) => {
+  const currentCaches = new Set([shellCacheName, assetCacheName]);
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter(
+              (key) =>
+                key.startsWith(cachePrefix) &&
+                (developmentMode || !currentCaches.has(key)),
+            )
+            .map((key) => caches.delete(key)),
+        ),
+      )
+      .then(() => self.clients.claim()),
+  );
+});
+
+const offlineBeaconDatabase = "busycube-offline-beacon";
+const offlineBeaconStore = "receipts";
+
+function openOfflineBeaconDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(offlineBeaconDatabase, 1);
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore(offlineBeaconStore, { keyPath: "nonce" });
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function storeOfflineBeaconReceipt(nonce) {
+  const database = await openOfflineBeaconDatabase();
+  await new Promise((resolve, reject) => {
+    const transaction = database.transaction(offlineBeaconStore, "readwrite");
+    transaction.objectStore(offlineBeaconStore).put({ nonce });
+    transaction.oncomplete = resolve;
+    transaction.onerror = () => reject(transaction.error);
+  });
+  database.close();
+}
+
+async function receiveOfflineBeacon(request) {
+  const payloadRequest = request.clone();
+  const probeUrl = new URL(
+    `./offline-beacon/network-probe?nonce=${crypto.randomUUID()}`,
+    self.location.href,
+  );
+  try {
+    await fetch(probeUrl.href, { cache: "no-store", credentials: "omit" });
+    return new Response("network reachable", { status: 409 });
+  } catch {
+    // A failed network-only fetch is the worker-side offline gate. Continue
+    // with the Beacon body only after the origin is unreachable.
+  }
+  let payload;
+  try {
+    payload = await payloadRequest.json();
+  } catch {
+    return new Response("invalid receipt", { status: 400 });
+  }
+  if (typeof payload?.nonce !== "string" || payload.nonce.length < 16) {
+    return new Response("invalid receipt", { status: 400 });
+  }
+  await storeOfflineBeaconReceipt(payload.nonce);
+  return new Response(null, { status: 204 });
+}
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  if (
+    request.method === "POST" &&
+    url.origin === self.location.origin &&
+    url.pathname.endsWith("/offline-beacon/receipt")
+  ) {
+    event.respondWith(receiveOfflineBeacon(request));
+    return;
+  }
+
+  // Vite still needs a worker for notification flows during development. Leaving
+  // fetch unhandled makes every module/HMR request use the network normally.
+  if (developmentMode) return;
+
+  if (request.method !== "GET") return;
+  if (url.origin !== self.location.origin) return;
+
+  const isBusycubeNavigation =
+    request.mode === "navigate" &&
+    (url.pathname === scopeUrl.pathname ||
+      url.pathname === new URL("./index.html", scopeUrl).pathname);
+  if (isBusycubeNavigation) {
+    // HTML is mutable: prefer the deployed version, then fall back to the one
+    // canonical shell response. Query-string stage routes share that fallback.
+    event.respondWith(networkFirst(request, shellCacheName, shellUrl));
+    return;
+  }
+
+  if (mutableShellUrls.has(url.href)) {
+    event.respondWith(networkFirst(request, shellCacheName));
+    return;
+  }
+
+  if (isImmutableBuildAsset(url)) {
+    // Vite content-hashed assets are immutable, so cache-first is safe and lets
+    // previously loaded lazy stage chunks work offline.
+    event.respondWith(cacheFirst(request));
+  }
+});
+
+self.addEventListener("notificationclick", (event) => {
+  const data = event.notification.data;
+  if (data?.stage === "S-410" || data?.stage === "S-420") {
+    const actionCode = event.action === "left" ? "L" : event.action === "right" ? "R" : "";
+    event.notification.close();
+    if (actionCode) {
+      let sequence = `${data.sequence || ""}${actionCode}`;
+      if (data.stage === "S-410" && !String(data.target).startsWith(sequence)) sequence = "";
+      if (data.stage === "S-410" && sequence === data.target) {
+        const target = new URL("./index.html?stage=S-410&notification-sequence=S-410-ok", self.registration.scope).href;
+        event.waitUntil(openOrFocus(target));
+        return;
+      }
+      if (data.stage === "S-420" && sequence.length > String(data.target).length) sequence = actionCode;
+      event.waitUntil(self.registration.showNotification(event.notification.title, {
+        body: event.notification.body,
+        tag: event.notification.tag,
+        renotify: true,
+        actions: [{ action: "left", title: "←" }, { action: "right", title: "→" }],
+        data: { ...data, sequence },
+      }));
+      return;
+    }
+    if (data.stage === "S-420") {
+      const target = new URL(`./index.html?stage=S-420&vault-attempt=${encodeURIComponent(data.sequence || "")}`, self.registration.scope).href;
+      event.waitUntil(openOrFocus(target));
+      return;
+    }
+  }
+  event.notification.close();
+  const target = new URL(
+    "./index.html?stage=S-090&notification=1",
+    self.registration.scope,
+  ).href;
+  event.waitUntil(openOrFocus(target));
+});
+
+async function openOrFocus(target) {
+  const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  const existing = clients.find((client) => client.url.startsWith(self.registration.scope));
+  if (existing) { await existing.navigate(target); return existing.focus(); }
+  return self.clients.openWindow(target);
+}
+
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") void self.skipWaiting();
+});

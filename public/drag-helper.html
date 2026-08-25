@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Busycube drag source</title>
+  <style>
+    body { margin: 0; background: #111827; color: #f8fafc; font: 14px system-ui, sans-serif; }
+    main { display: grid; gap: 0.75rem; padding: 1rem; }
+    img { width: 240px; height: 120px; object-fit: contain; border: 1px solid #64748b; background: #0f172a; cursor: grab; }
+    small { color: #cbd5e1; }
+  </style>
+</head>
+<body>
+  <main>
+    <strong id="heading">Busycube drag source</strong>
+    <small id="description">Drag this image to the Busycube drop zone.</small>
+    <img id="source" draggable="true" src="./drag-window.png" alt="Busycube separate-window source" width="240" height="120">
+  </main>
+<script>
+  const params = new URL(location.href).searchParams;
+  const locale = params.get("locale") === "ja" ? "ja" : "en";
+  const mode = params.get("mode") === "window" ? "window" : "iframe";
+  const round = params.get("round") || "";
+  document.documentElement.lang = locale;
+  const copy = {
+    ja: {
+      title: mode === "window" ? "Busycube別windowの画像" : "Busycube iframeの画像",
+      heading: mode === "window" ? "別windowの画像" : "iframe内の画像",
+      description: "この画像をBusycubeのドロップ欄へドラッグしてください。",
+      alt: mode === "window" ? "別windowの画像" : "iframe内の画像",
+    },
+    en: {
+      title: mode === "window" ? "Busycube separate-window image" : "Busycube iframe image",
+      heading: mode === "window" ? "Separate-window image" : "Image inside iframe",
+      description: "Drag this image to the Busycube drop zone.",
+      alt: mode === "window" ? "Separate-window image" : "Image inside iframe",
+    },
+  }[locale];
+  document.title = copy.title;
+  document.querySelector("#heading").textContent = copy.heading;
+  document.querySelector("#description").textContent = copy.description;
+  const image = document.querySelector("#source");
+  image.alt = copy.alt;
+  const receiver = mode === "window" ? window.opener : window.parent;
+  image.addEventListener("dragstart", (event) => {
+    receiver?.postMessage({
+      channel: "busycube-s510-drag",
+      type: "start",
+      round,
+      asset: "window",
+    }, "*");
+    event.dataTransfer.setData("text/uri-list", new URL(image.src, location.href).href);
+    event.dataTransfer.setData("text/plain", `busycube-round:${round}:window`);
+    event.dataTransfer.effectAllowed = "copy";
+  });
+</script>
+</body>
+</html>

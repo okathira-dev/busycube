@@ -1,0 +1,19 @@
+{
+  "name": "Busycube PoC payment handler",
+  "short_name": "Busycube Pay",
+  "description": "A fictional Busycube payment handler used only for local API verification.",
+  "icons": [
+    {
+      "src": "../../icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "./payment-handler-window.html",
+  "display": "standalone",
+  "serviceworker": {
+    "src": "./payment-handler-sw.js",
+    "scope": "./",
+    "use_cache": false
+  }
+}

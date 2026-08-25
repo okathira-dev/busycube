@@ -1,0 +1,38 @@
+# リリース準備状況
+
+更新日: 2026-08-21
+
+現行の残問題と動作確認順は[現状・残問題・人手確認への引継ぎ](./current-status-and-handoff.md)を正とする。
+
+## 実装完了範囲
+
+- Viteマルチページの独立入口とGitHub Pages相対パス
+- 日英UI、一覧・設定・About、ステージ直接URL、エラー境界
+- IndexedDB version 1、version 0移行、破損・将来version保護、JSON書き出し、初期化
+- 89ステージ・203問題箱、未着手・部分解決・完全解決の集約
+- 全問題箱を同じ箱DOM・寸法へ統一し、初回リボン、再入場時の閉箱、今回の開箱を分離
+- ステージ遅延読込、能力状態、AbortSignal、個別エラー隔離
+- Busycube scope限定PWA、実行時キャッシュ、更新導線、通知復帰
+- GIS token modelと `drive.appdata` による任意バックアップ、統合、削除、失敗時のローカル保護
+- コード、プライバシー、PWA、Drive、権限閾値、実装状況、検証記録の文書
+
+## 公開を止める外部・人手条件
+
+| 条件 | 現在 | 解除方法 |
+| --- | --- | --- |
+| 必須人手ケース | 未実施 | `human-test-matrix.md` の必須ID（全問題箱共通のH-025を含む）へ実施日・環境・結果を記録 |
+| Google Drive OAuth | 未設定 | Cloud設定後、Repository Secret `BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` を登録しH-015〜H-018 |
+| Google FedCM | 未設定 | [専用手順](./google-fedcm-setup.md)でDriveとは別のWeb clientとRepository Secret `BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`を登録しH-049 |
+| Payment Handler host | 公開未確認 | method manifest responseへ`Link: rel=payment-method-manifest`を付けられるmanaged hostでH-050 |
+| 専用API・実機 | 条件別に未確認 | XR、Periodic Background Sync、実SMS、Contact Picker、外部display、Local Font Access等を人手台帳の対応H-IDで確認 |
+| 本番Pages | 未配信 | main統合後のHTTPS・サブパス・直接URL・scopeをH-021で確認 |
+| PWAアイコン互換 | SVGのみ | 対象ブラウザで不足なら192/512 PNGとApple Touch Iconを追加 |
+| 名称・問い合わせ | 未確認 | `Busycube` 名称の公開前確認と公開問い合わせ先の決定 |
+
+## 判定
+
+実装とローカル自動検証は「一通り完成」。外部アカウント、実機権限、複数ブラウザ、本番配信を必要とするリリース判定は「人手ゲート待ち」であり、現時点で一般公開合格とはしない。
+
+未検証の条件付きステージは個別に非公開化できる構造だが、現在の一覧は検証用として実装済みステージをすべて表示する。公開時に条件付きステージを残す場合は、対応環境と未検証環境を設定・ヘルプへ明示する。
+
+Googleアカウントは分離しない方針で確定した。`drive.appdata` だけを要求し、同期時に選んだアカウントと単一ローカル進捗をgrow-only統合する。別アカウントを選んだ場合の混在は許容するが、その挙動をUIと公開説明へ明記し、H-017で実結果を確認する。

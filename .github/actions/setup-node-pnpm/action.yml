@@ -1,0 +1,17 @@
+name: Setup Node and pnpm
+description: Install the pinned pnpm version, set up Node, and install locked dependencies.
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996
+
+    - name: Setup Node.js
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      with:
+        node-version-file: package.json
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
