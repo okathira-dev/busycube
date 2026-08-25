@@ -39,7 +39,7 @@
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
     "jsqr": "^1.4.0",
-    "mediabunny": "1.52.3",
+    "mediabunny": "1.55.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
