@@ -2,9 +2,9 @@
 
 > この文書の箱番号はPoC実施時の履歴である。D-144後、encoding、Unicode、video recoveryのfixtureは`src/fixtures/`へ製品昇格し、製品stageはPoC pathを参照しない。PoC上の旧S-350-B04 Media Capabilitiesと旧B06実寸reelは不採用、旧B05 frame cadenceは製品S-810-B01、旧B07は現行S-350-B05、旧S-230-B01は現行S-350-B06、旧B08の音声track案は合意済みIDの将来B07に対応する。現行S-350-B04はnative再生速度、B08はfullscreen。本文のS-230とS-270は製品実装から削除済み。現行の解法は[現行ステージ解法仕様](./stage-walkthroughs.md)を正とする。
 
-> 初回実施日: 2026-08-01、POC-006 / POC-011 / POC-013 / POC-021 / POC-022 fixture更新: 2026-08-02。現行の対象と作業順は[次のPoC・ステージ化キュー](./next-poc-and-stage-work.md)を正とする。本文は実施時点の証拠であり、旧箱番号や当時の実装順を現在の結論に使わない。
+> 初回実施順: 第13段階、POC-006 / POC-011 / POC-013 / POC-021 / POC-022 fixture更新: 第14段階。現行の対象と作業順は[次のPoC・ステージ化キュー](./next-poc-and-stage-work.md)を正とする。本文は実施時点の証拠であり、旧箱番号や当時の実装順を現在の結論に使わない。
 
-> 2026-08-16現行更新: S-810はVFR cadence判定ではなく、native seek停止後の提示frame比率（1:1 / 4:3 / 16:9 / 9:20、各相対5%以内）へ変更した。実開箱はH-053の人手確認待ち。POC-008、POC-029、POC-032は対応APIの実挙動を捏造せず、User Preferences、Local Font Access、Text Fragment `beforematch`の実API呼び出しを隔離ページへ追加した。未対応環境でPASS表示へ置き換えない。
+> 第19段階の現行更新: S-810はVFR cadence判定ではなく、native seek停止後の提示frame比率（1:1 / 4:3 / 16:9 / 9:20、各相対5%以内）へ変更した。実開箱はH-053の人手確認待ち。POC-008、POC-029、POC-032は対応APIの実挙動を捏造せず、User Preferences、Local Font Access、Text Fragment `beforematch`の実API呼び出しを隔離ページへ追加した。未対応環境でPASS表示へ置き換えない。
 
 ## 共通環境と証跡
 
@@ -14,7 +14,7 @@
 - 実測: POC-006の6候補ではVP8のみ `powerEfficient=false`、VP9 / H.264 / AV1 / HEVCは3灯すべて`true`。最高pixel rateのH.264 / 1920×1080 / 60fps / 8Mbpsを正解候補として選べた。permission state は geolocation / notifications=`denied`、camera / microphone=`prompt`。`connection.type` と `CSS.highlightsFromPoint` は欠損。
 - 権限の受諾、カメラ・マイク取得、連絡先取得、フォント列挙、外部accountログイン、SMS送信、決済、機器操作、負荷生成は行っていない。これらは成功を模倣できず、専用の実機・account・公開HTTPS環境が要る。
 
-## 2026-08-18 Windows Chrome追加報告（ユーザー実測）
+## 第20段階 Windows Chrome追加報告（ユーザー実測）
 
 Windows ChromeでPOC-035〜054を一括確認した結果を、実測者の報告として記録する。ここでいうpositiveは「そのPoCの中心操作を観測できた」、negativeは「この環境では成功経路を観測できなかった」を意味し、製品stageの採用や公開環境の合格を意味しない。
 
@@ -23,7 +23,7 @@ Windows ChromeでPOC-035〜054を一括確認した結果を、実測者の報�
 - cleanup / 説明不足: POC-038は「3つの窓を同時に重ねる」の操作意図が不明瞭、POC-053はpositiveに見えるが何が変化したか見えない。038は横スクロールとroot付きratio表示へ、053はnative字幕とactive cue表示へ修正する。
 - 未報告の項目は、Windows Chromeで機能待ち・操作環境待ちとして結果を推測しない。
 
-### 2026-08-20 製品採否レビュー
+### 第21段階 製品採否レビュー
 
 D-148でPOC-035〜054を全件レビューし、PoCのpositive / negativeとは別に製品stageの処遇を確定した。下記は結論の索引であり、成功条件と実装順は[次のPoC・ステージ化キュー](./next-poc-and-stage-work.md)を正とする。
 
@@ -33,7 +33,7 @@ D-148でPOC-035〜054を全件レビューし、PoCのpositive / negativeとは�
 - POC-040、043、044、045、049、050は内部実装に利用できるが、問題箱・採用stage・API件数には含めない。
 - POC-051はS-350、POC-052はS-810、POC-053はS-350-B05へ統合せず、それぞれ異なる中心操作の独立stageとする。
 
-## 2026-08-09 製品初版への反映
+## 第15段階 製品初版への反映
 
 この記録時点で中心経路を、既存stageと新規S-610 / S-620 / S-640 / S-650 / S-660 / S-670 / S-700 / S-710 / S-720 / S-780 / S-810へ反映した。ここにある69stage・159箱は当時のスナップショットであり、現行registryは81stage・181箱である。PoCと製品stageは別entryとして維持する。
 
@@ -83,7 +83,7 @@ D-148でPOC-035〜054を全件レビューし、PoCのpositive / negativeとは�
 | 032 S-800 | PARTIAL | 隔離PoCへ、文脈付きfragmentと「先頭空白＋suffix」の2 fixtureを追加し、`hidden="until-found"`対象の`beforematch`を実観測する。入力欄・通常anchor・自作highlightで代替しない。 | Chrome系でB01/B02のURL貼付、UA highlight、`beforematch`、Back／reload、対象外語では発火しないことを確認する。 |
 | 033 S-430-B02 | NOT_RUN | Audio Sessionのactive／interrupted／activeを観測するlazy case、外部focus操作手順、listener／audio cleanupを追加した。 | Audio Session対応Safari／WebKitで実interruptionと再生復帰を確認する。通常pause、Media Session action、synthetic eventではPASSにしない。 |
 
-### 2026-08-18 追加PoC wave（POC-035〜054）
+### 第20段階 追加PoC wave（POC-035〜054）
 
 採用した最新版だけを共通のlazy accordionと`advanced-poc.ts`へ残した。各ケースは実APIをfeature-detectし、非対応時にfallbackでPASSへ置き換えない。`partial`は人手確認または専用fixtureが残る状態であり、製品stageへの採用を意味しない。
 
@@ -116,7 +116,7 @@ D-148でPOC-035〜054を全件レビューし、PoCのpositive / negativeとは�
 - B04: VP8 640×360 / 30だけ`true / true / false`。VP9 1280×720 / 30、H.264 1280×720 / 30、AV1 1920×1080 / 30、HEVC 1920×1080 / 30、H.264 1920×1080 / 60は`true / true / true`。pixel rate優先、bitrate tie-breakでH.264 1920×1080 / 60を選べた。
 - B05: `requestVideoFrameCallback()`の`mediaTime`差分から、12fps区間=`12.0fps / 21差分`、24fps区間=`23.8fps / 65差分`、30fps区間=`30.3fps / 53差分`、60fps区間=`58.8fps / 107差分`を観測。24fps安定差分は64で合格基準24以上を満たした。
 - B06: low=`320×180`、target=`640×360`、high=`960×540`で、各reelの`videoWidth / videoHeight`とframe callbackの`width / height`が期待値へ一致した。CSS表示寸法は判定に使わない。
-- B07: VTTのBusy / Busycube / Boxを`TextTrackList`で観測し、既定Busyだけ`showing`、残り2件は`disabled`。2026-08-02にユーザーがnative字幕menuでBusycubeへ変更できることを確認した。
+- B07: VTTのBusy / Busycube / Boxを`TextTrackList`で観測し、既定Busyだけ`showing`、残り2件は`disabled`。第14段階にユーザーがnative字幕menuでBusycubeへ変更できることを確認した。
 - B08: MP4はH.264 640×360とAAC 3 stream（Busy=`qaa/default`、Busycube=`qab`、Box=`qac`）を持ち、5秒・`readyState=4`まで読めた。現在のbrowserは`HTMLMediaElement.audioTracks === undefined`でnative変更eventを観測できないため未達のままとし、custom pickerで迂回しない。
 
 ### POC-011 固定回答表

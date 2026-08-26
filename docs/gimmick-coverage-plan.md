@@ -2,7 +2,7 @@
 
 > JSDocとstage-localizationへ移行する前の対応履歴。現行の解法・箱番号・実装状態はこの表から導かない。JSDoc移行完了後に削除または履歴ディレクトリへの移動を再判定する。
 
-> 本文には実装前の状態語も履歴として残る。2026-08-20に81stage・181箱へ更新し、G-068、G-079、G-081〜G-090を製品stageとして実装した。G-024 / S-270とMedia Capabilities profile箱をD-141で不採用、G-080 / S-810をnative seek後のアスペクト比判定へ更新、D-143でG-020のPiP箱をS-350へ統合し、D-144でfullscreen箱とmedia stage製品UXを確定した。G-076 / S-700-B03 PresentationとG-077 / S-780 Payment Handlerも製品stageへ実装し、S-780はD-147でbrowser所有chooserの指定wallet箱を加えた。G-049 / S-510はページ内画像、OS File、iframe拒否から別windowへ進む3箱へ更新した。過去のframe cadence案は履歴であり、現行状態は[ステージ実装状況](./stage-implementation-status.md)、解法は各stage JSDocを正とする。
+> 本文には実装前の状態語も履歴として残る。第21段階に81stage・181箱へ更新し、G-068、G-079、G-081〜G-090を製品stageとして実装した。G-024 / S-270とMedia Capabilities profile箱をD-141で不採用、G-080 / S-810をnative seek後のアスペクト比判定へ更新、D-143でG-020のPiP箱をS-350へ統合し、D-144でfullscreen箱とmedia stage製品UXを確定した。G-076 / S-700-B03 PresentationとG-077 / S-780 Payment Handlerも製品stageへ実装し、S-780はD-147でbrowser所有chooserの指定wallet箱を加えた。G-049 / S-510はページ内画像、OS File、iframe拒否から別windowへ進む3箱へ更新した。過去のframe cadence案は履歴であり、現行状態は[ステージ実装状況](./stage-implementation-status.md)、解法は各stage JSDocを正とする。
 
 ## 完了条件
 
@@ -116,7 +116,7 @@
 | G-089 | S-900 映像の継ぎ目 | MediaSource / SourceBuffer | playerのA→B→C→D append orderで完成videoを最後までnative再生する1箱 |
 | G-090 | S-910 その場でつくる字幕 | runtime WebVTT / TextTrack | 再生中に追加したVTTCueが対応した映像時刻へ重なる1箱 |
 
-## 2026-07-17 現行API確認
+## 第2段階 現行API確認
 
 - [Clipboard API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API): secure context、read/writeのユーザー操作・権限差を前提とし、paste eventを主経路にする。
 - [Screen Capture API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API): `getDisplayMedia()` は明示操作から開始し、全trackを離脱時に停止する。

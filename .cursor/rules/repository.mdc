@@ -1,0 +1,22 @@
+---
+description: Busycube repository structure and project overview
+globs:
+  - "**/*"
+alwaysApply: false
+---
+
+# Repository overview
+
+Busycube は、ブラウザー Web API を題材にしたステージ制のパズルゲームです。各ステージは、API が実環境で観測できた場合にだけ条件達成となる設計を基本とします。
+
+## 主な構成
+
+- `src/stages/`: 各ステージの manifest、表示文言、実装
+- `src/`: 共通 UI、ゲーム状態、ステージ索引、アプリ本体
+- `public/`: 静的アセットと検証用ファイル
+- `docs/`: 設計、運用、リリース、人手確認資料
+- `scripts/`: ステージ索引や検証用アセットの生成・検査
+- `skills/`: FSL Skills の公式正本
+- `.agents/skills/`, `.cursor/skills/`: エージェント別の FSL アダプター
+
+パッケージ管理は pnpm です。GitHub Pages の workflow と main マージ後のデプロイ方針は移行時点では維持しています。別ホストへの切り替えは、ホスト選定後の独立タスクとして扱います。

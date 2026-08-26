@@ -1,6 +1,6 @@
 # 検証記録
 
-## 2026-08-23 S-710 / S-720 / S-810 レビュー反映
+## 第23段階 S-710 / S-720 / S-810 レビュー反映
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -13,7 +13,7 @@
 
 この節が本レビュー反映分の現行検証結果である。既存のH-042/H-043/H-053は外部実機・実操作を要するため残す。
 
-## 2026-08-21 人手確認以外の残作業完遂
+## 第22段階 人手確認以外の残作業完遂
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -31,7 +31,7 @@
 
 この節が現行コードに対する最新の自動検証結果である。下位の旧件数と未実装表現は当時の履歴であり、現行仕様の結論に使わない。
 
-## 2026-08-21 S-690〜S-920製品stage統合
+## 第22段階 S-690〜S-920製品stage統合
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -49,7 +49,7 @@
 
 この節はS-690〜S-920統合時点の履歴である。
 
-## 2026-08-20 POC-035〜054採否整理
+## 第21段階 POC-035〜054採否整理
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -59,7 +59,7 @@
 | 件数境界 | 合格 | この採否整理時点では、新規10stage候補・計19箱はID未予約・未実装であり、当時の69stage・159箱を変更していなかった |
 | Markdown | 合格 | `git diff --check`。コード、fixture、catalogueは今回変更していないためTypeScript / Jest / buildは対象外 |
 
-## 2026-08-16 S-810比率シーク・個別PoC追補
+## 第19段階 S-810比率シーク・個別PoC追補
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -73,9 +73,9 @@
 | metadata locale registry | 合格 | `StageSpec` / `ProblemSpec`から表示名を切り離し、67隣接locale bundleの`stageName` / `Bxx`を解決する`metadataLocale.ts`と回帰テスト |
 | absolute path scan | 合格 | source/docsからWindows・Unix絶対パスなし |
 
-## 2026-08-12 実装追補の検証
+## 第18段階 実装追補の検証
 
-この節は2026-08-16のS-810比率仕様変更前に行った検証の履歴である。下記の「小正方形・大正方形・横長・縦長」は旧寸法分類の結果であり、現行の1:1・4:3・16:9・9:20の4箱が開く証拠ではない。現行の実開箱はH-053で再確認する。
+この節は第19段階のS-810比率仕様変更前に行った検証の履歴である。下記の「小正方形・大正方形・横長・縦長」は旧寸法分類の結果であり、現行の1:1・4:3・16:9・9:20の4箱が開く証拠ではない。現行の実開箱はH-053で再確認する。
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -91,7 +91,7 @@
 
 生成時のFFmpegはソースコードへ絶対パスを記録せず、実行時の`BUSYCUBE_FFMPEG_PATH`で注入する。実装側も入力flagを小文字へ正規化して照合する。
 
-## 2026-08-11 現行実装コミット前検証
+## 第17段階 現行実装コミット前検証
 
 この節が現行コードに対する最新の自動検証結果である。以下の過去節は当時のfixture、箱番号、実装経路を記録した履歴であり、現在のS-640/S-710/S-720/S-810の仕様判断には使わない。人手確認の未完了項目は[現状・残問題・人手確認への引継ぎ](./current-status-and-handoff.md)と[人手確認台帳](./human-test-matrix.md)を正とする。
 
@@ -112,7 +112,7 @@ S-810の現行判定は、固定packをnative controlsでシーク停止し、`s
 
 自動検証は人手確認の代替ではない。特にS-710の実frame差し替え、S-720のoutput再生・QR、S-810の可変寸法WebM再生は、Chrome実画面で確認する。
 
-## 2026-07-20 ステージ一覧のcompact化
+## 第5段階 ステージ一覧のcompact化
 
 | 確認 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -125,7 +125,7 @@ S-810の現行判定は、固定packをnative controlsでシーク停止し、`s
 
 実機またはhost browserでは、desktopとmobileの初期80%表示、card hover / focus、長い日英stage名の省略、map pan、S-190外縁markerを人手確認する。
 
-## 2026-07-20 合意済みステージの全実装
+## 第5段階 合意済みステージの全実装
 
 | 確認 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -139,11 +139,11 @@ S-810の現行判定は、固定packをnative controlsでシーク停止し、`s
 | 不採用確定 | 合格 | S-190-B05 notification capture markerはOS通知面を標準APIで選択・検証できず不採用。総数は97箱 |
 | TypeScript / markup / Biome | 合格 | `tsc --noEmit`、markuplint、Biome check |
 | Jest | 合格 | 19 suites / 107 tests。60/97 manifest整合、MDN / BCD全件台帳、通知action状態遷移を含む |
-| MDN / BCD台帳 | 合格 | 2026-07-20再取得で147 family・1,090 interface、未分類0。再生成scriptと全件testを追加 |
+| MDN / BCD台帳 | 合格 | 第5段階再取得で147 family・1,090 interface、未分類0。再生成scriptと全件testを追加 |
 
 権限、実機sensor、PWAインストール関連付け、OS通知action、passkey、system clock変更、cross-window D&Dはコード完成と公開合格を分離し、[人手確認台帳](./human-test-matrix.md)を必須ゲートとして残す。迂回clearやskipは追加していない。
 
-## 2026-07-20 ステージ地図・機械可読manifest・横断基盤
+## 第5段階 ステージ地図・機械可読manifest・横断基盤
 
 | 確認 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -157,7 +157,7 @@ S-810の現行判定は、固定packをnative controlsでシーク停止し、`s
 
 この時点のmanifestは実装済み35stageを対象にする。S-350以降はcatalogueへ追加したコミットで同時にmanifestへ入り、計画だけの項目を実装済みと誤認させない。
 
-## 2026-07-20 相談結果の統合とステージ展開計画
+## 第5段階 相談結果の統合とステージ展開計画
 
 Blackbox初期△28件・×1件の対話判断、新規G-033〜G-059、既存ステージ再設計を[ステージ展開計画](./stage-rollout-plan.md)へ統合した。コード実装は行わず、現在のcatalogueと計画値を分離して検証した。
 
@@ -173,9 +173,9 @@ Blackbox初期△28件・×1件の対話判断、新規G-033〜G-059、既存ス
 | 静的check | 合格 | markuplint、Biome check。既存のBiome schema差異info 2件と`jest.setup.ts` warning 1件のみ |
 | build | 合格 | TypeScriptとVite production build。既存のbrowser external、plugin timing、chunk size warningのみ |
 
-完全なMDN 147ファミリー・1,045インターフェースの機械可読台帳は未作成である。この件数は2026-07-18の調査スナップショットとしてのみ保持し、次のWave 0で母集団を再取得する。
+完全なMDN 147ファミリー・1,045インターフェースの機械可読台帳は未作成である。この件数は第3段階の調査スナップショットとしてのみ保持し、次のWave 0で母集団を再取得する。
 
-## 2026-07-18 ステージID単位の分割と問題ハンドル抽象化
+## 第3段階 ステージID単位の分割と問題ハンドル抽象化
 
 ### コード・成果物
 
@@ -215,7 +215,7 @@ Blackbox初期△28件・×1件の対話判断、新規G-033〜G-059、既存ス
 
 権限プロンプト、実センサー、外部機器、PWAインストール、OAuth実アカウントはこの確認で発火していない。公開合格には引き続き[人手確認台帳](./human-test-matrix.md)の該当ケースが必要である。
 
-## 2026-07-18 Service Workerキャッシュ境界の再設計
+## 第3段階 Service Workerキャッシュ境界の再設計
 
 ### コード・成果物
 
@@ -240,7 +240,7 @@ Blackbox初期△28件・×1件の対話判断、新規G-033〜G-059、既存ス
 
 旧cache-first workerがすでに開発originを制御している環境だけは、最初の一度だけ更新操作またはDevToolsからの登録解除が必要になる。以後の開発workerはfetchを処理しないため、Viteの更新を古いCache Storageが隠さない。
 
-## 2026-07-17 全ギミック実装の最終確認
+## 第2段階 全ギミック実装の最終確認
 
 ### コード・成果物
 
@@ -267,7 +267,7 @@ Blackbox初期△28件・×1件の対話判断、新規G-033〜G-059、既存ス
 
 限定提供・実験的APIは、APIの存在だけでクリアさせない。Gamepad、Screen Capture、Picture-in-Picture、Web Locks、EyeDropper、WebGPU、Web Bluetooth、WebHID、WebUSB、Device Posture、Screen Wake Lockは、それぞれ仕様に定めた実イベントまたは実データを観測した場合だけ箱を開く。
 
-## 2026-07-17 統一問題箱・再挑戦の再検証
+## 第2段階 統一問題箱・再挑戦の再検証
 
 ### コード・成果物
 
@@ -293,7 +293,7 @@ Blackbox初期△28件・×1件の対話判断、新規G-033〜G-059、既存ス
 
 S-010は画面でも、各箱の下にマウスカーソル、指、ペンのアイコンが対応順で表示されることを確認した。全API・権限条件を実端末で再達成する確認はH-025として人手台帳へ残す。
 
-## 2026-07-15 ローカル自動確認
+## 第1段階 ローカル自動確認
 
 ### 対象
 
@@ -314,7 +314,7 @@ S-010は画面でも、各箱の下にマウスカーソル、指、ペンのア
 | production build | 合格 | Busycube本体と遅延stage chunkを生成 |
 | PWA静的ファイル | 合格 | `manifest.webmanifest`、`service-worker.js`、`icon.svg` を `dist/` へ配置 |
 
-### 2026-08-09 現環境一括実装の自動検証
+### 第15段階 現環境一括実装の自動検証
 
 | 項目 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -327,9 +327,9 @@ S-010は画面でも、各箱の下にマウスカーソル、指、ペンのア
 | fixture determinism | 合格 | S-710 `s710-decode-failure.webm`を生成scriptと形式検証で固定。S-620/S-640/S-720のfixture manifestと意味検証を維持 |
 | diff hygiene | 合格 | `git diff --check` |
 
-同日再実行でも、S-710 object URL cleanup追加後にTypeScript、Biome（変更対象）、markuplint、Jest 40 suites / 274 tests、Vite production buildがすべて合格した。buildの既知警告（`vite.config.ts`の`__dirname`、browser externalization、500 kB超chunk）は既存警告として残る。
+同じ段階での再実行でも、S-710 object URL cleanup追加後にTypeScript、Biome（変更対象）、markuplint、Jest 40 suites / 274 tests、Vite production buildがすべて合格した。buildの既知警告（`vite.config.ts`の`__dirname`、browser externalization、500 kB超chunk）は既存警告として残る。
 
-2026-08-10: S-660の中間二状態を一箱へ統合した。未公開のため進捗schemaはv1のままとし、旧箱構成との互換処理は持たない。S-710のB02を入力decode失敗の別経路へ限定し、B03を実QR画像へ置換、S-510-B02のasset URLとSHA-256を固定した。TypeScript、Biome、Jest、Vite production build、`git diff --check`が合格した。Windows ChromeでのS-710 QR出力とS-510 iframe内からの実dragは最終人手確認として残す。
+第16段階: S-660の中間二状態を一箱へ統合した。未公開のため進捗schemaはv1のままとし、旧箱構成との互換処理は持たない。S-710のB02を入力decode失敗の別経路へ限定し、B03を実QR画像へ置換、S-510-B02のasset URLとSHA-256を固定した。TypeScript、Biome、Jest、Vite production build、`git diff --check`が合格した。Windows ChromeでのS-710 QR出力とS-510 iframe内からの実dragは最終人手確認として残す。
 
 ### ブラウザシナリオ
 
@@ -349,7 +349,7 @@ S-010は画面でも、各箱の下にマウスカーソル、指、ペンのア
 
 S-060の最初の試行では、問題コンポーネントの遅延読込前に強制遷移したため観測対象にならなかった。箱本体が表示されたことを待つ正しいシナリオへ修正し、表示commit直後の同期フラグとIndexedDB観測の両方で再訪を確認した。
 
-## 2026-08-10 D-141 S-270削除 / S-350再整理
+## 第16段階 D-141 S-270削除 / S-350再整理
 
 | 確認 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -363,7 +363,7 @@ S-060の最初の試行では、問題コンポーネントの遅延読込前に
 | browser structure | 合格（速度変更はH-030待ち） | S-350が5箱・単一player・page製profile / reel UIなし、B03 pause icon、B04 speed icon、B05 subtitles iconであることをlocalhostで確認。Chrome native playerのoverflow入口も表示。実menuから速度変更して開箱する操作はH-030に残す |
 | native seek完遂 | H-053待ち | browser制御からnative timelineの任意時刻操作を安定再現できないため、実マウスで24fps区間だけが開くことを公開前ゲートに残す |
 
-## 2026-08-10 D-143 PiP統合 / S-640修復
+## 第16段階 D-143 PiP統合 / S-640修復
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -376,7 +376,7 @@ S-060の最初の試行では、問題コンポーネントの遅延読込前に
 | automated checks | 合格 | Markuplint、Biome（既存warningのみ）、TypeScript、Jest 42 suites / 279 tests、Vite production build |
 | browser structure | 合格（native PiP実操作はH-030待ち） | S-350は0/6・単一video、S-640は0/12でB01〜B12と意図した問題表現を表示し例外なし、S-720は未選択のtransformとflag欄がdisabled |
 
-## 2026-08-10 D-144 media stage製品化
+## 第16段階 D-144 media stage製品化
 
 | 検証 | 結果 | 証跡 |
 | --- | --- | --- |
@@ -412,7 +412,7 @@ S-060の最初の試行では、問題コンポーネントの遅延読込前に
 
 これらは[人手確認台帳](./human-test-matrix.md)の該当IDへ結果と環境を追記してから公開合格にする。
 
-## 2026-08-18 追加PoC・製品stage wave
+## 第20段階 追加PoC・製品stage wave
 
 | 項目 | 結果 | 証跡 |
 | --- | --- | --- |

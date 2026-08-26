@@ -1,6 +1,6 @@
 # Google FedCM 設定
 
-更新日: 2026-08-21
+更新段階: 第22段階
 
 S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブラウザが仲介した手動FedCM結果だけを受け入れる。通常のOAuth popup / redirectやGoogle Drive認可は代替にならない。
 

@@ -1,6 +1,6 @@
 # ステージMind Map設計
 
-> 履歴資料。2026-08-25にステージ一覧は関連線・map metadataを持たない独立カードへ移行した。現行のステージ契約は各`stages/S-xxx/manifest.ts`、生成index、[アーキテクチャ判断](./architecture-decisions.md)を参照する。
+> 履歴資料。第25段階にステージ一覧は関連線・map metadataを持たない独立カードへ移行した。現行のステージ契約は各`stages/S-xxx/manifest.ts`、生成index、[アーキテクチャ判断](./architecture-decisions.md)を参照する。
 
 ## 目的
 
@@ -56,9 +56,9 @@ edge数が増えすぎないよう、各stageは主branch edgeを1本、補助�
 5. S-190のarmed tabと別tabのmapを接続し、外縁markerが通常閲覧や直接URLではround payloadを持たず、実capture frameだけでB04が開くことを確認する。
 6. 一覧の主要導線をmapへ切り替え、必要なら設定にcompact semantic list viewを残す。これは問題のskipや代替clearではなく、一覧操作のaccessibility表示である。
 
-## 実装状況（2026-07-20）
+## 実装状況（第5段階）
 
-実装順1・2と一覧の主要導線切替を完了した。`StageSpec.map`を全catalogue項目の必須情報とし、未指定の既存stageにもカテゴリとIDから安定したbranch / orderを導出する。2026-07-20のcompact化で、表示を1480×1650の決定的なDOM mapへ再配置し、60stageを6近接clusterの各2列へ収めた。nodeは260×168pxから196×92pxへ縮小し、初期zoomを80%、範囲を55〜130%とした。カード全面button、累積値`x/n`、背面SVG edge、中央復帰、外縁marker slotから構成し、routing、永続進捗、keyboard focus、accessible nameは地図の描画方式から独立している。
+実装順1・2と一覧の主要導線切替を完了した。`StageSpec.map`を全catalogue項目の必須情報とし、未指定の既存stageにもカテゴリとIDから安定したbranch / orderを導出する。第5段階のcompact化で、表示を1480×1650の決定的なDOM mapへ再配置し、60stageを6近接clusterの各2列へ収めた。nodeは260×168pxから196×92pxへ縮小し、初期zoomを80%、範囲を55〜130%とした。カード全面button、累積値`x/n`、背面SVG edge、中央復帰、外縁marker slotから構成し、routing、永続進捗、keyboard focus、accessible nameは地図の描画方式から独立している。
 
 実装順3の実ブラウザ目視、4の新規stage間clue edge、5のcapture handshakeは、それぞれ対応stageの実装と人手確認時に完了させる。Codex in-app browserからホストのlocalhostへ接続できない実行環境だったため、今回の基盤コミットでは型、DOM構造、catalogue整合、自動test、production buildを証跡とし、目視を合格扱いにはしない。
 

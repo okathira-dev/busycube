@@ -2,7 +2,7 @@
 
 > この文書はD-137時点の実行計画を保存した非規範スナップショットである。D-138以後の箱統合、D-140のS-350 / S-810分離、D-141のS-270 / Media Capabilities profile箱不採用、D-143のS-230からS-350-B06へのPiP統合、D-144のS-350 fullscreen・S-640共通欄・S-710 iframe・S-720 patch bay、現行件数は反映しない。本文のS-230、S-270、旧S-350箱、旧media stage UIは現行計画へ使わない。現在の箱IDと解法は[現行ステージ解法仕様](./stage-walkthroughs.md)、実装件数は[ステージ実装状況](./stage-implementation-status.md)を正とする。
 
-> 決定日: 2026-08-09。PoCを完全な直列gateにはせず、現在のWindows / Chrome環境でAPIまたは中心経路を確認できた範囲を製品stageへ実装し、実stage上の確認でPARTIALを箱単位に減らす。未観測のbrowser eventをmockで成功扱いしない。
+> 決定段階: 第15段階。PoCを完全な直列gateにはせず、現在のWindows / Chrome環境でAPIまたは中心経路を確認できた範囲を製品stageへ実装し、実stage上の確認でPARTIALを箱単位に減らす。未観測のbrowser eventをmockで成功扱いしない。
 
 ## 1. 到達点
 

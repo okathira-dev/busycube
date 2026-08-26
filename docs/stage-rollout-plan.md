@@ -2,19 +2,19 @@
 
 > この文書は実装前の展開スナップショットである。D-143後、本文のS-230、S-270、Media Capabilities profile箱、旧S-350箱番号と件数は現行計画へ使わない。旧S-230のPiPは現行S-350-B06である。現行箱ID・件数・解法は[現行ステージ解法仕様](./stage-walkthroughs.md)と[ステージ実装状況](./stage-implementation-status.md)を正とし、本文から導かない。
 
-> 実装完了記録（2026-07-20）: Wave 1〜6をコードへ反映し、S-380 / S-390を分離した60stage・97箱をcatalogueへ登録した。以下の「現在35stage」「未実装」「技術スパイク待ち」は着手前スナップショットとして残す。2026-07-21〜2026-08-09のDeep Research対話でS-030追加箱、S-060-B02、S-220-B04、S-350-B04〜B08、S-430-B02、S-510-B02、S-580-B02、S-610〜S-800を含む追加差分を承認した。D-135でS-680を外しD-136でS-800を加えた全体計画値は79stage・187箱だが、D-137で現環境確認分の68stage・157箱を初版実装へ昇格した。既存S-270-B01は不可視な4096候補検索の完成扱いを撤回し、大量光粒子を導くWebGPU盤面へ全面再設計する。現在状態は[ステージ実装状況](./stage-implementation-status.md)と[検証記録](./verification-record.md)を正とする。S-190-B05とS-680は不採用に確定した。
+> 実装完了記録（第5段階）: Wave 1〜6をコードへ反映し、S-380 / S-390を分離した60stage・97箱をcatalogueへ登録した。以下の「現在35stage」「未実装」「技術スパイク待ち」は着手前スナップショットとして残す。第6段階〜第15段階のDeep Research対話でS-030追加箱、S-060-B02、S-220-B04、S-350-B04〜B08、S-430-B02、S-510-B02、S-580-B02、S-610〜S-800を含む追加差分を承認した。D-135でS-680を外しD-136でS-800を加えた全体計画値は79stage・187箱だが、D-137で現環境確認分の68stage・157箱を初版実装へ昇格した。既存S-270-B01は不可視な4096候補検索の完成扱いを撤回し、大量光粒子を導くWebGPU盤面へ全面再設計する。現在状態は[ステージ実装状況](./stage-implementation-status.md)と[検証記録](./verification-record.md)を正とする。S-190-B05とS-680は不採用に確定した。
 
-> 2026-08-09実装境界: D-137で、現環境確認分を先に68stage・157箱まで実装するWave 0〜6を確定した。具体的な対象、依存関係、完了条件は[現環境確認分の一括実装計画](./current-environment-implementation-plan.md)を正とし、残り30箱を今回の完了条件へ含めない。
+> 第15段階の実装境界: D-137で、現環境確認分を先に68stage・157箱まで実装するWave 0〜6を確定した。具体的な対象、依存関係、完了条件は[現環境確認分の一括実装計画](./current-environment-implementation-plan.md)を正とし、残り30箱を今回の完了条件へ含めない。
 
 ## 目的と正本の範囲
 
-2026-07-18から2026-07-20に行ったBlackbox参考機構の相談結果、新規Web API案、既存35ステージの再設計を、実装可能な順序へまとめる。この文書は「何をどの順で実装するか」の正本とし、個々の成功条件は[ステージ実装状況](./stage-implementation-status.md)、判断履歴は[決定ログ](./decision-log.md)と[Blackbox機構監査](./blackbox-mechanism-ledger.md)を正とする。
+第3段階から第5段階に行ったBlackbox参考機構の相談結果、新規Web API案、既存35ステージの再設計を、実装可能な順序へまとめる。この文書は「何をどの順で実装するか」の正本とし、個々の成功条件は[ステージ実装状況](./stage-implementation-status.md)、判断履歴は[決定ログ](./decision-log.md)と[Blackbox機構監査](./blackbox-mechanism-ledger.md)を正とする。
 
 この文書の下記スナップショットはコード実装を開始する前の記録である。実装済みの結果と混同しない。
 
 未実装案の現在のPoC要否と作業順は[次のPoC・ステージ化キュー](./next-poc-and-stage-work.md)を正とする。本書の古い技術判断表は相談・実装前の履歴であり、現在コード化済みのstageを実装前PoCへ戻さない。
 
-## 2026-07-20スナップショット
+## 第5段階のスナップショット
 
 | 対象 | 現在 | 合意済みの計画 |
 | --- | ---: | ---: |
@@ -102,7 +102,7 @@ S-250は現行2箱をRGB三色タブと解放順の2箱へ再設計するため�
 ### Wave 0: 台帳と実装契約
 
 1. この計画、stage status、gimmick coverage、human testの件数と状態語を揃える。
-2. MDN 147ファミリー・1,045インターフェースという2026-07-18スナップショットを再取得し、機械可読API台帳へ変換する。現在この完全台帳は未作成であり、固定件数を現行値として扱わない。
+2. MDN 147ファミリー・1,045インターフェースという第3段階のスナップショットを再取得し、機械可読API台帳へ変換する。現在この完全台帳は未作成であり、固定件数を現行値として扱わない。
 3. stage manifestとJSON Schemaを作り、stage ID、problem ID、Gimmick ID、API台帳、人手確認IDの未参照・重複をCIで失敗させる。
 4. 計画ステージを実装済みとしてcatalogueへ先行登録しない。
 
@@ -265,11 +265,11 @@ OpenType fixture生成 + desktop Chromium / OS install PoC ─> S-790
 - 一つのAPI名につき一問を量産せず、同じ中心操作は既存stageへ統合する。
 - 自動test、型check、buildに加え、Limited / Experimental、PWA、権限、実機条件は人手証跡が揃うまで公開合格にしない。
 
-## 2026-07-20公式情報の再確認
+## 第5段階の公式情報の再確認
 
 - [Web Authentication Level 3](https://www.w3.org/TR/webauthn-3/)はconditional mediationの能力確認と`AbortSignal`による中断を定義する。Conditional requestはdocument lifetime中待機し得るため、S-380 / S-390は明示cleanupが必要。
 - [Notifications Living Standard](https://notifications.spec.whatwg.org/)ではaction数は実装・platform依存で0以上であり、`image`も表示されない場合がある。S-410 / S-420とS-190-B05は実機PoCを外せない。
 - [MDNのFile Handling解説](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/How_to/Associate_files_with_your_PWA)ではinstalled PWA、manifestの`file_handlers`、`LaunchQueue`が必要で、現状はdesktop Chromium系に限定される。
 - [Web App Manifest member一覧](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference)で、shortcuts、share_target、note_taking、file_handlers、protocol_handlers、launch_handler、display_overrideを別々のmemberとして再確認した。
-- [`<meta name="text-scale">`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/text-scale)は2026-07-20時点でExperimental / Limitedであり、最大200〜300%超の設定でもlayoutを壊さない検証が必要。
+- [`<meta name="text-scale">`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/text-scale)は第5段階でExperimental / Limitedであり、最大200〜300%超の設定でもlayoutを壊さない検証が必要。
 - [Battery Status API](https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API)はSecure Context限定かつLimited availabilityで、`chargingchange`と`levelchange`を提供する。

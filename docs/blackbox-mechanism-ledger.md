@@ -1,12 +1,12 @@
 # Blackbox機構監査・対話決定台帳
 
-> 2026-07-20追記: 各節の「現行コードとの差」「未実装」「技術スパイク待ち」は設計時の監査証跡として残している。承認されたWeb独自案は60stage・97箱として実装済みで、現在状態は[ステージ実装状況](./stage-implementation-status.md)を正とする。
+> 第5段階の追記: 各節の「現行コードとの差」「未実装」「技術スパイク待ち」は設計時の監査証跡として残している。承認されたWeb独自案は60stage・97箱として実装済みで、現在状態は[ステージ実装状況](./stage-implementation-status.md)を正とする。
 
 ## 目的
 
 Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有の独自問題へ再設計できるか1件ずつ判断する。名称、文章、画像、音、数値、配置、解法順、進行演出は流用しない。
 
-この文書は2026-07-18時点の調査を引き継ぎ、2026-07-20までに完了した対話決定の正本とする。コードの現状と承認済みの将来仕様を区別し、技術PoCで境界が確定した時にも更新する。
+この文書は第3段階の調査を引き継ぎ、第5段階までに完了した対話決定の正本とする。コードの現状と承認済みの将来仕様を区別し、技術PoCで境界が確定した時にも更新する。
 
 ## 引き継いだ調査スナップショット
 
@@ -24,8 +24,8 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 2. 各項目を「独自問題として採用」「既存ステージへ統合」「保留」「取りやめ」のいずれかへ確定する。
 3. 採用時は、体験の核、問題箱ごとの成功条件、使用API、対応差、非対応時の状態、reset、cleanup、既存ステージとの重複、実装先を記録する。
 4. 合意した設計と現行コードが異なる間は、必ず「再設計待ち」と明記する。
-5. 29件の相談は2026-07-20に完了した。Blackbox 50/50機構のWeb案または不採用理由を維持し、採否の相談漏れを再発させない。
-6. 次に、MDN一覧を再取得した機械可読台帳、ステージマニフェスト、JSON Schema、未分類を失敗させるCIへ進む。147ファミリーと1,045インターフェースは2026-07-18のスナップショットであり、再取得前の固定母数にはしない。
+5. 29件の相談は第5段階に完了した。Blackbox 50/50機構のWeb案または不採用理由を維持し、採否の相談漏れを再発させない。
+6. 次に、MDN一覧を再取得した機械可読台帳、ステージマニフェスト、JSON Schema、未分類を失敗させるCIへ進む。147ファミリーと1,045インターフェースは第3段階のスナップショットであり、再取得前の固定母数にはしない。
 
 全採用ステージにfeature detectionとreset / cleanupを用意する。非対応、権限拒否、必要機器なしの場合はその問題を未観測のままにし、代替操作やskipによるクリアは用意しない。全クリを前提とせず、非対応問題がアプリ全体を壊さないことを完了条件とする。
 
@@ -44,7 +44,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-065 App Switcherの順序と他アプリの強制終了
 
 - 初期評価: ×。Webページは他アプリの並びや終了状態を観測できない。
-- 決定日: 2026-07-18
+- 決定段階: 第3段階
 - 状態: 採用
 - 決定: RGB加法混色をモチーフにした、同一オリジンの複数タブとWeb Lock解放順の独自問題へ置き換える。
 - 実装先: 既存のG-022 / S-250を再設計する。G-017 / S-050は2タブ通信の入門として残し、第3の類似ステージは追加しない。
@@ -79,7 +79,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-017 スクリーンショット検出
 
 - 初期評価: △。WebページからOSのスクリーンショット撮影eventを受け取る標準経路は確認できない。
-- 決定日: 2026-07-18
+- 決定段階: 第3段階
 - 状態: 取りやめ
 - 決定: スクリーンショット撮影の検出も、撮影画像をページへ戻して検証する代替問題も採用しない。S-190へ問題箱を追加しない。
 - 理由: 受動的な撮影検出はできず、成果物の再入力へ変えると元の中心動詞から離れる。さらにS-130のfile往復、S-180のpaste、S-190の画面取得と近くなるため、問題数を増やす価値が不足する。
@@ -87,7 +87,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-018–021 消音、音量、ヘッドホン
 
 - 初期評価: △。Webページはsystem mute、system volume、silent switch、headphone装着状態を信頼できる入力として取得できない。
-- 決定日: 2026-07-18
+- 決定段階: 第3段階
 - 状態: 採用
 - 決定: OS状態の再現をやめ、user agentが描画するnative media playerのシーク、ミュート、再生・停止を3つの問題箱にする。
 - 対応先: 新規G-033 / S-350として計画する。元の4ライトを4箱へ対応させない。
@@ -119,7 +119,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-023 機内モード、Wi-Fi切断
 
 - 初期評価: △。Webページはnetwork接続種別や機内モードを特定できない。
-- 決定日: 2026-07-18
+- 決定段階: 第3段階
 - 状態: 既存ステージへ統合
 - 決定: 機内モード、Wi-Fi、Ethernetなどの切断方法を区別せず、「browserがofflineへ遷移した」という機構として既存S-070へ統合する。新しい問題箱や到達確認用serverは追加しない。
 - 現行機能の境界: [`navigator.onLine`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine)と `online` / `offline` eventは広く利用できるが、OSとbrowserごとのheuristicであり、`true`はInternet到達性を保証しない。
@@ -128,7 +128,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-050 端末再起動後に戻る
 
 - 初期評価: △。通常のWebページは端末やbrowser processの再起動を確実に識別できない。
-- 決定日: 2026-07-18
+- 決定段階: 第3段階
 - 状態: 元の機構は取りやめ、別のWeb固有機構を採用
 - 決定: 端末再起動を成功条件にはしない。代わりに [`PerformanceNavigationTiming.type`](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming/type) が識別するdocument navigationを使い、「browserの戻る・進むでステージへ復帰」と「reload」を独立した2箱にする。
 - 実装先: 既存G-019 / S-220を3箱へ拡張する。現行の同一document内の履歴問題は第1箱として残し、Navigation Timingの2箱を追加する。
@@ -144,7 +144,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 6. 3箱は順不同で独立して永続化する。document navigationでstage instanceが破棄されても、すでに開いた箱を失わない。
 7. navigation entry、`pageshow` listener、history stateの有無をfeature detectionし、利用できない環境では該当箱を未観測のままにする。skipや別操作による代替クリアは用意しない。
 
-> 2026-07-21追記: このBlackbox由来の3箱とは別に、Deep Research DR-047のNavigation API案をS-220-B04として統合した。A→B→Cからbrowser BackでAへ戻りDへ分岐し、旧B / C両entryの`dispose`と`canGoForward === false`を観測する。最新の4箱仕様は[Deep Research元案・暫定採否台帳](./deep-research-idea-disposition-ledger.md)と[ステージ実装状況](./stage-implementation-status.md)を正とする。
+> 第6段階の追記: このBlackbox由来の3箱とは別に、Deep Research DR-047のNavigation API案をS-220-B04として統合した。A→B→Cからbrowser BackでAへ戻りDへ分岐し、旧B / C両entryの`dispose`と`canGoForward === false`を観測する。最新の4箱仕様は[Deep Research元案・暫定採否台帳](./deep-research-idea-disposition-ledger.md)と[ステージ実装状況](./stage-implementation-status.md)を正とする。
 
 #### 既存ステージとの差
 
@@ -155,7 +155,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-058–059 通話の発着信と終了
 
 - 初期評価: △。WebページはOSの電話着信、発信、通話終了を観測できない。
-- 決定日: 2026-07-18
+- 決定段階: 第3段階
 - 状態: 採用・技術スパイク待ち
 - 決定: OS通話の再現をやめ、同一オリジンの2タブ間で実際のWebRTC peer connectionを確立し、接続と明示切断を2つの問題箱にする。
 - 対応先: 新規G-034 / S-360として計画する。
@@ -183,7 +183,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-072 OS共有シートを2経路で利用
 
 - 初期評価: △。Web Share APIはOSの共有先一覧や、ユーザーが選んだ共有先をページへ公開しない。
-- 決定日: 2026-07-19
+- 決定段階: 第4段階
 - 状態: 既存ステージへ統合・PWA導線を含めて再設計待ち
 - 決定: 共有先を推測する元の機構は使わず、G-021 / S-240を「Web Shareで外へ渡す」と「Web Share Targetとして外から受け取る」の非対称な2箱へ再設計する。
 - 現行コードとの差: 現在のS-240は文字列を `navigator.share()` へ渡す1箱だけを実装している。第2箱、manifestの `share_target`、受信route、PWAインストール導線は未実装。
@@ -214,7 +214,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-081–082 画面録画とbroadcast先
 
 - 初期評価: △。WebページはOS標準の画面録画開始、保存先、broadcast先を受動的に観測できない。
-- 決定日: 2026-07-19
+- 決定段階: 第4段階
 - 状態: 既存ステージへ統合・再設計待ち
 - 決定: OS画面録画を検出せず、G-012 / S-190を、userが選んだdisplay streamのlive preview、local recording、別tabへのlive relayという3箱へ拡張する。
 - 現行コードとの差: 現在のS-190はcurrent browser tabのlive frameを12回観測する1箱だけを実装している。MediaRecorder、recorded Blobの検証、observer tab、WebRTC relayは未実装。
@@ -240,7 +240,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-010–012 バッテリー残量
 
 - 初期評価: △。Battery Status APIは主要browser共通ではなく、取得不能時やbatteryなし環境では満充電・充電中に見えるdefault値を返しうる。
-- 決定日: 2026-07-19
+- 決定段階: 第4段階
 - 状態: 採用・新規ステージ計画
 - 決定: hosting deviceのBattery Statusを、充電器の接続、取り外し、75%以上、75%未満という4つの独立した箱にする。
 - 対応先: 新規G-035 / S-370として計画する。G-025 / S-280の外部Bluetooth機器Battery Serviceとは統合しない。
@@ -270,7 +270,7 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-015–016 OS画面輝度の最小、最大
 
 - 初期評価: △。標準WebページはOS display brightnessの現在値、最小値、最大値を取得できない。
-- 決定日: 2026-07-19
+- 決定段階: 第4段階
 - 状態: 取りやめ
 - 決定: OS画面輝度の検出も、page内brightness sliderによる置換も採用しない。新しいstageや問題箱は追加しない。
 - 理由:
@@ -283,12 +283,12 @@ Blackboxを参考に抽出した機構を、そのまま複製せず、Web固有
 ### BB-022 生体認証を意図的に失敗
 
 - 初期評価: △。WebAuthnはuser verificationを要求できるが、生体認証の種類や、生体照合に失敗したという個別理由をWebページへ公開しない。
-- 決定日: 2026-07-19
+- 決定段階: 第4段階
 - 状態: 5問題を採用・stage境界は技術スパイク待ち
 - 決定: ゲーム専用のdiscoverable credential、Conditional UI、credential-less request lifecycleを同じS-380操作盤へ統合する。
 - 対応先: 新規G-036 / S-380として計画する。
 - 現行コードとの差: S-380とpasskey cleanup導線は未実装。
-- 再検討履歴（2026-07-19）: credentialが端末または同期providerへ残る負担を避ける案を比較し、Conditional UI必須と5問題の採用を決定した。当初は同一pageの5箱としたが、D-038で3箱＋2箱の分割variantもPoC比較へ戻した。以下の旧案は判断履歴であり、現行仕様は「統合案: WebAuthn Conditional UI」と「ステージ境界の技術スパイク」を正とする。
+- 再検討履歴（第4段階）: credentialが端末または同期providerへ残る負担を避ける案を比較し、Conditional UI必須と5問題の採用を決定した。当初は同一pageの5箱としたが、D-038で3箱＋2箱の分割variantもPoC比較へ戻した。以下の旧案は判断履歴であり、現行仕様は「統合案: WebAuthn Conditional UI」と「ステージ境界の技術スパイク」を正とする。
 - 現行機能の境界:
   - [Web Authentication API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API)は `navigator.credentials.create()` と `get()`によるregistration / authentication ceremonyを提供する。`userVerification: "required"`はverificationを要求するが、fingerprint、face、PINなどの方式をsiteが指定・識別する仕組みではない。
   - [WebAuthn Level 3仕様](https://www.w3.org/TR/webauthn-3/)は、対象credentialなしとuser non-consentの双方を `NotAllowedError` 相当として扱う。したがって、API拒否の発生は検知できるが、誤った指、顔、PIN、cancel、対象鍵なしをerror名から区別できない。
@@ -351,11 +351,11 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 
 #### 両案を分離して残す候補
 
-- 2026-07-19にS-380 credential-less lifecycleとS-390 disposable passkeyを分ける案を検討した。
+- 第4段階にS-380 credential-less lifecycleとS-390 disposable passkeyを分ける案を検討した。
 - WebAuthn Conditional UIを必須採用する方針により、この分離案は撤回する。Conditional UIはdiscoverable credentialを候補表示する機構であり、credentialを作らないS-380だけではplayerが選べる候補を出せない。
 - G-037 / S-390の独立stage候補はG-036 / S-380へ統合する。S-390を別stageとして実装せず、G-037は統合履歴としてのみ残す。
 - passkey cleanup、専用host名、署名検証、provider残留警告は統合後のS-380へ戻す。`signalUnknownCredential()`はbest effortであり、削除を保証しない。
-- 再変更（2026-07-19）: no-match requestとAbortSignal中断は問題として採用するが、Conditional UIの3箱と同じstageへ置くかは実際の操作感を確認してから決める。G-037 / S-390をrequest lifecycle用の仮配置として復活させる。
+- 再変更（第4段階）: no-match requestとAbortSignal中断は問題として採用するが、Conditional UIの3箱と同じstageへ置くかは実際の操作感を確認してから決める。G-037 / S-390をrequest lifecycle用の仮配置として復活させる。
 
 #### 統合案: WebAuthn Conditional UI
 
@@ -420,8 +420,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-032 system clockを戻す
 
 - 初期評価: △。`Date.now()`はsystem clockの変更を反映しうるが、通常のWebページは正しい外部時刻や、ユーザーが時計設定を変更したという直接eventを持たない。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 採用・新規ステージ計画
 - 現行機能の境界:
   - [`Date.now()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now)はUnix epoch基準のwall clockであり、systemまたはuserによる時計補正の影響を受けうる。
@@ -454,8 +454,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-038 OS設定画面の専用項目
 
 - 初期評価: △。通常のWebページはOS設定画面の専用項目を開いたことや、その設定値を一般的に観測できない。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 取りやめ
 - 検討案: 通知権限が `granted`になった後に隠しstageを出し、notificationまたはbrowserのsite settingsから通知をoffにして `Notification.permission`の変化を観測する案を検討した。
 - 取りやめ理由:
@@ -470,8 +470,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-062 通知actionを順に選択
 
 - 初期評価: △。persistent notificationの `actions`とService Workerの `notificationclick`で選択されたaction IDを観測できるが、表示できるaction数とUIはbrowser / OS依存になる。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 採用・新規ステージ計画
 - 決定: 通知からpageへ遷移せず、2つのnotification actionをService Worker内で順次処理して通知を差し替える、繰り返し挑戦可能な1箱として採用する。
 
@@ -521,8 +521,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-063 通知からinline返信
 
 - 初期評価: △。現行の標準NotificationActionにはtext input / reply payloadがなく、通知内で入力された文字列をWebのService Workerへ返す共通APIはない。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 取りやめ
 - 現行機能の境界:
   - [WHATWG Notifications Standard](https://notifications.spec.whatwg.org/#dictdef-notificationaction)の `NotificationAction`は `action`、`title`、`navigate`、`icon`だけを定義し、text field、reply placeholder、入力値を含むmemberを持たない。
@@ -540,8 +540,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-064 指定時刻の通知から復帰
 
 - 初期評価: △。通常のWeb page / Service Workerは任意の将来時刻に自力でwakeしてnotificationを表示する標準alarmを持たず、正確な配信にはserver-side Web Pushなどが必要になる。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 取りやめ
 - 現行機能の境界:
   - Service Workerは常駐processではなく、browserがevent処理後に停止できる。pageの `setTimeout()`やworker内の待機を将来時刻のalarmとして扱えない。
@@ -573,8 +573,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-069 約25分background
 
 - 初期評価: △。background timerの継続には依存できないが、Page Visibilityのhidden開始時刻と復帰時刻の差は比較できる。既存G-018 / S-040「見ない時間」と中心動詞が重なる。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 採用・既存S-040拡張計画
 - 現行実装: S-040-B01は `visibilitychange`でhidden時の `Date.now()`をmemoryへ置き、同じdocumentがvisibleへ戻った時に2秒以上なら開く1箱。background中のtimer callbackには依存していない。
 - 決定: 新規stageを作らず、S-040へ `S-040-B02` 長い不在箱を追加する。
@@ -599,14 +599,14 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-070 OSメディア操作から音声停止
 
 - 初期評価: △。Media Session APIのaction handlerでOS / browserが送る `pause` actionを受け取れるが、Control Center、lock screen、hardware media keyなど操作元を標準APIで区別できない。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 採用・新規ステージ計画
 - 現行機能の境界:
   - [`navigator.mediaSession.setActionHandler("pause", handler)`](https://developer.mozilla.org/en-US/docs/Web/API/MediaSession/setActionHandler)は、deviceのonscreen / physical media controlsから届くpause actionをhandlerへ渡せる。
   - [Media Session Standard](https://w3c.github.io/mediasession/#actions-model)はaction sourceをplatformまたはuser-agent UI surfaceと定義するが、page callbackの `MediaSessionActionDetails`にsourceを公開しない。Control Center、lock screen、headset、keyboard media key、browser chromeを区別できない。
   - 一部browser / OSは電話着信などのsystem interruptionをpause actionとしてdispatchしうる。playerの明示操作だったと断定できない。
-- 決定: 新規G-041 / S-430-B01として、「Control Centerを使う」ではなく「page外のMedia Session pause actionを受ける」問題へ再設計する。native video playerのcontrols / pause eventは判定に使わない。2026-07-24のDR-065対話で、Audio Sessionの実interruptionと復帰を扱うB02を同じstageへ追加承認した。
+- 決定: 新規G-041 / S-430-B01として、「Control Centerを使う」ではなく「page外のMedia Session pause actionを受ける」問題へ再設計する。native video playerのcontrols / pause eventは判定に使わない。第7段階のDR-065対話で、Audio Sessionの実interruptionと復帰を扱うB02を同じstageへ追加承認した。
 
 #### 外側のpause案
 
@@ -628,8 +628,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-026 home画面上の位置から起動
 
 - 初期評価: △。Web App Manifest / Launch Handlerはinstalled PWAの起動経路やtarget URLを扱えるが、OS home screen上のicon座標・page・folder位置はWebへ公開されない。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 採用・既存S-310拡張計画
 - 現行機能の境界:
   - Web page / installed PWAは、自身のiconがhome screenの何行何列、どのpage / folderへ置かれたかを取得できない。icon移動eventもない。
@@ -654,8 +654,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 
 ### PWA起動周辺の追加監査
 
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 現行の公開仕様とbrowser資料を全件監査。独立性のある4案を維持し、ChromeOS限定の1案を撤回
 - 監査範囲:
   - [MDN Web App Manifest](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest)の現行member一覧
@@ -724,8 +724,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-027 OS文字サイズ
 
 - 初期評価: △から採用へ変更。従来はOS文字倍率を標準的に読む方法がなかったが、現行CSS Fonts Level 5とHTMLにpreferred text scaleの経路が追加された。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 採用・新規G-046 / S-480技術スパイク待ち
 - 現行機能の境界:
   - [MDN `<meta name="text-scale">`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/text-scale)の`content="scale"`は、OSまたはuser agentで選ばれた文字サイズをfont-relative sizeへ反映するようbrowserへ伝える。
@@ -751,8 +751,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-079 iOS Spotlight検索
 
 - 初期評価: △ではなく、標準Webだけでは元の中心動詞を観測不能。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 取りやめ
 - 現行機能の境界:
   - [Core Spotlight](https://developer.apple.com/documentation/corespotlight/adding-your-app-s-content-to-spotlight-indexes)でapp固有contentを端末indexへ登録し、検索result actionを受けるAPIはSwift / Objective-Cのnative frameworkで、Web pageやinstalled PWAへ公開されていない。
@@ -765,8 +765,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-080 OSスクリーンショットへQRを埋める
 
 - 初期評価: △ではなく、元の挙動は標準Webで観測不能。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-19
+- 調査段階: 第4段階
+- 決定段階: 第4段階
 - 状態: 元のscreenshot機構は取りやめ・独立Clipboard案をS-500へ採用。既存S-180は別のClipboard往復問題として維持
 - 現行機能の境界:
   - Web pageはOSが生成するスクリーンショットfileや撮影pipelineへ介入できず、撮影後の画像へQRを追加できない。
@@ -808,7 +808,7 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 
 ## 独自追加案: Screen Capture画像マーカー
 
-- 調査日: 2026-07-19
+- 調査段階: 第4段階
 - 状態: page markerはS-190-B04として採用確定。notification markerは実機PoC待ちで未確定。
 - page marker: round固有の高contrast markerをmind map型stage一覧の外縁へ描画し、user-selected display streamの実frameからCanvas decodeできた時だけ開く。S-190と別tab mapのBroadcastChannel handshake後だけpayloadを描画し、marker DOMの存在、viewport表示、共有開始、URL訪問だけでは開かない。
 - notification marker: Service Worker notificationの`image`へ別種markerを入れ、通知欄を含むcapture frameからdecodeする案。Notification imageのLimited対応と、OSが共有映像から通知を隠す可能性があるため、安定してpixelを取得できる対象環境をPoCで確認してから採否を決める。
@@ -818,8 +818,8 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-086 iMessage stickerのアプリ間D&D
 
 - 初期評価: △。iMessageや他native appのdrag source / destinationはWebから観測できないが、別top-level Busycube context間の実HTML Drag and Dropへ再設計できる。
-- 調査日: 2026-07-19
-- 決定日: 2026-07-20
+- 調査段階: 第4段階
+- 決定段階: 第5段階
 - 状態: 採用・新規G-049 / S-510技術スパイク待ち。
 - 決定: installed PWAのsource windowでround固有payloadを埋めた小さなPNG stickerを事前生成し、draggableな画像の`dragstart`で同期的に`DataTransferItemList.add(new File(...))`へ載せる。通常browserのreceiver windowの実`drop` eventで`DataTransfer.items`から画像Fileを読み、PNG bytes内のpayloadとcurrent roundが一致した場合に1箱を開く。
 - `dragstart`後の非同期`canvas.toBlob()`ではDrag Data Storeを書き換えられないため、Blob / Fileはplayerがdragを始める前にmemoryへ用意する。文字列tokenだけのdropやDOM移動だけでは開かない。
@@ -827,15 +827,15 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 - S-130はfileをdiskへ書き出して後で再投入、S-440は`.busycube`をOSから開いてPWAをlaunchする問題。本案はdiskへ保存せず、継続中のpointer dragが2つのtop-level context間でFileを運ぶ点で分担する。
 - Desktopの現行Chrome、Edge、Firefox、Safariで、script生成Fileがwindow境界を越えて`drop`へ残るかをPoCする。成立しないbrowserへtext payloadやuploadによる代替clearは設けない。
 - 技術根拠: [`DataTransferItemList.add()`](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/add)はFile項目を追加でき、drag dataは原則`dragstart`でだけ変更し、`drop`で読み出す。
-- 2026-07-26追記: DR-105 Storage Access APIの相談から派生したcross-origin iframe画像D&DをS-510-B02へ追加する。外部静的originのiframe内に置いたGit管理済み透明PNG 3枚を親Documentの現像台へdragし、実`drop`の`text/uri-list`、layer ID、current iframe payloadが一致した時だけ重ねる。B01のtop-level window間File転送は変更せず、B02はiframe / parent境界と画像URL itemを分担する。
+- 第9段階の追記: DR-105 Storage Access APIの相談から派生したcross-origin iframe画像D&DをS-510-B02へ追加する。外部静的originのiframe内に置いたGit管理済み透明PNG 3枚を親Documentの現像台へdragし、実`drop`の`text/uri-list`、layer ID、current iframe payloadが一致した時だけ重ねる。B01のtop-level window間File転送は変更せず、B02はiframe / parent境界と画像URL itemを分担する。
 
 ### BB-009 近接センサーを覆う
 
 - 初期評価: Labsで直接実現可能。camera明度への置換は不要。
-- 調査日: 2026-07-20
-- 決定日: 2026-07-20
+- 調査段階: 第5段階
+- 決定段階: 第5段階
 - 状態: 採用・新規G-050 / S-520技術スパイク待ち。
-- 現行仕様: 2026-05-14の[W3C Proximity Sensor Working Draft](https://www.w3.org/TR/proximity/)はGeneric Sensor APIを継承する`ProximitySensor`を定義し、`distance`、`max`、`near`をlive readingとして返す。Secure Context、permission `proximity`、Permissions Policy feature `proximity-sensor`を前提とする。
+- 現行仕様: [W3C Proximity Sensor Working Draft](https://www.w3.org/TR/proximity/)はGeneric Sensor APIを継承する`ProximitySensor`を定義し、`distance`、`max`、`near`をlive readingとして返す。Secure Context、permission `proximity`、Permissions Policy feature `proximity-sensor`を前提とする。
 - 推奨案: 明示的な開始操作から`new ProximitySensor()`を生成して`start()`する。少なくとも1回の実readingで「近くない」状態を観測した後、同じsensor instanceの後続readingが`near === true`になった場合にS-520-B01を開く。
 - 現行仕様では対象物が検出範囲外の時に`distance`と`near`が`null`になり得る。reading eventを一度も受けていない初期`null`と混同せず、baselineは実reading受信済みであることを要求する。
 - distance値は端末差が大きく、仕様も正確な距離計として頼れないとしているため、cm閾値や段階箱は作らない。中心操作を「上部センサーを覆う」1箱へ絞る。
@@ -846,7 +846,7 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 
 #### Generic Sensor追加監査
 
-- 調査日: 2026-07-20
+- 調査段階: 第5段階
 - 共通境界: 全候補をSecure Context、実interface、実hardware、permission / Permissions Policy、live readingが揃うLabsとして扱う。非対応時のDeviceMotion、camera、page内sliderなどによる代替clearは作らない。
 
 ##### 採用: G-051 / S-530 LinearAccelerationSensor
@@ -877,7 +877,7 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 
 ##### 取りやめ: G-055 Magnetometer / AbsoluteOrientationSensor
 
-- 2026-05-14版Magnetometer Working Draft自身が、既定で利用可能なbrowser engineはなく、現形のままRecommendationへ進む見込みもないと明記している。
+- 確認した版Magnetometer Working Draft自身が、既定で利用可能なbrowser engineはなく、現形のままRecommendationへ進む見込みもないと明記している。
 - 金属一般は磁場変化が安定せず、強い磁石を端末へ近づける操作も推奨しない。browser flagを有効にする導線もゲーム条件にしない。
 - `AbsoluteOrientationSensor`はaccelerometer、gyroscopeに加えてmagnetometer permissionへ依存するため、同時に新規stageから除外する。
 
@@ -894,7 +894,7 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 - targetは本文へ直接書かず、先行S-490で記憶した語とmind mapのS-490→S-580 clue edgeを使う。到達順は強制しない。
 - 既存S-120はWeb Audioで音量・周波数形状を観測し、本案はbrowserのspeech-to-text final resultを観測するため分担できる。
 - `SpeechRecognition`はLimited availabilityで、実装は端末内またはserver-based recognitionを選び得る。アプリは音声とtranscriptを保存しないが、browser serviceによる外部処理の可能性を開始前に説明する。
-- `processLocally`、`available()`、`install()`は2026年時点で実験的なon-device機能として別途API台帳へ残す。この1箱の必須条件やfallbackにはしない。
+- `processLocally`、`available()`、`install()`は当時は実験的なon-device機能として別途API台帳へ残す。この1箱の必須条件やfallbackにはしない。
 
 ### BB-033〜036 出発地点から一定距離移動
 
@@ -908,7 +908,7 @@ memory-only案では、Dedicated Worker内でECDSA P-256鍵pairを `extractable:
 ### BB-051 他アプリでコピーした文字
 
 - 状態: 新規stageは見送り。既存S-180とplayer体験が重複する。
-- 2026年のClipboard APIには、system clipboardがページ外で変化し、documentが再びsystem focusを得た時にpending eventを配送できるExperimentalな`clipboardchange`がある。
+- 当時のClipboard APIには、system clipboardがページ外で変化し、documentが再びsystem focusを得た時にpending eventを配送できるExperimentalな`clipboardchange`がある。
 - しかしS-180は、page外で逆順文字を直して再copyし、復帰後の箱clickで`readText()`する往復をすでに中心操作にしている。イベントで復帰時に自動判定しても、player視点では「外で文字をcopyして戻る」という発見が同じである。
 - `clipboardchange`はAPI台帳の監査対象として残すが、BB-051由来の新規Gimmick IDやstage IDは予約しない。S-600は後にBB-055〜057の高度stageへ割り当てた。
 

@@ -1,0 +1,20 @@
+---
+description: Required verification after repository changes
+globs:
+  - "**/*"
+alwaysApply: false
+---
+
+# Verification
+
+変更の種類に応じて、次を実行し、未実施または失敗は明示してください。
+
+- Markdown、ルール、メモのみ: diff とリンク・パスの確認
+- TypeScript、JavaScript、JSON、CSS: `pnpm run check`
+- 振る舞いの変更: `pnpm run test:ci`
+- 依存関係、ビルド設定、配布物への影響: `pnpm run build`
+- ステージ索引に関わる変更: 対応する生成・検査スクリプトと差分確認
+- AI エージェント設定: 参照先が存在し、秘密情報やローカル絶対パスがないことを確認
+- FSL Skills: 正本と各アダプターの参照構造を確認し、利用可能なら対応する `fslc` でも検証
+
+`docs/human-test-matrix.md` の項目は自動検証で代替しません。人手確認が未実施なら、その状態を維持して報告してください。
