@@ -15,7 +15,7 @@
 
 ## 現行スナップショット
 
-2026-08-25現在、生成catalogueと各manifestに89stage・204箱が実装されている。全体はID、表示名、play条件、ローカル箱IDだけを知り、各stage folderが箱のアイコン、色、配置、解法を所有して開いた時だけ読み込む。S-920は実Popover経路と影専用経路を同じCSS Anchor Positioning規則でlayoutする3箱の迷路である。ステージ名・箱名は隣接する`locale.ts`、各stageの解法は`stage.tsx`のJSDocを正とする。旧件数や実装前計画は現行判断に使わない。
+第25段階、生成catalogueと各manifestに89stage・204箱が実装されている。全体はID、表示名、play条件、ローカル箱IDだけを知り、各stage folderが箱のアイコン、色、配置、解法を所有して開いた時だけ読み込む。S-920は実Popover経路と影専用経路を同じCSS Anchor Positioning規則でlayoutする3箱の迷路である。ステージ名・箱名は隣接する`locale.ts`、各stageの解法は`stage.tsx`のJSDocを正とする。旧件数や実装前計画は現行判断に使わない。
 
 過去の60stage・97箱、68stage・156箱、69stage・156箱、79stage・187箱、80stage・187箱は、実装前または中間時点のスナップショットである。現行の箱IDと解法は[現行ステージ解法仕様](./stage-walkthroughs.md)と実装を正とし、旧展開計画やPoCの番号から導かない。
 

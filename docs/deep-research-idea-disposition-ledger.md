@@ -1,6 +1,6 @@
 # Deep Research元案・暫定採否台帳
 
-> 調査日: 2026-07-20。これは元案と対話過程の非規範台帳である。後の決定で上書きされた箱ID・箱数・成功条件は現行仕様に使わない。現在の解法は[現行ステージ解法仕様](./stage-walkthroughs.md)、件数は[ステージ実装状況](./stage-implementation-status.md)を正とする。
+> 調査段階: 第5段階。これは元案と対話過程の非規範台帳である。後の決定で上書きされた箱ID・箱数・成功条件は現行仕様に使わない。現在の解法は[現行ステージ解法仕様](./stage-walkthroughs.md)、件数は[ステージ実装状況](./stage-implementation-status.md)を正とする。
 
 ## 目的
 
@@ -21,7 +21,7 @@
 ## 調査方法と現行性
 
 - 原文145見出しと各操作手順を読み、現行の[ギミック実装カバレッジ計画](./gimmick-coverage-plan.md)、[ステージ実装状況](./stage-implementation-status.md)、実ステージコード、[API台帳](../data/api-ledger.json)を照合した。
-- 対応状況が判断を左右する案は、MDNと現行仕様を2026-07-20に再確認した。たとえば[Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API)と[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API)は原文作成後に実装状況が進んでいる一方、[EditContext](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API)、[VirtualKeyboard](https://developer.mozilla.org/en-US/docs/Web/API/VirtualKeyboard_API)、[Document Picture-in-Picture](https://developer.mozilla.org/en-US/docs/Web/API/Document_Picture-in-Picture_API)、[HTML Sanitizer](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Sanitizer_API)、[Audio Session](https://developer.mozilla.org/en-US/docs/Web/API/Audio_Session_API)は依然として対応差を前提にする。
+- 対応状況が判断を左右する案は、MDNと現行仕様を第5段階に再確認した。たとえば[Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API)と[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API)は原文作成後に実装状況が進んでいる一方、[EditContext](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API)、[VirtualKeyboard](https://developer.mozilla.org/en-US/docs/Web/API/VirtualKeyboard_API)、[Document Picture-in-Picture](https://developer.mozilla.org/en-US/docs/Web/API/Document_Picture-in-Picture_API)、[HTML Sanitizer](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Sanitizer_API)、[Audio Session](https://developer.mozilla.org/en-US/docs/Web/API/Audio_Session_API)は依然として対応差を前提にする。
 - [Force Touch events](https://developer.mozilla.org/en-US/docs/Web/API/Force_Touch_events)はApple固有の非標準機能、WebVRはDeprecatedであり、新規の標準問題にはしない。
 - [Text fragments](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments)のdirectiveは読込時にURLから取り除かれ、現在の[URL Fragment Text Directives API](https://developer.mozilla.org/en-US/docs/Web/API/URL_Fragment_Text_Directives)も主にfeature detection用である。成功をscriptから確実に観測する原案はそのまま成立しない。
 - [WebOTP](https://wicg.github.io/WebOTP/)はoriginを含む実SMSを必要とするが、送信者はgame serverに限定されない。G-074 / S-750では別の携帯電話または協力者がcurrent round文面を送るため、電話番号とSMS backendをgameへ持ち込まない。Push / SSE / WebSocket / WebTransport /各種background送信は引き続きbackend要件を個別判断する。
@@ -137,7 +137,7 @@
 | DR-075 | Remote Playback API | 採用 | 新規G-069 / S-700の2箱。B01は外部画面の文字鍵を手元入力、B02はDR-016のround別QRを手元cameraと実`BarcodeDetector`で読む | 済 |
 | DR-076 | Presentation API | 統合案 | G-069 / S-700-B03へ統合。明示操作でreceiver pageを外部画面へ起動し、実`connected`とreceiverの表示準備完了messageを確認した時点で開く | 済 |
 | DR-077 | Insertable Streams for MediaStreamTrack API | 採用 | 新規G-070 / S-710の動画変換4箱へ具体化。暗黒frame、decode失敗、QR frame、自己生成metadataを別条件とし、player入力依存の変換だけをruntime実行する | 済 |
-| DR-078 | WebCodecs API | 却下 | POC-054はWindows Chromeで実decodeを確認できず、2026-06時点でもW3C Working Draftかつlimited availabilityである。encoded chunk順・timestamp修復はpage製UIとなり、S-720とDR-071の体験にも重なるためstage化しない | 済 |
+| DR-078 | WebCodecs API | 却下 | POC-054はWindows Chromeで実decodeを確認できず、当時もW3C Working Draftかつlimited availabilityである。encoded chunk順・timestamp修復はpage製UIとなり、S-720とDR-071の体験にも重なるためstage化しない | 済 |
 | DR-079 | WebRTC API | 重複 | S-360で同一origin 2 tabの実peer接続と明示終了へ統合。遠隔2人用backendは追加しない | — |
 | DR-080 | WebTransport API | 却下 | datagram / stream差は固有だが専用HTTP/3 / QUIC backendと運用が必須。静的配信・自前backendなし方針を変更せず、新規stage・箱を作らない | 済 |
 | DR-081 | WebGL | 却下 | POC-043で描画自体は確認したが、player操作はgame製3D sceneの回転に留まり、WebGLでなければ成立しないbrowser固有体験にならない。rendererの内部利用はできるがstage・箱は追加しない | 済 |
@@ -202,7 +202,7 @@
 | DR-130 | 帰属レポート API | 却下 | Chromeで非推奨化・削除予定。browser固有UIやclient側の確定eventがなく、report受信backendを要するためstage・統合・historical exhibitを作らない | 済 |
 | DR-131 | Private State Token API | 却下 | 独自issuer / redeemer backend、暗号鍵運用、issuer登録が必要で一般向けmanaged issuerもない。通常player向けbrowser UIもないためstage・統合・demo依存を作らない | 済 |
 | DR-132 | Topics API | 却下 | Chrome 144から非推奨化・削除予定。非標準、privacy、非決定性、固有UI欠如のためstage・統合・historical exhibit・設定変更箱を作らない | 済 |
-| DR-133 | Trusted Types API | 却下 | POC-050のpolicy / sink差はplayer操作ではなく内部security境界であり、2026-02時点でもW3C Working Draftである。CSP強化の内部実装には使えるがstage・箱・採用API数へ含めない | 済 |
+| DR-133 | Trusted Types API | 却下 | POC-050のpolicy / sink差はplayer操作ではなく内部security境界であり、当時もW3C Working Draftである。CSP強化の内部実装には使えるがstage・箱・採用API数へ含めない | 済 |
 | DR-134 | フェンスフレーム API | 却下 | 隔離枠内の達成を親pageへ直接通知できず、playerには普通の埋め込みcontentにしか見えない。reporting backendやgame製puzzleへ置換せずstage・統合・historical exhibitを作らない | 済 |
 | DR-135 | 起動ハンドラー API | 重複 | S-310、S-440、S-450でPWA起動、file、protocolの実LaunchQueueを分担済み | — |
 | DR-136 | 呼び出しコマンド API | 統合案 | 原文のOS外部command案は破棄する。DR-041へ、複数buttonから同じPopoverへ宣言的なcommandを送り、呼び出し元を識別する別箱を1箱追加する。DR-025のDialogには追加しない | 済 |
@@ -220,7 +220,7 @@
 
 ### DR-002 インク API
 
-- 決定日: 2026-07-20
+- 決定段階: 第5段階
 - 最終分類: 統合案
 - 統合先: S-160
 - 決定: S-160のポインター軌跡描画へInk APIを組み込む。`navigator.ink.requestPresenter()`が利用できる環境では、最後にCanvasへ確定したtrusted Pointer Eventを`updateInkTrailStartPoint()`へ渡し、次のanimation frameまでの低遅延な一時trailを描く。Canvasは従来どおり永続軌跡を描く。
@@ -231,7 +231,7 @@
 
 ### DR-012 Force Touch events
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、stage ID予約を追加しない。
 - 元案: Force Touch対応面を押し込む強さのprofileを合わせて封印を割り、materialが曲がって亀裂が入る演出でpressure差へ気付かせる。
 - 新規案: 通常clickでは表面だけが沈み、`webkitmouseforcechanged`の圧力上昇、`webkitmouseforcedown`の二段目、`webkitmouseforceup`、通常`mouseup`までを一回の実操作で通す1箱「二段底（仮）」を検討した。Force Clickを無効化している場合や非対応hardwareを偽陽性にしない設計だった。
@@ -242,7 +242,7 @@
 
 ### DR-013 UI イベント
 
-- 決定日: 2026-07-20
+- 決定段階: 第5段階
 - 最終分類: 統合案
 - 統合先: S-150へ1問題箱を追加する
 - 決定: 画面上では見えないがsemanticなbuttonとしてDOMのtab順に存在する問題箱を置く。playerがTabまたはShift+Tabでfocusを到達させると箱を可視化し、そのfocus試行で解錠する。
@@ -253,7 +253,7 @@
 
 ### DR-017 連絡先ピッカー API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 採用。新規G-075 / S-760「架空の名刺（仮）」へ、攻略必須経路と全箱必須報酬から外したLabsの2箱を置く。
 - 元案: 実アドレス帳から「箱の持ち主」を見つけ、選んだ連絡先の内容がhint条件に一致すると開く。宛名labelが封筒へ貼られる演出だった。
 - 元案をそのまま採らない理由: 実連絡先の値を正解へ使うと第三者の個人情報を要求し、playerごとに連絡先集合が異なるため同じ解を保証できない。
@@ -269,7 +269,7 @@
 
 ### DR-019 User Preferences API
 
-- 決定日: 2026-07-20
+- 決定段階: 第5段階
 - 最終分類: 統合案
 - 統合先: S-480へ5問題箱を追加する
 - 対象: User Preferences APIの`navigator.preferences`が扱う5系統をすべて独立させる。S-480-B05は`prefers-color-scheme`、B06は`prefers-contrast`、B07は`prefers-reduced-motion`、B08は`prefers-reduced-transparency`、B09は`prefers-reduced-data`とする。`forced-colors`など`prefers-*`ではないmedia featureはこの決定へ含めない。
@@ -283,7 +283,7 @@
 
 ### DR-021 端末メモリー API
 
-- 決定日: 2026-07-20
+- 決定段階: 第5段階
 - 最終分類: 却下
 - 決定: 新規stage・問題箱を作らず、重い描画やmedia処理の品質・負荷調整基盤にも統合しない。
 - APIの性質: `navigator.deviceMemory`は端末RAMの概算を読み取るだけで、値はfingerprinting低減のため粗く量子化・clampされる。playerがpage上の操作で値や状態を変える経路はない。
@@ -293,7 +293,7 @@
 
 ### DR-023 Compute Pressure API
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 採用。新規G-065 / S-660「四つの計算圧力（仮）」に4箱を置く。
 - 相談対象の元案: 他の箱や処理を止め、CPU pressureが`nominal`になった時だけ1箱を開く。「静かな計算状態」に近づくにつれて箱の放熱フィンが閉じる演出だった。
 - 採用する再設計: `PressureObserver`が返すCPUの`nominal`、`fair`、`serious`、`critical`をS-660-B01〜B04へ一対一で対応させる。playerが明示的に観測を開始した後、実`PressureRecord.state`を受け取るたびに該当箱だけを開き、複数回の訪問をまたいで4状態を累積する。初期recordも実観測として認め、特定順序や状態遷移は要求しない。
@@ -307,7 +307,7 @@
 
 ### DR-025 HTML DOM API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 採用
 - 元案: `<details>`、`<dialog>`、`<input>`などHTML要素固有の状態を鍵機構にし、複数状態の組合せが一致すると開く。元メモの例は`dialog.open && meter.value === 42`で、箱そのものがformへ変形する演出だった。
 - 分類理由: 原案の一部は既存stageへ統合・重複するが、`<dialog>`の閉じ方を3種類のplayer操作へ分けた専用stageを新設するため、元案全体の最終分類は`統合案`ではなく`採用`とする。
@@ -324,7 +324,7 @@
 
 ### DR-028 CSS カウンタースタイル
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下
 - 元案: `@counter-style`で箱の目盛りを架空の独自数字へ置き換え、説明文を独自counterの`ol`で並べる。playerが対応表を読み取って2桁＋1桁の答えを通常のinputへ入力し、「異文明の数字を解読した」演出で開箱する案だった。
 - 却下理由: `@counter-style`と説明付きcounterを捨て、架空・異文明として見せない方針になったため、CSS Counter Styles API自体は最終stageで使わない。文字を調べて計算する中心操作は残るが、元APIへの統合ではなく独立した新規問題へ置き換える。
@@ -340,7 +340,7 @@
 
 ### DR-029 CSS カスタムハイライト API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 統合案
 - 元案: 詩や暗号文の一部をアプリがCustom Highlightで蛍光表示し、その断片を順番に読んで得た鍵文をinputへ入力すると箱が開く。箱面だけに蛍光線が走る演出を想定していた。
 - 分類理由: 元案の「表示された箇所を読んで入力」はauthor側の装飾が中心で、鍵文入力はS-490、暗号文・貼付け・SelectionはS-500と重なる。一方、S-030は初期G-003でSelection / Custom Highlightを掲げながら現行B01が純Selectionだけなので、Custom Highlight固有の複数Range保持とrange hit testingを別箱として補う。
@@ -357,7 +357,7 @@
 
 ### DR-030 CSS フォント読み込み API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下
 - 元案: 正しいfontが読み込まれた時だけ暗号文が可読な書体へ変わり、playerが読んだ答えをinputへ入力すると箱が開く。箱の刻印が別書体へ相転移する演出と、`document.fonts.load()`による配信待ちを想定していた。
 - 却下理由: fontの取得、parse、layout完了はbrowser・app・network側の状態であり、元案ではplayerが待って表示後の文字を入力するだけになる。通常のtext inputはS-490、文字を調べて入力する問題はS-620と重なり、font load完了を成功条件にしてもplayer固有の操作にならない。
@@ -368,7 +368,7 @@
 
 ### DR-031 CSS 描画 API
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 却下。新規stage・問題箱・成功条件には使わない。
 - 元案: Paint Workletで箱表面へ生体的なnoise模様を描き、playerがCSS custom propertyのseedまたは周波数をsliderで正解値へ合わせると開く案だった。
 - APIの性質: `CSS.paintWorklet.addModule()`で登録したpaint classは、`paint()`のCSS imageとしてbackground、border、content等をprocedural描画できる。要素の描画size、宣言した`inputProperties`、`paint()`引数を受け取れる一方、workletからDOMへ触れたり、表示されたbitmapをmain threadへ成功結果として返したりしない。
@@ -381,7 +381,7 @@
 
 ### DR-032 CSS プロパティと値 API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下
 - 元案: `CSS.registerProperty()`で温度や角度に相当するcustom propertyを型付き登録し、playerが画面内dialで値を精密調整する。登録値が閾値へ一致すると箱が開き、数式的な変形を見せる案だった。
 - 調査結果: 登録したcustom propertyにはsyntax、initial value、inheritanceを指定でき、数値・角度・色などは登録型のcomputed valueとしてCSS transition / animationで連続補間できる。同じdocumentのJS登録setへ同名を再登録すると`InvalidModificationError`になり、明示的な登録解除APIはない。
@@ -392,7 +392,7 @@
 
 ### DR-033 CSS 型付き OM API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下
 - 元案: playerが箱の位置・回転を数式的に微調整し、`attributeStyleMap.set()`へ`CSS.deg(45)`のようなtyped CSS値を設定して、計算誤差なく正解姿勢へ合わせる精密機械風の問題だった。
 - 調査結果: Typed OMはCSS値を文字列ではなく`CSSStyleValue`、`CSSUnitValue`、`CSSTransformValue`等として読み書きし、unit-awareな演算、変換、StylePropertyMapへの直接設定を可能にする。文字列生成・parse・serializeを減らし、高頻度のstyle操作を実装しやすくすることが仕様目的に含まれる。
@@ -403,7 +403,7 @@
 
 ### DR-034 CSSOM
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 却下。新規stage・問題箱・成功条件には使わない。
 - 元案: 箱のstylesheetへruleを追加、削除、並べ替え、または宣言変更し、CSSRuleの組が答え状態になると開く。「実験室の配線盤」のようなgame UIと`CSSStyleSheet.insertRule()`を想定していた。
 - game UI案の却下理由: rule候補をbutton、select、drag等で操作させる場合、playerの中心操作は通常の選択・並べ替えになる。CSSOMはapp内部の状態更新手段に留まり、DOM class、inline style、stateから生成したstylesheetでも同じ問題になる。
@@ -415,7 +415,7 @@
 
 ### DR-036 幾何インターフェイス
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下
 - 元案: playerがレンズや反射板を操作し、`DOMPoint`を`DOMMatrix`で変換した光線が鍵穴へ到達すると箱が開く、幾何学的な光線simulationだった。
 - 調査結果: Geometry Interfacesは2D / 3Dの点、矩形、四辺形、3x2 / 4x4変換行列を共通表現し、`matrixTransform()`、行列の積・逆変換等をSVG、Canvas、CSS Transformsなどから利用するための基礎型である。
@@ -426,7 +426,7 @@
 
 ### DR-047 ナビゲーション API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 統合案
 - 元案: Navigation APIのentry列を迷路の部屋として見せ、playerが複数のsame-document navigationを進み、戻る・進む・別経路への分岐で正しいentry sequenceを作る。現在entry、戻れるか、進めるか、entryが破棄されたかを箱の状態へ反映する案だった。
 - 統合理由: browser履歴そのものを操作する中心動詞は、既存G-019 / S-220のsame-document Back、full-document back-forward復帰、reloadと同じである。一方、Navigation APIには「Backした位置から新しいentryをpushすると旧forward entryがpruneされ、各`NavigationHistoryEntry`へ`dispose`が発火する」という、既存3箱にないplayer可変の履歴分岐があるため、単独stageではなく第4箱として残す。
@@ -441,7 +441,7 @@
 
 ### DR-049 URL Fragment Text Directives
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 採用。新規G-068 / S-690「断片をたどる文書（仮）」に1箱を置く。
 - 元案: 長文のどこを参照すべきか自体を謎にし、正しいText Fragmentへjumpした時点で開箱する。「この一節だけ読め」という演出と、scriptから`location.hash = ":~:text=secret"`を設定する例だった。
 - 再設計: 一つの長いstage document内に複数の同一page Text Fragment linkを置く。playerは通常のlink activationで`#:~:text=...`付きURLへ順にnavigateし、browserがscroll / highlightした各一節からhint片を集める。集めたhintを組み合わせてpage上の最終回答欄へ提出し、完全一致した時に一箱を開く。
@@ -452,12 +452,12 @@
 - accessibility / privacy: long documentの通常reading順とkeyboard link操作を維持し、UA highlightの色だけにhintを載せない。URLにはround用の公開文面だけを含め、token、個人情報、保存進捗を埋め込まない。保存するのは解決済みproblem IDだけで、巡回順、scroll位置、誤答、閲覧時刻は保存・同期・送信しない。
 - 検証: 自動testは各hrefのdirective syntax、全target textの存在と一意性、巡回graphの到達性、最終回答、reset、固定history上限を確認する。実browserでは同一page jump、highlight / scroll、Back、reload、keyboard操作、長文layout、非対応時の未観測を確認する。謎fixtureと完全解は詳細確定後に追加する。
 - 件数: 新規1stage・1箱を追加し、計画値は69stage・160箱とする。
-- 2026-08-09追加: D-136で派生G-079 / S-800を別stageとして採用した。英文上部にfragment表示B01と単語表示B02を置き、player自身が同一pageのfragment URLを組み立てる。`hidden="until-found"`と`beforematch`で対象語の出現と箱の開放を結ぶ。具体問題は別途吟味し、現在の全体計画値は79stage・187箱とする。
+- 第15段階で追加: D-136で派生G-079 / S-800を別stageとして採用した。英文上部にfragment表示B01と単語表示B02を置き、player自身が同一pageのfragment URLを組み立てる。`hidden="until-found"`と`beforematch`で対象語の出現と箱の開放を結ぶ。具体問題は別途吟味し、現在の全体計画値は79stage・187箱とする。
 - 根拠: [URL Fragment Text Directives](https://wicg.github.io/scroll-to-text-fragment/)、[CSS Pseudo-Elements Level 4の`::target-text`](https://drafts.csswg.org/css-pseudo-4/#selectordef-target-text)。
 
 ### DR-050 URL パターン API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下
 - 元案: playerが箱の迷路配線図から正しいroute構造を推理してURLを辿り、`new URLPattern('/box/:face/:code').test(url)`へ一致する遷移を完成させると開く案だった。
 - 調査結果: `URLPattern`はprotocol、hostname、pathname、search、hash等をcomponentごとのpatternへ照合し、`test()`で真偽、`exec()`で名前付きgroupを返す。navigation、address bar入力、履歴変更、route eventは起こさず、任意に渡されたURL文字列またはcomponent objectを解析するAPIである。
@@ -468,7 +468,7 @@
 
 ### DR-052 ウェブコンポーネント
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合を追加しない。
 - 元案: 各箱を`<busy-cube>` custom elementとして独立実装し、component内部のstate machineが完了すると開く。箱ごとに固有の振る舞いを保てる開発基盤として提案されていた。
 - 調査結果: Custom Elementsはauthor定義elementのparser統合、後発upgrade、lifecycle reaction、`ElementInternals`等を提供する。Shadow DOM、`<template>`、`<slot>`と組み合わせれば内部DOM / CSSのencapsulationとlight DOM投影も行えるが、いずれもauthor向け実装機構で、playerが直接操作するbrowser所有UIではない。
@@ -479,7 +479,7 @@
 
 ### DR-063 ウェブ音声 API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 統合案
 - 元案: playerが合言葉を唱えて認識結果を正答へ合わせる、または箱が合成音声で指示を囁きplayerが従う。箱が囁き、playerが唱えると返歌する演出を想定していた。
 - 既存との重複: 音声認識側はG-057 / S-580-B01で実装済みである。明示buttonからone-shot recognitionを開始し、final resultを正規化して`busycube`なら開くため、同じ認識問題は増やさない。
@@ -494,7 +494,7 @@
 
 ### DR-065 オーディオセッション API
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 統合案。既存G-041 / S-430へB02を追加する。
 - 元案: BGM、効果音、音声案内の優先度をpage上で切り替え、`navigator.audioSession.type === "playback"`等の指定typeになれば開箱する。「儀式モード」へ入る演出だった。
 - 元案から破棄する部分: `AudioSession.type`はapp自身が設定する宣言値であり、playerがselectやbuttonを選んだ直後に同じpage stateだけで判定できる。`auto`、`playback`、`transient`、`transient-solo`、`ambient`、`play-and-record`を順に設定すること自体は問題箱にしない。duck、mix、exclusiveの聴感だけを自己申告させる案も採らない。
@@ -510,7 +510,7 @@
 
 ### DR-069 Media Capabilities API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 統合案
 - 元案: 複数の動画形式から滑らかに再生できるものを見抜き、その形式の箱だけを開く。「重い映像を嫌う箱」として、`navigator.mediaCapabilities.decodingInfo()`が最も適したprofileを返すことを問題にする案だった。
 - 調査結果: Media Capabilitiesはnative playerで現在選択中の画質やFPSを取得しない。authorがcodec、width、height、bitrate、framerate等を含む仮想構成を渡し、`supported`、`smooth`、`powerEfficient`を得る。実mediaからは別APIでnatural / frame解像度、presented frame列、subtitle / audio track状態を観測できるが、UA固有の画質menu内部やその選択labelを読む標準APIはない。
@@ -527,7 +527,7 @@
 
 ### DR-074 Encrypted Media Extensions API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合を追加しない。
 - 元案: 正しいlicenseを得た者だけが見られる保護mediaへ鍵を埋め、復号・再生に成功した映像内codeで開箱する。「許された者だけが見られる封印映像」という演出だった。
 - 調査結果の訂正: EMEは商用DRMやproprietary license serverを必須にしない。全準拠user agentの共通baselineである`org.w3.clearkey`なら、暗号化media、KID、key、Clear Key licenseを固定assetとしてGit管理し、pageが`MediaKeySession`のmessageへlocal responseを`update()`する静的構成で成立する。backend必須という暫定理由は撤回する。
@@ -539,7 +539,7 @@
 
 ### DR-075 Remote Playback API / DR-016 バーコード検出 API
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: DR-075とDR-016をともに採用する。新規G-069 / S-700「遠くの映写箱（仮）」へ2箱を置き、DR-016はS-700-B02の実装先を得る。
 - DR-075の元案: 外部再生機器にだけ「箱の裏側」のhintを映し、外部表示中の動画と手元端末の入力を組み合わせて開箱する案だった。
 - 元案の能力修正: Remote Playbackは任意の別documentや自由なreceiver UIを外部画面へ送るAPIではなく、一つの`HTMLMediaElement`のmediaを選択した再生先へremotingする。外部画面だけに別内容を生成する想定は捨て、same-originのself-hosted動画内に文字鍵区間とQR区間をあらかじめ収録する。
@@ -557,7 +557,7 @@
 
 ### DR-076 Presentation API
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 統合案。既存G-069 / S-700「遠くの映写箱（仮）」へB03を追加する。
 - 元案: 手元端末を鍵盤、外部画面を箱本体として分離し、controllerとreceiverの間で正しいmessage列を交換すると開く。手元が外部画面のcontrollerになる展示向けパズルだった。
 - 元案から破棄する部分: 正しいmessage列、外部画面だけに出る手順、複数keyの入力、順序誤りによるresetを問題にしない。WebSocket、WebRTC、別tab通信との違いを増やすために複雑なprotocolを足さず、playerの中心操作を「Presentation APIで外部画面へ実表示する」一動作へ絞る。
@@ -573,7 +573,7 @@
 
 ### DR-077 Insertable Streams for MediaStreamTrack API
 
-- 決定日: 2026-07-25
+- 決定段階: 第8段階
 - 最終分類: 採用。新規G-070 / S-710「合言葉変換所（仮）」へ4箱を置く。相談から派生した別pipelineのG-071 / S-720「映像復元機（仮）」も4箱で採用する。
 - 元案: 走査線、frame位相、四分割位置が崩れた映像に対して、playerが3段の変換順を選び正しい映像へ戻す。MediaStreamTrackのframe途中変換を使うが、変換順選択が通常の並べ替えに見える点と、API固有の気づきが弱い点を再吟味していた。
 - 新規案G-070の体験: 一見すると動画変換・低bitrate圧縮toolで、上部に4箱、左にfile選択または最大10秒のwebcam録画、右に変換後videoの自由再生とdownload、下に共通合言葉欄を置く。file入力も先頭10秒まで、video-only、640×360・15fpsを基準とし、入力size、出力size、出力 / 入力比を表示する。`videoBitsPerSecond`は初期候補384kbpsの低い固定hintとし、必ず小さくなるとは表示しない。
@@ -599,22 +599,22 @@
 
 ### DR-080 WebTransport API
 
-- 決定日: 2026-07-25
+- 決定段階: 第8段階
 - 最終分類: 却下。新規stage、問題箱、共通runtime、専用backendを追加しない。
 - 元案: serverから高速に流れるhintをdatagramとstreamへ振り分け、取りこぼさず同期すると開く。箱がrealtimeに脈動する低遅延通信パズルだった。
 - API固有性: WebTransportは一つのsessionで欠落・順序変化を許すdatagram、信頼できるuni / bidirectional stream、複数独立streamを扱える。datagramはqueue overflow、age、network lossで消え得る一方、streamはwrite単位をmessage境界として保持しないためapplication framingが必要である。したがって元案の「datagramを取りこぼさない」は性質と逆であり、採るなら「最新状態はdatagram、欠落不可の長い鍵はstream」へ再設計する必要がある。
-- 対応状況: WebTransportの中心機能は2026年3月にBaseline Newly Availableとなり、対応browser不足だけを却下理由にはしない。ただし新しい統計・送信順・reliability関連memberには実装差が残るため、採る場合も`ready` / `closed`、datagram、uni / bidirectional streamの共通部分へ限定する必要がある。
+- 対応状況: WebTransportの中心機能は後にBaseline Newly Availableとなり、対応browser不足だけを却下理由にはしない。ただし新しい統計・送信順・reliability関連memberには実装差が残るため、採る場合も`ready` / `closed`、datagram、uni / bidirectional streamの共通部分へ限定する必要がある。
 - 却下理由: browser clientだけでは成立せず、WebTransport sessionを受けるHTTP/3 / QUIC application serverが必要である。serverはextended CONNECT、WebTransport / HTTP datagram設定、browserからのOrigin検証、証明書、capacity、障害監視を運用しなければならない。GitHub Pagesはclient assetを配信できてもWebTransport endpointにはならず、WebTransport requestはService Workerを通らない。
 - 既存案との差: S-360は自前backend、STUN / TURN、microphoneなしで同一origin 2 tabの実WebRTC lifecycleを扱う。DR-090 WebSocketも別途相談前であり、server通信というだけでWebTransport箱を追加しない。datagramと複数streamの差を実通信でplayerに見せない案は既存通信問題や通常のrouting mini-gameと重複する。
 - 採らない代替: 公開echo server、第三者demo endpoint、client内simulation、Service Worker relay、WebSocket / WebRTCによるAPI名だけの置換を成功経路にしない。playerへlocal HTTP/3 serverや証明書準備を要求するExhibitにも変更しない。
 - 将来の再検討条件: 本作全体で自前backendを正式採用し、静的配信方針、privacy、運用責任、費用、障害時UXを別決定として変更した場合だけ、新規案として再相談できる。その場合の最小案は、最新snapshotをdatagram、完全な固定flagをbidirectional streamで受ける2箱だが、今回の予約stage・箱数には含めない。
 - privacy / lifecycle: 今回は通信を実装しないためpayload、接続先、IP由来情報、通信統計を収集しない。将来採る場合もcredentialsは既定で送られないこと、Origin allowlist、固定回答とcurrent-session tokenの分離、reader / writer cancel、session close、timeout、server log最小化を先に仕様化する。
 - 件数: stage・箱を増やさず、計画値は72stage・172箱のままとする。
-- 根拠: [WebTransport W3C Working Draft](https://www.w3.org/TR/webtransport/)、[WebTransport over HTTP/3 Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-webtrans-http3/)、[WebDX 2026年3月更新](https://web-platform-dx.github.io/web-features-explorer/release-notes/march-2026/)。
+- 根拠: [WebTransport W3C Working Draft](https://www.w3.org/TR/webtransport/)、[WebTransport over HTTP/3 Internet-Draft](https://datatracker.ietf.org/doc/draft-ietf-webtrans-http3/)、[WebDX 後続更新](https://web-platform-dx.github.io/web-features-explorer/release-notes/march-2026/)。
 
 ### DR-083 WebVR API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合を追加しない。
 - 元案: `VRDisplay.requestPresent()`で旧WebVR空間へ入り、箱の裏面を覗いて通常画面では見えない鍵を得る。
 - 現行性: WebVR仕様化は中止され、preserved specification自体が主要browserは実装しないとしている。現代のimmersive Web APIはWebXR Device APIであり、WebVR compatibilityを新規標準問題として採らない。
@@ -625,7 +625,7 @@
 
 ### DR-084 WebXR 機器 API
 
-- 決定日: 2026-07-25
+- 決定段階: 第8段階
 - 最終分類: 採用。新規G-072 / S-730「XRの箱（仮）」へ2箱だけを置く。
 - 元案: ARで現実の机上へ箱を投影し、現実位置で角度を合わせ、XR空間の箱とmarker位置が一致すると開く案だった。物理感を強く見せる一方、空間認識と位置合わせを中心にした高難度のXR世界を想定していた。
 - 新規設計案: XR世界そのものを作り込むと任意の3D gameになり、本作のWeb APIを触る芯から外れるため、中心操作を「対応XR機器を実際に稼働させる」と「XR空間上の箱へ実XR入力で触る」の二つへ縮める。現実markerとの位置合わせ、凝った空間謎、room-scale探索は引き継がない。
@@ -643,7 +643,7 @@
 
 ### DR-086 XMLHttpRequest API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 却下。新規stage、問題箱、既存DR-085 Fetch案への統合を追加しない。
 - 元案: 古い通信機器風の箱で`open()`、`setRequestHeader()`、`send()`を順に実行し、特定headerと`readyState`遷移を満たす「古い通信儀式」だった。
 - 現行性: XMLHttpRequest自体は現役Living Standardで、`UNSENT`、`OPENED`、`HEADERS_RECEIVED`、`LOADING`、`DONE`の状態と、download / uploadの`ProgressEvent`、`abort`、`timeout`を持つ。main threadの同期XHRだけは削除方向であり、warningもuser agentへ推奨されるだけなので使わない。
@@ -654,7 +654,7 @@
 
 ### DR-087 サーバー送信イベント
 
-- 決定日: 2026-07-25
+- 決定段階: 第8段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、SSE backendを追加しない。
 - 元案: 箱がserverから断続的に受け取る予言文を読み、特定のevent列が揃うと開く。`new EventSource("/prophecy")`で一方向streamを購読し、「向こう側から囁かれる箱」として見せる案だった。
 - API固有性: EventSourceは`text/event-stream`の持続HTTP responseからnamed event、data、IDを受け取る。切断後は自動再接続し、最後に受け取ったIDを`Last-Event-ID` request headerでserverへ返せる。serverは`retry:`で再接続間隔を指定し、HTTP 204で再接続を止められる。一方、clientからserverへmessageを送るAPIではない。
@@ -669,7 +669,7 @@
 
 ### DR-090 WebSocket API
 
-- 決定日: 2026-07-25
+- 決定段階: 第8段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、WebSocket backendを追加しない。
 - 元案: serverが箱の状態をリアルタイムに変え、playerが接続を維持しながら時間制約付きの手順を送り返す。「生きている箱」として双方向常時接続を見せ、`ws.send(step)`と受信messageの列が揃うと開く案だった。
 - API固有性: WebSocketはbrowserとserver processの双方向通信を維持し、text / binary message、subprotocol、`CONNECTING → OPEN → CLOSING → CLOSED`、close code / reason、未送信application data量の`bufferedAmount`を扱う。標準WebSocket interface自体には受信backpressureがなく、大量送受信を問題にするとmemory、CPU、回線差の危険がある。
@@ -684,7 +684,7 @@
 
 ### DR-091 Web Workers API / S-270 WebGPU案
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: DR-091とG-024 / S-270を却下。Web WorkerまたはWebGPUを新規stage、追加箱、成功条件にはしない。
 - 元案: 箱内部の複雑な計算や生成をworkerへ逃がし、background計算結果で鍵を生成する。「箱の中で小人が働く」演出を付け、`worker.postMessage(seed)`で開始する案だった。
 - 却下理由: 計算完了待ち、main threadが応答し続けること、transfer後に送信元`ArrayBuffer`がdetachedになることは実装上の事実だが、playerには任意の待機、animation、左右移動演出と区別できない。WorkerがDOMへ直接触れない制約も、それ自体ではplayerが操作する問題にならない。SharedWorkerのtab間生存は既存の複数tab問題と中心操作が重なる。WorkerはWebCodecs、圧縮、描画等の内部負荷分離へ任意で使えるが、採用数や箱数へ数えない。
@@ -693,7 +693,7 @@
 
 ### DR-093 Push API
 
-- 決定日: 2026-07-25
+- 決定段階: 第8段階
 - 最終分類: 却下。新規stage、問題箱、S-090への統合、Push送信用backendを追加しない。
 - 元案: 一定時刻または外部条件で「鍵の夢」が届き、pushされたhintで箱を解く。pageがforegroundになくてもserver messageを受け、「箱があとで呼びかけてくる」体験を`registration.pushManager.subscribe()`で作る案だった。
 - API固有性: Push APIはapplication serverがPushSubscriptionのendpointへ暗号化messageを送り、push serviceがuser agentへ配送し、必要ならService Workerを起動して実PushEventを渡す。VAPID restricted subscriptionでは登録時のapplication server公開鍵に対応する秘密鍵で送信requestを署名する。Service Workerは受信側であり、自分自身へPushEventを予約・配送するAPIではない。
@@ -709,7 +709,7 @@
 
 ### DR-095 バックグラウンドタスク API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 重複。DR-118 Prioritized Task Scheduling APIへまとめ、新規stage・問題箱・成功条件は作らない。
 - 元案: 箱が裏で「熟成計算」を続け、非同期task完了で開く。長く寝かせるほど開きやすい演出を付け、疑似コードに`scheduler.postTask(work, { priority: "background" })`を使う案だった。
 - API整理: `scheduler.postTask()`はDR-118の中心APIであり、`background`は同APIのtask priorityである。Cooperative Scheduling of Background Tasksを指す場合の中心は`requestIdleCallback()`で、user agentが定めるidle periodが来なければcallbackは無期限に延期されうる。どちらもpage終了後に継続するService Worker型background処理ではない。
@@ -719,7 +719,7 @@
 
 ### DR-096 バックグラウンド同期 API
 
-- 相談日: 2026-07-26
+- 相談段階: 第9段階
 - 現在分類: 継続保留。新規stage、問題箱、既存stageへの統合はまだ予約しない。
 - 元案: offline中に記録した操作をoutboxへ置き、再接続後の実`sync` eventでserverへ提出して箱を開く。「一度閉じた箱が後で勝手に開く」案だった。受信結果をserver側で判定する元案のままなら動的backendが必要になる。
 - API固有性として残す部分: foreground clientがある間に`ServiceWorkerRegistration.sync.register(tag)`を行い、その後page / tabがなくなっても、online復旧時にuser agentがService Workerへ実`SyncEvent`を配送して登録済みの仕事を完了できる。単なるoffline表示ではなく、操作元のdocumentが消えた後にもevent destinationが残る点を次回設計の中心にする。
@@ -734,7 +734,7 @@
 
 ### DR-097 ウェブ定期バックグラウンド同期 API
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 採用。新規G-073 / S-740「留守番温室（仮）」へ、攻略必須経路から外した長期Labsの1箱を置く。
 - 元案: Periodic Background Syncが毎日鍵片を一つずつ育て、日次同期で完全体になる箱だった。`minInterval`を正確な日次scheduleとして扱う部分は現仕様と一致しないため捨てる。
 - API固有性: `PeriodicSyncManager.register(tag, { minInterval })`は最小間隔の希望を登録し、user agentがonline、利用頻度、既知network、電源等を考慮してService Workerへ実`periodicsync` eventを配送する。指定間隔ちょうどの発火、deadline、最大待ち時間、発火回数は保証されず、originの実効間隔が`Infinity`になれば発火しない。Chromeではinstalled PWAを独立appとして起動した実績とsite engagementも必要になる。
@@ -752,7 +752,7 @@
 
 ### DR-098 バックグラウンドフェッチ API
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、低速配信endpointを追加しない。
 - 元案: 巨大な鍵dataをBackground Fetchで長時間取得し、完了後に最終箱を開く。「宝物庫の搬入を待つ」案だった。完了を長引かせるためだけの巨大fixtureは帯域、storage、GitHub Pagesの配信量を浪費するため採らない。
 - API固有性: `ServiceWorkerRegistration.backgroundFetch.fetch()`は一つまたは複数のrequestをbrowser管理jobへまとめ、page / worker終了後も転送を継続・再開できる。`downloaded` / `downloadTotal`の実byte progress、browser / OS側の中止可能なUI、`backgroundfetchsuccess` / `fail` / `abort` / `click`を持ち、success event中だけresponseを取り出してCache Storageへ保存できる。network requestはservice-workers mode `none`で、BusycubeのService Workerを通らない。
@@ -768,7 +768,7 @@
 
 ### DR-100 Beacon API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 統合案。新規stageは作らず、既存S-060へB02「オフライン郵便（仮）」を1箱追加する。
 - 元案: pageを去る時に`sendBeacon()`で別れの手紙を送り、次回訪問で箱を開く。documentを止めずに送信を継続するfire-and-forget性を中心にする案だった。
 - APIの境界: `sendBeacon()`の`true`は送信queueへの受理だけで、server受領や保存完了を証明しない。ただしsame-origin requestは制御中Service Workerのfetch eventで受けられるため、backendなしでもworkerをlocal郵便局にできる。
@@ -782,7 +782,7 @@
 
 ### DR-101 Network Information API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 採用。新規G-062 / S-630「接続の道（仮）」に4箱を置く。
 - 元案: online / offlineや低速回線ごとに別箱を用意し、`navigator.connection.effectiveType`が示す現在条件に合う解法を選ぶ。「電波状況で気まぐれになる箱」という案だった。
 - 残す部分: playerが端末の接続方式を外側で変更し、pageが現在の実接続方式を観測して対応箱を開く中心動詞を残す。
@@ -796,7 +796,7 @@
 
 ### DR-102 Content Index API
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 却下。次期案だけを記録し、新規stage、問題箱、既存stageへの統合、Content Index用のID予約は行わない。
 - 元案: 解錠に必要な断片をoffline閲覧対象としてContent Indexへ登録し、すべて集めると開く。「箱が旅行用の鍵束になる」案だった。`index.add()`はmetadataを登録するだけでcontentをcacheせず、登録成功だけではplayerがbrowser外部UIを使ったことにならないため、そのまま採らない。
 - API固有性: `ServiceWorkerRegistration.index.add()`はService Worker scope内のoffline対応HTMLとmetadataをbrowserのlocal indexへ登録する。user agentはentryを外部content一覧やoffline recommendationへ表示できるが、表示自体は任意である。entry activationは登録URLへの通常navigationで専用launch eventをpageへ渡さない。一方、browser内蔵UIからentryを削除した場合だけService Workerへ実`contentdelete`が届き、scriptの`index.delete()`では発火しない。
@@ -811,7 +811,7 @@
 
 ### DR-104 Storage API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下。問題箱、stage、設定画面のいずれにも追加しない。
 - 元案: `navigator.storage.persist()`で箱の記憶をpersistent storageにし、永続化された記録でだけ開く長期箱を作る。「箱が忘れない」と宣言する演出を付ける案だった。
 - 調査結果: `persist()`はdefault storage bucketのpersistent化を要求し、`persisted()`は現在のmode、`estimate()`はoriginのusage / quota概算を返す。許可はuser agentのpermission判断を含み、playerが必ず成功させられない。実際のeviction耐性を問題内で証明するにはstorage pressureやデータ消去が必要になり、安全で決定的な成功条件にできない。
@@ -821,7 +821,7 @@
 
 ### DR-105 Storage Access API
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 却下。Storage Access APIを中心にした新規stage、問題箱、既存storage stageへの統合を追加しない。
 - 元案: cross-site iframe内の箱が`document.requestStorageAccess()`で本体の記憶へアクセスできた時だけ開く。別枠の小箱と本箱が記憶を共有する演出を想定していた。
 - 調査結果: core APIはiframeからunpartitioned cookieへのaccessを要求できるが、実演には外部siteをfirst partyとして訪問・操作してcookieを作り、Busycubeから同じsiteをthird party iframeとして埋める必要がある。許可はtop-level siteとembedded siteの組にscopedされ、user activation、browser privacy policy、user設定、heuristicsの影響を受ける。
@@ -838,7 +838,7 @@
 
 ### DR-107 Cookie Store API
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合を追加しない。
 - 元案: Cookie値を古い鍵札に見立て、`cookieStore.set("seal", "ok")`による特定cookieの発行・更新を成功条件にする。封蝋付き通行証が箱を開く演出だった。
 - API固有部分: `CookieStore`はWindowとService Workerから使える非同期cookie APIであり、Windowの`change` eventでscript-visible cookieの変更を監視できる。Service Worker registrationは`CookieStoreManager.subscribe()`でname / URLを購読し、該当変更時に実`cookiechange` functional eventを受けられる。
@@ -852,20 +852,20 @@
 
 ### DR-108 Shared Storage API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合を追加しない。
 - 元案: 個人識別なしに「世界全体の箱進捗」をShared Storageへ蓄積し、全playerの集約状態に応じて開錠率を変える案だった。
 - 成立しない点: Shared Storageはserver上のglobal databaseではなく、各browser profile内でcontext originがtop-level siteをまたいで使うunpartitioned local storageである。他playerの値は共有されず、backendなしに世界全体の達成率を得られない。
 - 新規案: 二つの異なるtop-level siteへ同じ第三者originを埋め込み、一方で書いた記憶をworkletが読み、`selectURL()`で選んだcontentをFenced Frameへ表示する「二つのsiteをまたぐ秘密の記憶」を検討した。
 - 却下理由: pageはShared Storage値や選択indexを直接取得できず、workletのoutput gateはURL選択またはPrivate Aggregationに制限される。playerが見るのはgame製contentで、browser所有のprompt、表示、外部操作はない。別top-level site、第三者origin、privacy sandbox enrollmentを追加しても、通常storage puzzleとの差がplayer体験にならない。
-- 現行性: WICG Draft Community Group Reportで標準化されず、repositoryは2026-01-28にarchiveされた。ChromeはM144でdeprecatedとし、M150以降の無効化、M152でのstub置換と実装削除を進めている。他engineも採用していない。
+- 現行性: WICG Draft Community Group Reportで標準化されず、repositoryはarchiveされた。ChromeはM144でdeprecatedとし、M150以降の無効化、M152でのstub置換と実装削除を進めている。他engineも採用していない。
 - 実装上の扱い: historical exhibit、third-party cookieによる模倣、polyfill、Fenced Frameだけの演出、内部analytics利用を作らない。player識別子やcross-site profileを保存・送信しない。
 - 件数: stage・問題箱を増やさず、計画値は76stage・180箱のままとする。
 - 根拠: [WICG Shared Storage](https://wicg.github.io/shared-storage/)、[Chromium Intent to Deprecate and Remove](https://groups.google.com/a/chromium.org/g/blink-dev/c/uh5Ke6qyegc)、[archive済みWICG repository](https://github.com/WICG/shared-storage)。
 
 ### DR-114 エンコーディング API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 採用。新規G-063 / S-640「十二の文字コード（仮）」に12箱を置く。
 - 元案: 文字列をUTF-8等へ変換し、正しいbyte列との一致を鍵にして箱を開く案だった。原文の疑似コードは`new TextEncoder().encode(answer)`で、「箱が文字ではなく符号を読む」演出を想定していた。
 - 再設計: 単一のUTF-8変換問題にはせず、2進byte列4問、16進byte列4問、文字化け4問を置く。16種類の文字コードlabelは固定fixture内で各1回使うが、playerはlabel名ではなく、推理して復号した文字列を各問のtext fieldへ入力する。
@@ -881,7 +881,7 @@
 
 ### DR-115 Reporting API
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合を追加しない。
 - 元案: エラー、browser介入、policy違反等のreportを逆手に取り、`ReportingObserver`が特定classを受信すると箱が開く。「箱が異常時だけ本音を言う」という演出だった。
 - API固有部分: Reporting APIはCSP違反、COOP / COEP、介入、非推奨機能等を構造化reportとして生成し、同じenvironment settings objectの`ReportingObserver`へ通知できる。一方、Report自体はplayer向けのbrowser標準画面、通知、dialog、操作部を持たない。
@@ -893,7 +893,7 @@
 
 ### DR-117 JS Self-Profiling API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 却下。新規stage、問題箱、既存S-680への統合を追加しない。
 - 元案: playerの操作ではなく実装者がcodeを最適化し、特定関数のself timeを削減すると開く「開発者向けデバッグ箱」だった。
 - API固有部分: `new Profiler()`でsampling sessionを開始し、`stop()`からsamples、stacks、frames、resourcesを持つtraceを得る。requested intervalでのsamplingはbest-effortで、user agentはbackground時にpauseできる。Document Policyの`js-profiling-mode`による明示許可を必要とする。
@@ -906,7 +906,7 @@
 
 ### DR-118 Prioritized Task Scheduling API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 却下。新規stage、箱、共通runtime要件を追加しない。
 - 元案: 高優先度と低優先度のtaskを、指定した順序で実行した時だけ箱を開く案だった。`scheduler.postTask(step, { priority: "user-visible" })`を使い、箱内部のleverへpriorityが付く演出を想定していた。
 - 検討1: 固定登録順の文字cardへ3段階priorityを割り当て、実行結果を`BUSYCUBE`にする案。player操作と見た目が通常のstable sortへ収束し、browser scheduler固有の体験にならないため不採用。
@@ -919,7 +919,7 @@
 
 ### DR-119 投機ルール API
 
-- 決定日: 2026-07-29
+- 決定段階: 第10段階
 - 最終分類: 却下。新規stage、問題箱、既存S-220への統合を追加しない。
 - 元案: playerが次に進むstageを予測し、投機が当たった場合だけ滑らかに遷移する。「先を読む箱」だった。
 - API固有部分: speculation rulesはnavigation候補とeagernessを宣言し、browserがprefetchまたはprerenderを裁量実行する。target documentは`document.prerendering`、`prerenderingchange`、`PerformanceNavigationTiming.activationStart`から事前実行とactivationを観測できる。
@@ -932,12 +932,12 @@
 
 ### DR-120 コンソール API
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 採用。採用範囲は新規G-066 / S-670「端末迷路（仮）」1箱だけとする。G-067 / S-680「端末診断卓（仮）」はD-135で体験重複のため不採用へ変更した。
 - 元案: 「箱はConsoleでだけ喋る」Hidden箱として、DevTools Consoleへround固有の手掛かりを出し、playerが読んだ答えをpageへ入力する案だった。`console.log("%c42", ...)`による色付きの一問一答を想定していた。
 - 共通再設計: Consoleをread-onlyの文字画面として使い、`console.log()`、`console.table()`、`console.group()`等でround状態を表示する。player入力はpage上のbutton、switch、dialだけから受け、DevTools evaluatorへのJavaScript入力、Consoleからの関数呼出し、DOM / CSS / script /進捗編集を解法として要求・承認しない。
 - S-670端末迷路: ConsoleへASCII迷路、現在位置、向きをtextで表示し、page上の上下左右buttonで1stepずつ移動する。各操作後に専用label付きgroupへ盤面を再出力し、実round stateが出口へ到達した時に1箱を開く。色、文字幅、groupの開閉状態だけへ依存せず、monospaceでなくても壁、通路、現在位置を文字として判別できるfixtureにする。
-- S-680端末診断卓: switch / dialと`console.table()`の案まで試作したが、Consoleをread-only表示面、pageを入力面として往復する中心体験がS-670と重なる。2026-08-09に別stage・箱を作らないと決定した。
+- S-680端末診断卓: switch / dialと`console.table()`の案まで試作したが、Consoleをread-only表示面、pageを入力面として往復する中心体験がS-670と重なる。第15段階に別stage・箱を作らないと決定した。
 - 再表示と対応差: `console.clear()`でplayer自身のlogを消さない。pageに「端末を再表示」操作を置き、Consoleを後から開いた場合やbuffer上限で過去logが失われた場合も現roundを再出力できるようにする。ConsoleのPrinter、table列、色、object展開、group UIは実装依存なので、正解に必要な情報はplain textでも保持する。
 - 成功条件の境界: Consoleが開いていること、logを読んだこと、groupを展開したことはpageから標準的に観測できないため成功条件にしない。迷路の位置と診断卓のpage-side stateだけを判定し、Console出力は不可欠な手掛かり表示として使う。Consoleへ答えそのものを一行で出して通常text inputへ転記するだけの元案には戻さない。
 - scope / privacy: desktop向けHidden / Labsとして通常導線の必須完了へ含めない。round seed、迷路盤面、診断値以外のapp state、個人情報、token、permission、device情報をlogしない。離脱・reset時にround stateを破棄し、永続化するのは通常の解決済みproblem IDだけとする。
@@ -947,7 +947,7 @@
 
 ### DR-121 権限 API
 
-- 決定日: 2026-07-21
+- 決定段階: 第6段階
 - 最終分類: 採用。新規G-064 / S-650「四つの許可（仮）」に4箱を置く。
 - 相談中の元案: 位置、通知、カメラ等の許可状態を箱へ挑む前に診断し、必要権限が揃うと箱面へ本当の鍵穴を表示する「儀式の準備チェック」だった。成功条件は権限診断の通過で、`navigator.permissions.query({ name: "geolocation" })`を想定していた。
 - 当初の統合先: 企画書の端末診断はSecure Context、PWA、保存、入力機器、描画能力、権限等を技術一覧ではなくstage mapや装置の反応で示す案である。現行StageCardは主にinterfaceの存在から`available`、`permission-required`、`unsupported`等を返すが、実PermissionStatusを共通照会していない。当初はここへDR-121を統合する案だった。
@@ -963,7 +963,7 @@
 
 ### DR-126 WebOTP API
 
-- 決定日: 2026-07-26
+- 決定段階: 第9段階
 - 最終分類: 採用。新規G-074 / S-750「届いた封書（仮）」へ、攻略必須経路から外したLabsの1箱を置く。
 - 元案: 現実のSMSで届く一時鍵を読み、OTP一致で箱を開く。「現実の封書を開いて、その番号で箱を開ける」という演出だった。通常の認証flowのようにgame serverがplayerの電話番号へcodeを送る構成を想定していた。
 - 新規設計: gameは電話番号を受け取らず、SMSを送信しない。playerが明示的に「SMSを待つ」を押すとmemory上へcurrent roundの6桁数字codeを生成し、実`navigator.credentials.get({ otp: { transport: ["sms"] }, signal })`を開始してから、協力者または別の携帯電話へ渡すcopy可能なSMS文面を表示する。最終行は実公開hostへ結び付けた`@host #code`とする。
@@ -982,12 +982,12 @@
 
 ### DR-127 Federated Credential Management API
 
-- 決定日: 2026-07-30
+- 決定段階: 第11段階
 - 最終分類: 採用。新規G-076 / S-770「身分証棚（仮）」へ、攻略必須経路と全箱必須報酬から外したprovider別のLabs箱を置く。現計画には成立確認済みのGoogle 1箱だけを下限として算入する。
 - 元案: 別世界のfederated IDを提示し、連携IDが箱の規則と一致すると勢力の印章で門が開く。特定のIdP、account属性、identity backendによる照合を想定していた。
 - 元案をそのまま採らない理由: account属性や勢力を正解にすると、BusycubeがJWTを検証してidentityを信頼するbackendを持つ必要があり、実account情報をgameplayへ過剰に使う。Google accountの有無や内容を解答にせず、browserが外部IdPを仲介するFedCM固有の手動提示だけを中心動詞として残す。
 - 新規設計: 実装着手時にserviceの公式情報を再調査し、公式FedCM endpointまたはSDK、一般向けRP / client登録、provider自身または信頼できるmanaged運用、fallbackと区別できる肯定的FedCM証拠、Busycube独自server / Cloud Functions / serverless function / identity database不要、をすべて満たすproviderごとに独立箱を置く。有名なOAuth / OIDC providerであるだけでは採らず、broker配下でX等へ通常loginする経路をそのserviceのFedCM箱として数えない。
-- provider registry: 各候補の調査日、公式資料、config URLまたはSDK、client登録手順、利用条件、要求field、FedCM証拠、解除方法、実account PoCを記録する。追加providerはpublic client登録まで成功してから固定problem IDと箱数を加える。実装開始前の名前だけの候補を計画数へ数えない。
+- provider registry: 各候補の調査順、公式資料、config URLまたはSDK、client登録手順、利用条件、要求field、FedCM証拠、解除方法、実account PoCを記録する。追加providerはpublic client登録まで成功してから固定problem IDと箱数を加える。実装開始前の名前だけの候補を計画数へ数えない。
 - Google下限: Google Identity Servicesは成立確認済みのmanaged IdPとしてB01へ置く。Google Drive進捗保存とは別project / OAuth clientを使い、`auto_select: false`、非空credential、厳密な`select_by === "fedcm"`を要求する。`fedcm_auto`、`auto`、`user`、`btn`その他のlegacy / button / popup / redirect経路では開かない。
 - player操作と成功条件: provider名を示した明示操作から単一providerのactive attemptを開始する。公式SDKがFedCM専用resultを返す場合はその証拠、標準APIを公式に案内するproviderでは実`navigator.credentials.get({identity})`の`IdentityCredential`と期待`configURL`を使う。一つのpassive multi-IdP chooserへまとめず、一箱と一providerを対応させる。
 - 認証との分離: tokenのpayloadをdecodeせず、署名検証、account ID / email / name / picture照合、本人確認、account login、勢力判定をしない。各箱が証明するのは「browserが公式managed IdPを仲介し、playerが該当providerのFedCM UIで手動提示した」ことだけである。server-side verificationやauthorization code exchangeが必要なproviderは採らない。
@@ -1001,7 +1001,7 @@
 
 ### DR-128 決済リクエスト API
 
-- 決定日: 2026-07-30
+- 決定段階: 第11段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合を追加しない。
 - 元案: 支払そのものではなく通貨の組み合わせを鍵に見立て、指定した支払detailをbrowserの標準payment UIで模擬承認すると商人箱または寄付箱が開く。
 - APIの実態: Payment Requestはmerchant、payer、payment methodを仲介し、`show()`でhandlerを選ばせ、user承認後にmerchantが処理する`PaymentResponse`を返す。架空決済を安全に完了させるsimulation modeではない。汎用card入力に使われた`basic-card` payment method identifierはDeprecatedである。
@@ -1013,8 +1013,8 @@
 
 ### DR-129 決済ハンドラー API
 
-- 決定日: 2026-07-31
-- 最終分類: 採用。当初のG-077 / S-780「三つの財布（仮）」3箱を、D-147で指定wallet選択を加えた4箱へ改訂する（2026-08-18更新）。
+- 決定段階: 第12段階
+- 最終分類: 採用。当初のG-077 / S-780「三つの財布（仮）」3箱を、D-147で指定wallet選択を加えた4箱へ改訂する（第20段階で更新）。
 - 元案: 架空の「眠りの通貨」をWeb Payment Handlerで受け取り、正しい支払flowを完了すると箱が開く。
 - API固有性: BusycubeがGit管理する架空payment methodと複数の架空payment handlerだけを使う。browser所有のhandler候補、選択後にService Workerへ届くtrusted `PaymentRequestEvent`、handler window、`respondWith()`、merchant側の`complete()`と`retry()`を中心操作にする。実Google Pay / Apple Pay、card、実通貨、実merchant accountを使わない。
 - trusted event: B01〜B03ではService Workerがcurrent attemptのtrusted `PaymentRequestEvent`を受けたことを経路の証跡とし、walletを固定しない。B04ではbrowser所有chooserから◇walletを選び、◇workerがcurrent requestのtrusted eventを受けたこと自体を成功条件にする。
@@ -1031,11 +1031,11 @@
 
 ### DR-130 帰属レポート API
 
-- 決定日: 2026-07-31
+- 決定段階: 第12段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、historical exhibitを追加しない。
 - 元案: playerがどの導線から来たかをattribution sourceとして登録し、後のconversion triggerと一致した場合に反応が変わる「マーケ箱」を作る。
 - APIの実態: `attributionsrc`、Fetch / XHRのattribution設定とHTTP response headerでsource / triggerを登録し、browserの非公開領域で照合した後、遅延・noise・件数制限を伴うreportをserver endpointへ送る。元案の`registerAttributionSource()`という直接的なclient APIはない。
-- 却下理由: Googleは2025-10-17にAttribution Reporting APIのretireを発表し、Chromeは144でdeprecationを開始して削除を予定している。廃止予定APIを新規stageやhistorical exhibitへ固定しない。
+- 却下理由: GoogleはAttribution Reporting APIのretireを発表し、Chromeは144でdeprecationを開始して削除を予定している。廃止予定APIを新規stageやhistorical exhibitへ固定しない。
 - player体験: source登録、trigger登録、一致、不一致、report送信にbrowser固有UIがなく、pageへ一致を通知する確定eventもない。playerが知覚するのは通常のlink遷移とgame製結果だけで、非言語のbrowser固有パズルにならない。
 - backend / privacy: 成否を知るには`.well-known/attribution-reporting/`配下等でreport POSTを受けるbackendが必要で、通常reportは即時でなくnoiseもある。debug reportもserver側の統合診断用で、即時開箱のclient証拠にしない。実広告、campaign、第三者計測service、tracking profileを導入しない。
 - 代替案: URL query / fragment、`document.referrer`、History、same-origin storageで導線を記録すれば確実だが、Attribution Reporting固有性がなく既存navigation / fragment / storage体験とも重複するため、置換stageや統合箱を追加しない。
@@ -1044,11 +1044,11 @@
 
 ### DR-131 Private State Token API
 
-- 決定日: 2026-07-31
+- 決定段階: 第12段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、demo issuer依存、historical exhibitを追加しない。
 - 元案: 以前に正しく儀式を終えたplayerへ個人を識別しない「見えない紋章」を発行し、別contextでそのtrust signalを償還できた場合だけ箱を開く。
 - APIの実態: issuerがbrowserへ暗号tokenを発行し、redeemerがtokenを償還してRedemption Recordを得る。`document.hasPrivateToken(issuer)`と`document.hasRedemptionRecord(issuer)`は保存有無をBooleanで返し、Fetch / XHR / iframeのprivate token operationで発行・償還・record転送を行う。APIは信頼を確立せず、issuerが別手段で決めた粗いtrust signalを伝える。
-- status: Attribution Reporting等と異なり、Private State Tokensは2025-10-17のPrivacy Sandbox整理後も継続サポート対象である。廃止予定を却下理由にしない。
+- status: Attribution Reporting等と異なり、Private State TokensはPrivacy Sandbox整理後も継続サポート対象である。廃止予定を却下理由にしない。
 - backend理由: 本番issuerにはChromeへのissuer登録、key commitment、token issuance、暗号鍵保護が必要で、redeemerにもredemption endpointとrecord検証が必要になる。公式guideは独自server-side application、TLS、key rotation、observabilityを前提にする。Service Worker、GitHub Pages、固定fixtureだけでは正規発行・償還を構成できない。
 - managed service調査: Busycubeの架空儀式を任意の発行条件にできる一般向けmanaged PST issuerは確認できない。Chrome issuer registryはhosted serviceの一覧でなく自前issuerの登録台帳であり、`privatetokens.dev`等は検証demoなのでproduction gameplayへ依存させない。reCAPTCHA等の別anti-fraud productをPST箱の代替clearにしない。
 - player体験: 通常画面には発行prompt、token icon、償還確認UIがない。Chrome DevToolsのApplication panelならtokenを確認できるが、DevTools操作を解法にしない既定方針と衝突する。通常playerへ見えるのはrequest後のgame製開箱だけで、backend・鍵運用に見合うbrowser固有体験にならない。
@@ -1059,11 +1059,11 @@
 
 ### DR-132 Topics API
 
-- 決定日: 2026-07-31
+- 決定段階: 第12段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、historical exhibit、browserの広告privacy設定変更を要求する箱を追加しない。
 - 元案: browserが推定したplayerの関心topicに応じて内容が変わるpersonalized箱を置き、そのカテゴリに対応した謎を解く。
 - APIの実態: Topicsを利用する複数siteでの観測からbrowserが一般的関心を分類し、週単位のepochごとにtop topicを更新する。`document.browsingTopics()`、Fetch / iframe request headerでcallerが以前観測したtopicを受ける。Privacy Sandbox enrollmentを要し、通常の履歴全体や即時の関心を返すAPIではない。
-- status: Googleは2025-10-17にTopics APIのretireを発表し、Chrome 144からdeprecationを開始して削除を予定している。MDNもDeprecated、Non-standardとし、FirefoxとSafariのstandards positionは否定的である。廃止予定を主な却下理由にする。
+- status: GoogleはTopics APIのretireを発表し、Chrome 144からdeprecationを開始して削除を予定している。MDNもDeprecated、Non-standardとし、FirefoxとSafariのstandards positionは否定的である。廃止予定を主な却下理由にする。
 - player制御性: 関心topicは複数siteの過去観測、epoch、履歴不足、noise、browser設定に左右され、playerがstage内の操作だけで目的topicを即時・確実に作れない。固定topicをgame側で選ぶfallbackはTopics APIでなく通常分岐なので追加しない。
 - player体験: API呼出し時のbrowser固有UIはなく、playerが見るのはgameが表示したカテゴリと分岐だけである。browserの広告privacy設定面を開かせたりtopicを変更させたりすることも、設定依存・privacy負担・非決定性を増やすため成功条件にしない。
 - privacy: 閲覧傾向から推定された関心カテゴリをgameplayへ利用、表示、保存、Drive同期、file export、analytics、network送信しない。敏感カテゴリをtaxonomyが除外する設計であっても、ゲームの正解へ使う根拠にはしない。
@@ -1072,7 +1072,7 @@
 
 ### DR-134 フェンスフレーム API
 
-- 決定日: 2026-07-31
+- 決定段階: 第12段階
 - 最終分類: 却下。新規stage、問題箱、既存stageへの統合、historical exhibitを追加しない。
 - 元案: 外界から見えない小箱を埋め込み、その内部でだけ鍵を生成し、隔離枠内の条件達成で開く「覗けない密室箱」を作る。
 - APIの実態: Fenced Frameはplayerから見えないframeではなく、描画contentは通常どおり見える一方、embedderとframeが互いのDOM、URL、状態を観測・共有できない隔離された埋め込みである。通常の`postMessage()`による親子通信も意図的に使えない。
@@ -1086,7 +1086,7 @@
 
 ### DR-137 Local Font Access API
 
-- 決定日: 2026-08-01
+- 決定段階: 第13段階
 - 最終分類: 採用。新規G-078 / S-790「活字の鍵（仮）」を任意Labs 1箱として追加する。
 - 元案: PCへ偶然installされているfont群を列挙し、その頭文字の並びから鍵を導く「この端末らしさ」で開く箱だった。
 - 破棄する部分: installed font集合、件数、並び、一般font名を正解にしない。端末・OS・言語・software構成で答えが変わるacrostic、広いfont列挙、既存fontによるfingerprintingを使わない。
@@ -1101,7 +1101,7 @@
 
 ### DR-136 呼び出しコマンド API
 
-- 決定日: 2026-07-24
+- 決定段階: 第7段階
 - 最終分類: 統合案
 - 相談対象の元案: OSまたは外部actionのcommandを呼び出し、呼び出されたcommand種別が一致すると開く。「箱が外界の儀式を要求する」という演出と`navigation` eventを組み合わせる案だった。
 - 調査結果: 現行Invoker Commands APIはOS外部commandやNavigation APIではなく、`<button commandfor>`から同一document内の対象要素へ`command`を宣言的に送る。対象側の`command` eventでは`CommandEvent.command`と、呼び出し元buttonを示す`CommandEvent.source`を観測できる。Popoverには`show-popover`、`hide-popover`、`toggle-popover`の組み込みcommandがある。
@@ -1119,7 +1119,7 @@
 
 ### 通常相談完了
 
-安定ID順の`統合案`、`保留`、`却下候補`相談は2026-08-01に完了した。未相談案の実装は禁止する暫定gateを解除し、以後は確定案の仕様化、PoC、実装順を別計画で決める。
+安定ID順の`統合案`、`保留`、`却下候補`相談は第13段階に完了した。未相談案の実装は禁止する暫定gateを解除し、以後は確定案の仕様化、PoC、実装順を別計画で決める。
 
 各相談では、(1) 元メモに書かれた操作手順・成功条件・UX演出、(2) 原案の中心動詞、(3) 現APIで実際に観測できること、(4) 現行ステージとの重複、(5) 統合時に原案から残す部分・変更する部分・統合先、(6) 採る場合の最小再設計、(7) 権限・privacy・cleanup、(8) 最終5分類、の順で決める。とくに`統合案`は元案の説明を省略せず、何が元案のままで何が統合による再設計かを分けて提示する。結論はこの台帳と[決定ログ](./decision-log.md)へ同時に反映する。
 

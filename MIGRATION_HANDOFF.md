@@ -1,5 +1,7 @@
 # Busycube 移行・検証引継ぎメモ
 
+本文の段階番号は試行錯誤の順序を表し、小さい番号ほど先に行った作業、大きい番号ほど後に行った作業である。暦日は記録しない。
+
 ## このリポジトリの位置づけ
 
 - Busycube の正本は非公開 GitHub リポジトリ `okathira-dev/busycube` である。
@@ -33,7 +35,7 @@
 - `@biomejs/biome`: 2.5.6 から 2.5.10
 - `mediabunny`: 1.52.3 から 1.55.2
 
-2026-08-27 に、この `main` を起点とする移行差分へ Three.js 依存、共有 AI エージェント指示、FSL Skills を追加し、次を再実行して成功した。
+第26段階に、この `main` を起点とする移行差分へ Three.js 依存、共有 AI エージェント指示、FSL Skills を追加し、次を再実行して成功した。
 
 - `pnpm run check`
 - `pnpm run test:ci`: 33 test suites / 89 tests passed

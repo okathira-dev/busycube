@@ -1,6 +1,6 @@
 # 権限・実機ステージ実装メモ
 
-> 2026-07-20追記: 本文の差分・技術スパイク表現は設計履歴である。S-190拡張とS-380 / S-390分離案は実装済み。公開合格には本文の実機ゲートが引き続き必要である。
+> 第5段階の追記: 本文の差分・技術スパイク表現は設計履歴である。S-190拡張とS-380 / S-390分離案は実装済み。公開合格には本文の実機ゲートが引き続き必要である。
 >
 > 現行の箱番号・成功条件・実装状態はこのメモから導かない。現行仕様は[現行ステージ解法仕様](./stage-walkthroughs.md)、状態は[ステージ実装状況](./stage-implementation-status.md)、残問題は[現状・残問題・人手確認への引継ぎ](./current-status-and-handoff.md)を正とする。
 
@@ -464,7 +464,7 @@ DR-019で追加承認したB05〜B09は、文字倍率4箱とは別にUser Prefe
 
 ## S-690 断片をたどる文書（DR-049追加、製品実装済み）
 
-> 2026-08-20に本文の設計を製品stageへ反映した。現在の対象文、4語、固定回答、cleanup、人手確認は`S-690.tsx`の日本語JSDocとH-054を正とし、下記の未確定・実装前表現は検討履歴として読む。
+> 第21段階に本文の設計を製品stageへ反映した。現在の対象文、4語、固定回答、cleanup、人手確認は`S-690.tsx`の日本語JSDocとH-054を正とし、下記の未確定・実装前表現は検討履歴として読む。
 
 - 一つのstageに一箱を置く枠組みを採用する。一つの長いdocument内に複数のText Fragment linkを置き、playerが同一page内を順にjumpしてbrowserが示した一節からhint片を集め、組み合わせた最終回答をpage上の入力欄へ提出する。
 - 移動にはround用の実`<a href="...#:~:text=...">`とtrustedなlink activationを使う。scriptだけの`location`変更、`scrollIntoView()`、通常fragment ID、app独自highlight、find-in-pageを成功手順の代替にしない。
@@ -476,7 +476,7 @@ DR-019で追加承認したB05〜B09は、文字倍率4箱とは別にUser Prefe
 
 ## S-800 断片を組み立てる文書（D-136追加、製品実装済み）
 
-> 2026-08-20にB01 / B02を製品stageへ反映した。現在のfragment、対象語、`beforematch`判定、既知のCtrl+F制約、人手確認は`S-800.tsx`の日本語JSDocとH-055を正とし、下記の実装前表現は検討履歴として読む。
+> 第21段階にB01 / B02を製品stageへ反映した。現在のfragment、対象語、`beforematch`判定、既知のCtrl+F制約、人手確認は`S-800.tsx`の日本語JSDocとH-055を正とし、下記の実装前表現は検討履歴として読む。
 
 - 同一pageの長い英文と、画面上部にB01 / B02の二箱を置く。B01は対象語を直接読めないpercent-encoded `textStart`とpunctuation contextを示し、B02は対象語そのものを示す。page内にfragmentや単語の入力欄を置かず、playerがaddress barへ同一pageのfragment付きURLを貼る。
 - `textStart`を空白、suffixを`.`とする指定は中間の任意単語を含むmatchにならないため使わない。B01 / B02とも対象語だけがUA highlightされるdirectiveをfixtureとして固定し、対象語は互いに異なり各block内で一意にする。
@@ -574,7 +574,7 @@ DR-019で追加承認したB05〜B09は、文字倍率4箱とは別にUser Prefe
 ## S-770 身分証棚（DR-127追加、未実装）
 
 - 攻略必須経路と全箱必須報酬から外したLabsに、採用providerごとの独立箱を並べる。実装着手時に公式資料を再調査し、(1) service自身が公式FedCM endpointまたはSDKを提供、(2) 一般の第三者siteがRP / client登録可能、(3) provider自身または信頼できるmanaged IdPが運用、(4) callbackからFedCM経路をfallback loginと肯定的に区別可能、(5) Busycube独自backend、Cloud Functions、serverless function、identity database不要、をすべて満たすserviceだけをprovider registryへ採る。
-- provider registryには調査日、公式資料、config URLまたは公式SDK、client登録手順、利用規約、要求scope / field、FedCM証拠、解除方法、PoC結果を記録する。有名なOAuth / OIDC providerであることだけでは採らず、X等への通常OAuthをbroker serviceのFedCM内に隠しただけの経路も、そのservice自身のFedCM箱として数えない。
+- provider registryには調査順、公式資料、config URLまたは公式SDK、client登録手順、利用規約、要求scope / field、FedCM証拠、解除方法、PoC結果を記録する。有名なOAuth / OIDC providerであることだけでは採らず、X等への通常OAuthをbroker serviceのFedCM内に隠しただけの経路も、そのservice自身のFedCM箱として数えない。
 - 各箱はpage loadで自動promptせず、provider名を示した「身分証を提示」操作から単一providerのactive attemptを開始する。provider公式SDKがFedCM専用resultを返す場合はその証拠を使い、標準APIを公式に案内するproviderでは実`navigator.credentials.get({ identity: { providers: [{ configURL, clientId }] }, mediation: "required" })`が返す`IdentityCredential`と期待`configURL`を使う。複数IdPを一つのpassive chooserへまとめず、一箱と一providerを対応させる。
 - Google箱は現計画の下限B01とする。Drive保存と共有しない専用Google Cloud project / OAuth Web client、公開JavaScript origin、branding、privacy policyを用意し、Google公式hostのGISを`auto_select: false`で使う。current attemptで非空`credential`と厳密な`select_by === "fedcm"`が返った場合だけ開き、`fedcm_auto`、`auto`、`user`、`btn`その他のlegacy / button / automatic経路では開かない。
 - 追加providerは公式client登録と実account PoCを完了してから固定problem IDを割り当てる。FedCM操作の成立時に対応箱だけを開き、provider別の完了messageや固定flagを後置しない。追加数はPoC完了時に正式計画値へ加算する。

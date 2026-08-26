@@ -19,7 +19,7 @@
 - [Vite environment variables](https://vite.dev/guide/env-and-mode)
 - [GitHub Actions variables](https://docs.github.com/actions/concepts/workflows-and-actions/variables)
 
-確認日: 2026-07-17。
+確認順: 第2段階。
 
 ## Google Cloud設定
 

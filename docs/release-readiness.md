@@ -1,6 +1,6 @@
 # リリース準備状況
 
-更新日: 2026-08-21
+更新段階: 第22段階
 
 現行の残問題と動作確認順は[現状・残問題・人手確認への引継ぎ](./current-status-and-handoff.md)を正とする。
 
@@ -20,7 +20,7 @@
 
 | 条件 | 現在 | 解除方法 |
 | --- | --- | --- |
-| 必須人手ケース | 未実施 | `human-test-matrix.md` の必須ID（全問題箱共通のH-025を含む）へ実施日・環境・結果を記録 |
+| 必須人手ケース | 未実施 | `human-test-matrix.md` の必須ID（全問題箱共通のH-025を含む）へ実施順・環境・結果を記録 |
 | Google Drive OAuth | 未設定 | Cloud設定後、Repository Secret `BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` を登録しH-015〜H-018 |
 | Google FedCM | 未設定 | [専用手順](./google-fedcm-setup.md)でDriveとは別のWeb clientとRepository Secret `BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`を登録しH-049 |
 | Payment Handler host | 公開未確認 | method manifest responseへ`Link: rel=payment-method-manifest`を付けられるmanaged hostでH-050 |
