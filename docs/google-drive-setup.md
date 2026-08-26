@@ -31,7 +31,7 @@
 6. Authorized JavaScript originsへ、実際に配信するoriginを完全一致で登録する。
    - ローカル例: `http://localhost:5173`。ポートが変わる場合はそのoriginも登録する。
    - GitHub Pages例: `https://okathira-dev.github.io`。
-   - Pagesのリポジトリパス（例 `/client-web-api-sandbox`）や `/busycube/index.html` はoriginへ含めない。
+   - Pagesのリポジトリパス（例 `/repository-name`）やアプリ内のHTMLパスはoriginへ含めない。
    - 独自ドメインを使う場合は、そのHTTPS originを別途登録する。
 7. 本実装はGIS token modelのポップアップcallbackを使うため、Authorized redirect URIは使用しない。
 8. 発行されたブラウザ用OAuth Client IDをローカルまたはGitHubの設定へ登録する。Client Secretは使用しない。

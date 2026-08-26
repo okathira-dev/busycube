@@ -1,0 +1,17 @@
+---
+description: Coding and review rules
+globs:
+  - "src/**/*.{ts,tsx,css}"
+  - "scripts/**/*.{js,mjs,ts}"
+alwaysApply: false
+---
+
+# Coding rules
+
+- 既存の構造と命名に合わせ、変更は必要な範囲へ限定してください。
+- ステージ固有の実装と文言は該当する `src/stages/S-xxx/` にまとめ、共通化は複数ステージで明確に共有される場合に行ってください。
+- ブラウザー API の有無、権限拒否、未観測を区別し、代替値で成功を捏造しないでください。
+- event listener、timer、media stream、WebGL 資源などは終了時に確実に解放してください。可能なら `AbortSignal` と明示的な dispose を使います。
+- import している外部パッケージは `package.json` の直接依存として宣言してください。
+- 型安全性を維持し、理由のない `any`、型検査回避、広すぎる型 assertion を追加しないでください。
+- コメントはコードだけでは残せない判断、制約、将来議論すべき事項に限定してください。

@@ -1,0 +1,20 @@
+---
+description: Busycube stage and Web API behavior rules
+globs:
+  - "src/stages/**/*"
+  - "src/**/*stage*"
+  - "scripts/**/*stage*"
+  - "docs/human-test-matrix.md"
+alwaysApply: false
+---
+
+# Busycube rules
+
+- ステージは原則 `src/stages/S-xxx/` 配下の既存構成（`manifest.ts`、`locale.ts`、`stage.tsx`）に合わせてください。
+- ステージ追加・削除時は、生成されるステージ索引と関連スクリプトを確認してください。
+- 実ブラウザー API の観測結果だけを達成判定に使い、未対応・権限拒否・タイムアウトを成功へ変換しないでください。
+- センサー、メディア、端末識別子などの生データは、ゲーム判定に必要な最小範囲を越えて保存・送信しないでください。
+- listener、stream、animation frame、Three.js/WebGL 資源などは、ステージ離脱時に停止・破棄してください。
+- 自動テストでは再現可能な fixture を使い、数値の内部実装だけでなくユーザーに見える意味を検証してください。
+- `docs/human-test-matrix.md` は実機・権限・ブラウザー差異の確認記録です。削除、縮退、自動的な合格処理をしないでください。
+- 現在の GitHub Pages workflow と main マージ後のデプロイは維持します。別ホスト対応や、Pages の header 制約で見送ったギミックの再導入は別タスクです。

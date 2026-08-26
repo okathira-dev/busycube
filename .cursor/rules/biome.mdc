@@ -1,0 +1,13 @@
+---
+description: Biome lint and formatting rules
+globs:
+  - "**/*.{js,jsx,mjs,cjs,ts,tsx,json,jsonc,css}"
+alwaysApply: false
+---
+
+# Biome
+
+- lint、format、import 整理にはリポジトリ設定の Biome を使ってください。
+- 通常の一括確認は `pnpm run check` を使用してください。
+- 手作業で Biome と競合する整形を追加しないでください。
+- 自動修正を行った場合も diff を確認し、依頼外の変更が混ざっていないことを確認してください。

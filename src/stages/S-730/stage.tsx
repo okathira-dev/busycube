@@ -11,6 +11,7 @@ import { manifest } from "./manifest";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 import { useCallback, useEffect, useRef, useState } from "react";
+// TODO: S-730の最小描画・raycastをThree.jsで維持するか、WebXR/WebGLの直接実装へ置き換えて依存を削除するかを設計レビューする。
 import {
   BoxGeometry,
   Color,
