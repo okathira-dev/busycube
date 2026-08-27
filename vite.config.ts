@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
@@ -12,29 +13,38 @@ export default defineConfig({
   envDir: import.meta.dirname,
   appType: "mpa",
   assetsInclude: ["**/*.pack"],
-  plugins: [react()],
+  plugins: [react(), cloudflare({ configPath: "../wrangler.jsonc" })],
   worker: { format: "es" },
   build: {
     outDir,
     emptyOutDir: true,
-    rolldownOptions: {
-      input: {
-        index: resolve(root, "index.html"),
-        poc: resolve(root, "poc", "index.html"),
-        "poc-offline-beacon-receiver": resolve(
-          root,
-          "poc",
-          "offline-beacon",
-          "receiver.html",
-        ),
-        "poc-presentation-receiver": resolve(
-          root,
-          "poc",
-          "presentation-receiver.html",
-        ),
-        "s710-tool": resolve(root, "tools", "s710", "index.html"),
-        privacy: resolve(root, "privacy", "index.html"),
-        terms: resolve(root, "terms", "index.html"),
+  },
+  environments: {
+    client: {
+      build: {
+        // Scope every HTML entry to the browser build. A top-level input is
+        // inherited by the Worker environment and makes HTML virtual modules
+        // look like Worker entry points under Vite 8/Rolldown.
+        rollupOptions: {
+          input: {
+            index: resolve(root, "index.html"),
+            poc: resolve(root, "poc", "index.html"),
+            "poc-offline-beacon-receiver": resolve(
+              root,
+              "poc",
+              "offline-beacon",
+              "receiver.html",
+            ),
+            "poc-presentation-receiver": resolve(
+              root,
+              "poc",
+              "presentation-receiver.html",
+            ),
+            "s710-tool": resolve(root, "tools", "s710", "index.html"),
+            privacy: resolve(root, "privacy", "index.html"),
+            terms: resolve(root, "terms", "index.html"),
+          },
+        },
       },
     },
   },

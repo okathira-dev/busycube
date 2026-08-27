@@ -172,7 +172,14 @@ function S510Stage(props: Props) {
           : event.source === popupRef.current
             ? "window"
             : undefined;
-      if (!source || !event.data || typeof event.data !== "object") return;
+      const expectedOrigin = source === "iframe" ? "null" : location.origin;
+      if (
+        !source ||
+        event.origin !== expectedOrigin ||
+        !event.data ||
+        typeof event.data !== "object"
+      )
+        return;
       const data = event.data as {
         channel?: unknown;
         round?: unknown;

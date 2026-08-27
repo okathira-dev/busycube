@@ -1,10 +1,11 @@
 # Cloudflare Workersへのデプロイ
 
-Busycubeは、Viteで生成した`dist/`をCloudflare Workers Static Assetsで配信し、Hono Workerが動的なHTTP応答だけを担当する。GitHub Pages向けの配信workflowや、response headerをService Workerで補う回避策は使わない。
+Busycubeは、Cloudflare Viteプラグインでブラウザ用assetとWorkerを同時にbuildし、Static Assetsが前者を、Hono Workerが動的なHTTP応答だけを配信する。GitHub Pages向けの配信workflowや、response headerをService Workerで補う回避策は使わない。
 
 ## 構成
 
-- `wrangler.jsonc`: Worker名、Hono entry point、Static Assets、Workerへ渡す動的route
+- `vite.config.ts`: 複数HTML入口を`client`環境へ限定し、Cloudflare Viteプラグインでブラウザ用assetとWorkerをbuild
+- `wrangler.jsonc`: Worker名、Hono entry point、Static Assets binding、Workerへ渡す動的route
 - `worker/app.ts`: Payment Method Manifestの`Link` headerとオフライン疎通probe
 - `public/_headers`: 静的assetのcacheと共通security header
 - `.github/workflows/deploy-cloudflare-workers.yml`: mainへのpush時の検査、build、deploy
@@ -20,7 +21,9 @@ pnpm run build
 pnpm run preview
 ```
 
-`pnpm run preview`は`wrangler dev`で`dist/`とHono Workerを同時に動かす。表示されたlocalhost URLで、少なくとも`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`を確認する。Payment Handlerのrouteは次のいずれかへ`GET`と`HEAD`を送り、204と`Link: <…>; rel=payment-method-manifest`を確認する。
+`pnpm run build`は`dist/client/`へブラウザ用assetを、`dist/busycube/`へWorker bundleとデプロイ用`wrangler.json`を生成する。入力側の`wrangler.jsonc`へ`assets.directory`を固定せず、Viteプラグインが生成物間の正しい相対pathを出力する。Viteのapplication rootが`src/`でリポジトリrootと異なるため、deploy scriptとworkflowは生成後の`dist/busycube/wrangler.json`を明示してWranglerへ渡す。
+
+`pnpm run preview`はCloudflare Viteプラグインのpreview環境でStatic AssetsとHono Workerを同時に動かす。表示されたlocalhost URLで、少なくとも`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`を確認する。Payment Handlerのrouteは次のいずれかへ`GET`と`HEAD`を送り、204と`Link: <…>; rel=payment-method-manifest`を確認する。
 
 - `/payment/method`
 - `/poc/payment/method`

@@ -40,4 +40,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --config wrangler.jsonc
+          # Vite's application root is src/, so point Wrangler at the output
+          # config generated beside the bundled Worker.
+          command: deploy --config dist/busycube/wrangler.json
