@@ -21,6 +21,7 @@ pnpm run dev
 | 実装の通常確認 | `pnpm run check` |
 | テスト | `pnpm run test:ci` |
 | 本番ビルド | `pnpm run build` |
+| Workersローカルプレビュー | `pnpm run preview` |
 
 ## リポジトリ構成
 
@@ -45,6 +46,7 @@ pnpm run dev
 - [Google Auth Platformブランディング](./google-auth-platform-branding.md)
 - [Google Driveバックアップの設定と運用](./google-drive-setup.md)
 - [Google FedCM設定](./google-fedcm-setup.md)
+- [Cloudflare Workersへのデプロイ](./cloudflare-workers-deployment.md)
 - [決定ログ](./decision-log.md)
 
 ## 履歴資料

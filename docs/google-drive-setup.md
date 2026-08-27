@@ -30,11 +30,11 @@
 5. ClientsでApplication typeが「Web application」のOAuth Clientを作成する。
 6. Authorized JavaScript originsへ、実際に配信するoriginを完全一致で登録する。
    - ローカル例: `http://localhost:5173`。ポートが変わる場合はそのoriginも登録する。
-   - GitHub Pages例: `https://okathira-dev.github.io`。
-   - Pagesのリポジトリパス（例 `/repository-name`）やアプリ内のHTMLパスはoriginへ含めない。
-   - 独自ドメインを使う場合は、そのHTTPS originを別途登録する。
+   - 本番例: Cloudflare Workersへ設定した`https://<production-host>`。
+   - pathやアプリ内のHTMLパスはoriginへ含めない。
+   - 実在しない`workers.dev` URLを推測で登録しない。本番hostnameは[デプロイ手順](./cloudflare-workers-deployment.md)に従って確定する。
 7. 本実装はGIS token modelのポップアップcallbackを使うため、Authorized redirect URIは使用しない。
-8. 発行されたブラウザ用OAuth Client IDをローカルまたはGitHubの設定へ登録する。Client Secretは使用しない。
+8. 発行されたブラウザ用OAuth Client IDをローカルまたはGitHub Actionsの設定へ登録する。Client Secretは使用しない。
 
 値が空なら、設定画面は「未設定」を表示するだけで、ローカルゲーム・PWA・他のリポジトリアプリへ影響しない。
 
@@ -62,7 +62,7 @@ VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID=1234567890-example.apps.googleusercontent.c
 
 `.env.example` は変数名と注意だけを記載し、実値をコミットしない。値を変更した後はdev serverを再起動する。production相当を確認する場合は、同じ値を設定したシェルからbuildする。
 
-## GitHub Pages CI
+## GitHub Actionsの本番deploy
 
 Repositoryの `Settings` → `Secrets and variables` → `Actions` → `Secrets` で、次を登録する。
 
@@ -76,15 +76,15 @@ CLIを使う場合は、リポジトリを指定して次のように登録で�
 gh secret set BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID --body "1234567890-example.apps.googleusercontent.com"
 ```
 
-`publish-pages.yml` は `${{ secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}` をworkflow環境変数 `VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` へ渡し、`pnpm run build` で公開JavaScriptへ埋め込む。Client IDは最終成果物から読める公開識別子だが、Secretに入れることでGitHub設定画面とActionsログでの偶発表示を抑える。client secret、access token、refresh tokenはここへ入れない。
+`deploy-cloudflare-workers.yml` は `${{ secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}` をworkflow環境変数 `VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` へ渡し、`pnpm run build` で公開JavaScriptへ埋め込む。Client IDは最終成果物から読める公開識別子だが、Secretに入れることでGitHub設定画面とActionsログでの偶発表示を抑える。client secret、access token、refresh tokenはここへ入れない。
 
-Secretが未登録または空ならDrive UIだけが未設定状態になり、buildとPages配信は成功する。Secretを変更しても既存の配信物は変化しないため、mainへの再pushまたはActionsの `workflow_dispatch` で必ず再build・再deployする。
+Secretが未登録または空ならDrive UIだけが未設定状態になり、buildとWorkers配信は成功する。Secretを変更しても既存の配信物は変化しないため、mainへの再pushまたはActionsの `workflow_dispatch` で必ず再build・再deployする。
 
-Pagesで認可エラーになった場合は、次を順に確認する。
+Workers本番で認可エラーになった場合は、次を順に確認する。
 
 1. workflowのbuildが新しいVariable設定後に実行された。
 2. Client IDがGoogle Auth PlatformのWeb application clientと一致する。
-3. Authorized JavaScript originsに実際のPages originがHTTPSで登録されている。
+3. Authorized JavaScript originsに実際のWorkers production originがHTTPSで登録されている。
 4. AudienceがTestingなら、操作したGoogleアカウントがTest userに入っている。
 5. Data Accessとコードがともに `drive.appdata` だけを要求している。
 

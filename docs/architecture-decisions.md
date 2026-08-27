@@ -5,11 +5,11 @@
 
 ## 全体像
 
-本作はGitHub Pagesから配信する静的Webアプリであり、通常プレイと進捗保存はブラウザ内だけで完結する。
+本作はCloudflare Workers Static Assetsから配信するWebアプリであり、通常プレイと進捗保存はブラウザ内だけで完結する。Hono Workerは静的assetを補完するHTTP responseだけを扱い、ゲーム進捗や個人データを保存しない。
 
 | 領域 | 方針 |
 | --- | --- |
-| 配信 | 既存Viteプロジェクトの独立したエントリとしてビルドし、GitHub Pagesへ配信する |
+| 配信 | 既存Viteプロジェクトの独立したエントリとしてビルドし、Cloudflare Workers Static Assetsへ配信する |
 | 基本スタック | 既存リポジトリのReact、TypeScript、Viteを利用する |
 | 通常プレイ | 自前APIサーバーへ依存しない |
 | 主進捗 | IndexedDBを主保存先とし、ブラウザ内に保存する |
@@ -148,15 +148,15 @@ PWAは単なる配布手段ではなく、一部ステージの条件にもな�
 - 更新後に古いHTMLと新しいJavaScriptが混在しない
 - オフライン用キャッシュとゲーム進捗を混同しない
 - 開発環境では古いService Workerを安全に解除できる
-- GitHub Pagesのサブパスでもmanifestとアセットが解決できる
+- 専用hostのroot scopeでmanifestとassetが解決できる
 
 ## 配信とルーティング
 
-GitHub Pagesのリポジトリ配下パスと、既存Vite設定の相対アセット方針を尊重する。初期実装では、サーバー側rewriteを必要としない遷移を優先する。
+Cloudflare Workersの専用host rootと、Vite設定のroot-relative asset方針を使う。stage URLはquery parameterを使い、server-side rewriteを必要としない。
 
-[GitHub PagesのHTTPS](https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https)を公開前提とし、混在コンテンツを許さない。
+Cloudflare WorkersのHTTPSを公開前提とし、混在コンテンツを許さない。
 
-URL自体をギミックに使う場合も、通常の再読み込みで404にならない設計にする。URL表現を決める前に、GitHub Pages上の直接アクセスとPWA起動を人手で確認する。
+URL自体をギミックに使う場合も、通常の再読み込みで404にならない設計にする。URL表現を決める前に、Cloudflare Workers上の直接アクセスとPWA起動を人手で確認する。
 
 ## テスト可能性
 
@@ -186,7 +186,7 @@ URL自体をギミックに使う場合も、通常の再読み込みで404に�
 - 権限プロンプトをユーザージェスチャー内へ保つ箇所
 - イベントやストリームを明示的に破棄する箇所
 - 同期競合でデータを消さないためのマージ規則
-- GitHub PagesのサブパスやService Worker scopeに関する制約
+- Cloudflare Workersのroot scopeやHTTP response headerに関する制約
 - セキュリティ・プライバシー上、あえて収集しない情報
 
 処理の逐語訳や、変更時にすぐ嘘になるコメントは避ける。

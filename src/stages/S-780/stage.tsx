@@ -123,7 +123,7 @@ async function registerWallets(wallets: readonly Wallet[]): Promise<void> {
  * 使用API: PaymentRequest、PaymentResponse、Payment Handler Service Worker、PaymentManager.userHint、payment-method-manifest。
  * 権限・privacy: 実Payment、payer情報、credential、handlerの詳細情報を保存・送信しない。財布IDはその場の開箱判定にだけ使う。
  * cleanup: stage離脱・cancel・retry失敗時にhandler windowへの追加操作をせず、active request IDを破棄する。旧単一walletの製品workerだけはexact scope / script URL一致時に登録解除する。
- * 対応環境: PaymentRequest、Payment Handler、Service Worker、method manifestのLink response headerを提供する対応browserとsecure context。通常のGitHub Pagesだけでは任意routeのLink headerを設定できないため、公開時はheader ruleを設定できるmanaged static hostが必要。
+ * 対応環境: PaymentRequest、Payment Handler、Service Worker、method manifestのLink response headerを提供する対応browserとsecure context。公開時はCloudflare Workers上のHono Workerがmethod routeへheaderを返す。
  * 人手確認: H-003/H-004/H-019/H-023/H-025/H-050。
  */
 function S780Stage(props: Props) {

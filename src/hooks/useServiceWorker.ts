@@ -25,10 +25,10 @@ export function useServiceWorker() {
     // Development still registers a pass-through worker so notification and PWA
     // stages remain testable without letting Cache Storage hide Vite/HMR updates.
     const workerUrl = import.meta.env.DEV
-      ? "./service-worker.js?mode=development"
-      : "./service-worker.js";
+      ? "/service-worker.js?mode=development"
+      : "/service-worker.js";
     void navigator.serviceWorker
-      .register(workerUrl, { scope: "./", updateViaCache: "none" })
+      .register(workerUrl, { scope: "/", updateViaCache: "none" })
       .then((nextRegistration) => {
         if (!active) return;
         setRegistration(nextRegistration);

@@ -12,9 +12,9 @@
 
 - パッケージマネージャーは pnpm。`packageManager` は `pnpm@11.24.0`、Node.js は `>=24.14.0`。
 - アプリ本体は `src/`、静的公開物は `public/`、設計・検証資料は `docs/`、生成・検証処理は `scripts/` に置く。
-- ローカル開発 URL は `/index.html`、隔離 PoC は `/poc/`。
-- 移行時点ではGitHub Pages workflowとデプロイ方針を変更していない。現在は`main`へのマージ後にPagesへデプロイする既存運用を継続する。
-- header rule、専用origin、PWA / Service Worker、必要に応じたEdge処理を設定できる別ホストの選定と移行は、今回のリポジトリ切り出しとは別の将来タスクとする。配信先決定時にViteの`base`、manifest、Service Worker scope、OAuth originをまとめて見直す。
+- ローカル開発 URL は `/`、隔離 PoC は `/poc/`。
+- 本番はCloudflare Workers Static AssetsとHono Workerで配信する。`main`への反映後は`deploy-cloudflare-workers.yml`が検査、build、deployを実行する。
+- Viteの`base`、manifest、Service Worker scope、OAuth originはCloudflare Workers専用hostのroot配信に合わせた。初期設定と公開直前の確認は[Cloudflare Workersへのデプロイ](docs/cloudflare-workers-deployment.md)を正本とする。
 - GitHub Actions は pnpm と `pnpm-lock.yaml` を使う。
 - メディア、QR、フォントなどの fixture は新名称で再生成済み。再生成には環境変数 `BUSYCUBE_FFMPEG_PATH` と `BUSYCUBE_FFPROBE_PATH` が必要なスクリプトがある。
 
@@ -55,16 +55,16 @@
 1. `git status` と `git log -1` で、作業ツリーと対象コミットを確認する。
 2. `pnpm install --frozen-lockfile` を実行する。
 3. `pnpm run check`、`pnpm run test:ci`、`pnpm run build` を順に実行する。
-4. `pnpm run dev` でローカルサーバーを起動し、まず主要画面、PoC、Service Worker scope、直接 URL を確認する。
+4. `pnpm run preview` でWorkersローカルサーバーを起動し、まず主要画面、PoC、Service Worker scope、直接 URL、HTTP headerを確認する。
 5. `docs/human-test-matrix.md` に従い、実行可能な人手確認から結果を記録する。
 
 ## 公開前に残る外部設定
 
-- 現在の公開先はGitHub Pagesで、移行時にworkflowとマージ後デプロイ運用は変更していない。別ホストを選定した後に、独立タスクでworkflowと資料を更新または置換する。
+- 公開先はCloudflare Workersへ移行済みの設定である。初回deploy後に確定するproduction hostnameをGoogle Auth PlatformとOAuth Clientへ登録し、確認完了後にGitHub Pagesを無効化する。
 - Google Drive / FedCM などに必要な公開 origin、OAuth Client ID、GitHub Actions secrets は未設定。
 - S-780 Payment Handlerは製品stage実装済みで、再導入対象ではない。method URLへ`Link: rel="payment-method-manifest"`を返せるheader対応ホストでH-050を実施する。
 
-## header対応ホスト移行後に再検討するギミック
+## header対応ホストで再検討するギミック
 
 - 主対象はPOC-050 Trusted Types。`Content-Security-Policy: require-trusted-types-for 'script'`を実response headerとして設定し、policy由来値と未信頼値のsink境界を観測するPoCまで実装したが、stage化は見送られた。headerを設定できる公開先へ移行した後、製品stageとして再導入できないか改めて設計レビューする。
 - 取り違え防止の関連候補として、POC-044 conditional Fetchも再評価する。これはhostが返す`ETag`、requestの`If-None-Match`、実`304 Not Modified`を観測するPoCで、GitHub Pagesではresponse headerと再検証条件を自由に設計できなかった。

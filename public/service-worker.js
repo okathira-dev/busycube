@@ -3,14 +3,14 @@
 const workerUrl = new URL(self.location.href);
 const developmentMode = workerUrl.searchParams.get("mode") === "development";
 const cachePrefix = "busycube-";
-const cacheVersion = "v4";
+const cacheVersion = "v6";
 const shellCacheName = `${cachePrefix}shell-${cacheVersion}`;
 const assetCacheName = `${cachePrefix}assets-${cacheVersion}`;
 const scopeUrl = new URL(self.registration.scope);
-const shellUrl = new URL("./index.html", scopeUrl).href;
-const assetPath = new URL("../assets/", scopeUrl).pathname;
+const shellUrl = new URL("./", scopeUrl).href;
+const assetPath = new URL("./assets/", scopeUrl).pathname;
 const shellFiles = [
-  "./index.html",
+  "./",
   "./manifest.webmanifest",
   "./icon.svg",
   "./licenses/index.html",
@@ -220,7 +220,7 @@ self.addEventListener("notificationclick", (event) => {
       let sequence = `${data.sequence || ""}${actionCode}`;
       if (data.stage === "S-410" && !String(data.target).startsWith(sequence)) sequence = "";
       if (data.stage === "S-410" && sequence === data.target) {
-        const target = new URL("./index.html?stage=S-410&notification-sequence=S-410-ok", self.registration.scope).href;
+        const target = new URL("./?stage=S-410&notification-sequence=S-410-ok", self.registration.scope).href;
         event.waitUntil(openOrFocus(target));
         return;
       }
@@ -235,14 +235,14 @@ self.addEventListener("notificationclick", (event) => {
       return;
     }
     if (data.stage === "S-420") {
-      const target = new URL(`./index.html?stage=S-420&vault-attempt=${encodeURIComponent(data.sequence || "")}`, self.registration.scope).href;
+      const target = new URL(`./?stage=S-420&vault-attempt=${encodeURIComponent(data.sequence || "")}`, self.registration.scope).href;
       event.waitUntil(openOrFocus(target));
       return;
     }
   }
   event.notification.close();
   const target = new URL(
-    "./index.html?stage=S-090&notification=1",
+    "./?stage=S-090&notification=1",
     self.registration.scope,
   ).href;
   event.waitUntil(openOrFocus(target));

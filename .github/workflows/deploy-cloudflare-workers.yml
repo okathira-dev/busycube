@@ -1,0 +1,43 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # These are public OAuth client IDs embedded in the Vite bundle. Do not add
+  # a Google client secret, access token, refresh token, or personal address.
+  VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
+  VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ secrets.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
+
+concurrency:
+  group: cloudflare-workers-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-workers-production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Check
+        run: pnpm run check
+      - name: Test
+        run: pnpm run test:ci
+      - name: Build
+        run: pnpm run build
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler.jsonc

@@ -13,6 +13,7 @@ dist-ssr
 *.local
 .eslintcache
 /coverage
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
@@ -28,6 +29,9 @@ dist-ssr
 
 .env*
 !.env.example
+.dev.vars*
+.wrangler
+.wrangler-config
 
 # Serena cache
 .serena/cache/

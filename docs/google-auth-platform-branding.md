@@ -7,10 +7,10 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 | 項目 | 値 |
 | --- | --- |
 | アプリ名 | `Busycube` |
-| アプリケーションのホームページ | `https://okathira-dev.github.io/busycube/` |
-| プライバシーポリシー | `https://okathira-dev.github.io/busycube/privacy/` |
-| 利用規約 | `https://okathira-dev.github.io/busycube/terms/` |
-| 承認済みドメイン | `okathira-dev.github.io` |
+| アプリケーションのホームページ | `https://<production-host>/` |
+| プライバシーポリシー | `https://<production-host>/privacy/` |
+| 利用規約 | `https://<production-host>/terms/` |
+| 承認済みドメイン | `<production-host>` |
 | アプリロゴ | `public/brand/google-auth-logo-120.png`、120 x 120 px、PNG、1 MB以下 |
 
 サポートメールとデベロッパー連絡先は、Google Cloud Consoleで管理する。個人メールアドレスをリポジトリ、公開ページ、テキスト資料へ記録してはならない。登録するアドレスは、利用者やGoogleからの連絡を継続して確認できるものにする。
@@ -33,7 +33,7 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 ## Console設定手順
 
 1. Google Cloud Consoleで本番用プロジェクトを選び、Google Auth PlatformのBrandingを開く。
-2. 先に承認済みドメイン`okathira-dev.github.io`を登録する。
+2. [Cloudflare Workersへのデプロイ](./cloudflare-workers-deployment.md)で確定した専用の本番hostnameを、先に承認済みドメインへ登録する。
 3. アプリ名、監視できるサポートメール、デベロッパー連絡先、ホームページ、プライバシーポリシー、利用規約を設定する。
 4. `public/brand/google-auth-logo-120.png`をロゴとしてアップロードする。
 5. Search Consoleでドメイン所有を確認する。確認に使うGoogleアカウントはCloudプロジェクトのOwnerまたはEditorにする。
@@ -41,6 +41,8 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 7. Brandingの検証を開始し、承認後にPublish brandingを実行する。
 
 ロゴ、アプリ名、ホームページ、ポリシーURL、承認済みドメインを変更した場合は、Brandingの再検証と公開が必要になる。
+
+`<production-host>`はCloudflare accountごとに異なるため、実在しない`workers.dev` URLを推測で入力しない。初回deploy後に表示されたhostname、または設定済みcustom domainのどちらか一つへ置き換える。GitHub Pagesの旧URLは切替確認が終わるまでの暫定値であり、Consoleの本番値には残さない。
 
 ## OAuth Clientとの対応
 

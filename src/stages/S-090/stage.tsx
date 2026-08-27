@@ -55,7 +55,7 @@ function S090Stage(props: Props) {
       const tag = "busycube-stage-S-090";
       await registration.showNotification("Busycube", {
         body: stageText(props.locale, locale.outsideBody),
-        icon: "./icon.svg",
+        icon: "/icon.svg",
         tag,
       });
       if (props.signal.aborted) {

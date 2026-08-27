@@ -6,7 +6,7 @@
 
 ## 実装完了範囲
 
-- Viteマルチページの独立入口とGitHub Pages相対パス
+- Viteマルチページの独立入口とCloudflare Workers root配信
 - 日英UI、一覧・設定・About、ステージ直接URL、エラー境界
 - IndexedDB version 1、version 0移行、破損・将来version保護、JSON書き出し、初期化
 - 89ステージ・203問題箱、未着手・部分解決・完全解決の集約
@@ -25,7 +25,7 @@
 | Google FedCM | 未設定 | [専用手順](./google-fedcm-setup.md)でDriveとは別のWeb clientとRepository Secret `BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`を登録しH-049 |
 | Payment Handler host | 公開未確認 | method manifest responseへ`Link: rel=payment-method-manifest`を付けられるmanaged hostでH-050 |
 | 専用API・実機 | 条件別に未確認 | XR、Periodic Background Sync、実SMS、Contact Picker、外部display、Local Font Access等を人手台帳の対応H-IDで確認 |
-| 本番Pages | 未配信 | main統合後のHTTPS・サブパス・直接URL・scopeをH-021で確認 |
+| 本番Cloudflare Workers | 未配信 | main統合後のHTTPS・直接URL・root scope・headerをH-021で確認 |
 | PWAアイコン互換 | SVGのみ | 対象ブラウザで不足なら192/512 PNGとApple Touch Iconを追加 |
 | 名称・問い合わせ | 未確認 | `Busycube` 名称の公開前確認と公開問い合わせ先の決定 |
 

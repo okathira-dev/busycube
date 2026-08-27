@@ -18,7 +18,7 @@ S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブ�
 - [Google Identity Services JavaScript API reference](https://developers.google.com/identity/gsi/web/reference/js-reference)
 - [FedCM migration guide](https://developers.google.com/identity/gsi/web/guides/fedcm-migration)
 
-## ローカルとGitHub Pages
+## ローカルとCloudflare Workers
 
 ローカルbuildでは次を設定する。
 
@@ -26,7 +26,7 @@ S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブ�
 VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID=<public-web-client-id>
 ```
 
-GitHubではRepository Secret `BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ同じ公開client IDを登録する。`publish-pages.yml`がbuild時に`VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ渡す。最終bundleでは読める公開識別子だが、Secretに入れることでGitHub設定画面とActionsログでの偶発表示を抑える。未設定時、S-770は設定不足を表示し、通常OAuthへfallbackしない。
+GitHubではRepository Secret `BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ同じ公開client IDを登録する。`deploy-cloudflare-workers.yml`がbuild時に`VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ渡す。最終bundleでは読める公開識別子だが、Secretに入れることでGitHub設定画面とActionsログでの偶発表示を抑える。未設定時、S-770は設定不足を表示し、通常OAuthへfallbackしない。
 
 ## 成功境界と人手確認
 

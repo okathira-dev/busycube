@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "target": "ES2024",
+    "lib": ["ES2024", "WebWorker"],
+    "types": ["@cloudflare/workers-types", "vite/client"]
+  },
+  "include": ["worker/**/*.ts"],
+  "exclude": ["worker/**/*.test.ts"]
+}

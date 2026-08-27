@@ -17,4 +17,4 @@ alwaysApply: false
 - listener、stream、animation frame、Three.js/WebGL 資源などは、ステージ離脱時に停止・破棄してください。
 - 自動テストでは再現可能な fixture を使い、数値の内部実装だけでなくユーザーに見える意味を検証してください。
 - `docs/human-test-matrix.md` は実機・権限・ブラウザー差異の確認記録です。削除、縮退、自動的な合格処理をしないでください。
-- 現在の GitHub Pages workflow と main マージ後のデプロイは維持します。別ホスト対応や、Pages の header 制約で見送ったギミックの再導入は別タスクです。
+- 本番はCloudflare Workers Static AssetsとHono Workerで配信する。headerが必要なrouteはWorkerで返し、Service Workerやclient codeでHTTP responseを代替しない。

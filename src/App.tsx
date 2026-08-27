@@ -122,7 +122,7 @@ export function App() {
   return (
     <div className="app-shell">
       <header className="hero">
-        <a className="eyebrow" href="../index.html">
+        <a className="eyebrow" href="/">
           {productCopy.descriptor}
         </a>
         <h1>{productCopy.brandName}</h1>

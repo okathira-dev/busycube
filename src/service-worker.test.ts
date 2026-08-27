@@ -40,7 +40,7 @@ function createWorker(scriptUrl: string) {
   const self = {
     location: new URL(scriptUrl),
     registration: {
-      scope: "https://example.test/repo/busycube/",
+      scope: "https://example.test/",
       showNotification,
     },
     clients: {
@@ -80,7 +80,7 @@ function createWorker(scriptUrl: string) {
 describe("Busycube service worker strategy", () => {
   it("leaves every fetch on the network in development mode", () => {
     const worker = createWorker(
-      "https://example.test/repo/busycube/service-worker.js?mode=development",
+      "https://example.test/service-worker.js?mode=development",
     );
     const respondWith = jest.fn();
 
@@ -98,7 +98,7 @@ describe("Busycube service worker strategy", () => {
 
   it("activates the development worker immediately without precaching", async () => {
     const worker = createWorker(
-      "https://example.test/repo/busycube/service-worker.js?mode=development",
+      "https://example.test/service-worker.js?mode=development",
     );
     let installation: Promise<unknown> | undefined;
 
@@ -114,9 +114,7 @@ describe("Busycube service worker strategy", () => {
   });
 
   it("precaches only the production shell and its hashed entry assets", async () => {
-    const worker = createWorker(
-      "https://example.test/repo/busycube/service-worker.js",
-    );
+    const worker = createWorker("https://example.test/service-worker.js");
     let installation: Promise<unknown> | undefined;
 
     worker.listeners.get("install")?.({
@@ -127,7 +125,7 @@ describe("Busycube service worker strategy", () => {
     await installation;
 
     expect(worker.shellCache.addAll).toHaveBeenCalledWith([
-      "./index.html",
+      "./",
       "./manifest.webmanifest",
       "./icon.svg",
       "./licenses/index.html",
@@ -136,16 +134,14 @@ describe("Busycube service worker strategy", () => {
       "./licenses/unifont-OFL-1.1.txt",
     ]);
     expect(worker.assetCache.addAll).toHaveBeenCalledWith([
-      "https://example.test/repo/assets/busycube-AbCdEf12.js",
-      "https://example.test/repo/assets/client-ZyXwVu98.js",
-      "https://example.test/repo/assets/busycube-QwErTy76.css",
+      "https://example.test/assets/busycube-AbCdEf12.js",
+      "https://example.test/assets/client-ZyXwVu98.js",
+      "https://example.test/assets/busycube-QwErTy76.css",
     ]);
   });
 
   it("handles mutable navigation and hashed assets but ignores Vite source", () => {
-    const worker = createWorker(
-      "https://example.test/repo/busycube/service-worker.js",
-    );
+    const worker = createWorker("https://example.test/service-worker.js");
     const navigationResponse = jest.fn();
     const assetResponse = jest.fn();
     const sourceResponse = jest.fn();
@@ -155,7 +151,7 @@ describe("Busycube service worker strategy", () => {
       request: {
         method: "GET",
         mode: "navigate",
-        url: "https://example.test/repo/busycube/index.html?stage=S-070",
+        url: "https://example.test/index.html?stage=S-070",
       },
       respondWith: navigationResponse,
     });
@@ -163,7 +159,7 @@ describe("Busycube service worker strategy", () => {
       request: {
         method: "GET",
         mode: "cors",
-        url: "https://example.test/repo/assets/S-000-AbCdEf12.js",
+        url: "https://example.test/assets/S-000-AbCdEf12.js",
       },
       respondWith: assetResponse,
     });
@@ -171,7 +167,7 @@ describe("Busycube service worker strategy", () => {
       request: {
         method: "GET",
         mode: "cors",
-        url: "https://example.test/repo/busycube/stages/S-000.tsx",
+        url: "https://example.test/stages/S-000.tsx",
       },
       respondWith: sourceResponse,
     });
@@ -182,9 +178,7 @@ describe("Busycube service worker strategy", () => {
   });
 
   it("keeps notification action state in the replacement notification", async () => {
-    const worker = createWorker(
-      "https://example.test/repo/busycube/service-worker.js",
-    );
+    const worker = createWorker("https://example.test/service-worker.js");
     let completion: Promise<unknown> | undefined;
     worker.listeners.get("notificationclick")?.({
       action: "left",
