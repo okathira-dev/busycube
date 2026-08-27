@@ -212,7 +212,7 @@ DR-019で追加承認したB05〜B09は、文字倍率4箱とは別にUser Prefe
 - 開始前に、アプリは音声とtranscriptを保存しないこと、browserの認識実装が外部serviceへ音声を送る可能性があることを説明する。`processLocally`、`available()`、`install()`は実験的な別機能として台帳に残すが、この箱の成功条件や代替routeにはしない。
 - final result、`end`、`error`、stage離脱でrecognitionをstop / abortし、取得したmicrophone trackがある実装ではtrackもstopする。transcript、confidence、alternatives、音声は進捗やDriveへ保存しない。
 - DR-063追加B02は1〜12文字のASCII小文字だけを受ける。i文字目をalphabetで+i shiftしてzからaへwrapする。変換結果はDOM、status、accessible nameへ表示せず、`SpeechSynthesisUtterance`へ一文字ずつ区切った`en-US` textとして渡す。
-- B02はtrustedな提出ごとに既存queueを`cancel()`してから一つのutteranceを` speak()`する。変換結果が`busycube`、すなわち入力が`aspuxouw`であり、そのutteranceが実際に`start`した後、取消・errorなしで`end`した時だけ開く。文字列一致だけ、`start`だけ、直接`busycube`を入力した場合では開かない。
+- B02はtrustedな提出ごとに既存queueを`cancel()`してから一つのutteranceを`speak()`する。変換結果が`busycube`、すなわち入力が`aspuxouw`であり、そのutteranceが実際に`start`した後、取消・errorなしで`end`した時だけ開く。文字列一致だけ、`start`だけ、直接`busycube`を入力した場合では開かない。
 - 空欄、ASCII小文字以外、13文字以上は発話しない。入力、変換結果、試行回数、voice情報、発話履歴は保存・同期・送信しない。再提出、reset、離脱、abort時は`speechSynthesis.cancel()`し、utterance listenerと参照を破棄する。
 - `speechSynthesis`、`SpeechSynthesisUtterance`、利用可能voiceのいずれかがない場合と発話errorではB02を未観測とし、録音音声、画面表示、Web Audioによる代替clearを作らない。
 - 人手確認: H-006, H-007, H-019, H-020, H-023, H-025, H-027。B01のpermission、取消、no-speech、network、言語差、候補列に加え、B02のvoice準備、文字読み、queue取消、start / end / error、離脱cleanupを確認する。

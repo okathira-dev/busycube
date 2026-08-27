@@ -24,7 +24,7 @@
 ## Google Cloud設定
 
 1. Google Cloudで本番用プロジェクトを作成または選択し、Google Drive APIを有効にする。開発用と本番用を分離する場合は、それぞれ別のClient IDとoriginを持たせる。
-2. Google Auth PlatformのBrandingで、アプリ名、User support email、Developer contact information、公開時に必要なホームページとプライバシーポリシーを登録する。
+2. Google Auth PlatformのBrandingは、[Google Auth Platformブランディング](./google-auth-platform-branding.md)の公開値、ロゴ、連絡先方針、所有確認、検証手順に従って登録する。
 3. Audienceを設定する。開発中はTestingとして利用者をTest usersへ追加する。一般公開時はExternal / In productionへ移し、表示されるVerification Centerの要件を完了する。
 4. Data Accessへ `https://www.googleapis.com/auth/drive.appdata` だけを追加する。Cloud設定とコードの両方で同じ最小scopeにする。
 5. ClientsでApplication typeが「Web application」のOAuth Clientを作成する。
@@ -76,7 +76,7 @@ CLIを使う場合は、リポジトリを指定して次のように登録で�
 gh secret set BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID --body "1234567890-example.apps.googleusercontent.com"
 ```
 
-`publish-pages.yml` は `${{ secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}` をworkflow環境変数 `VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` へ渡し、`npm run build` で公開JavaScriptへ埋め込む。Client IDは最終成果物から読める公開識別子だが、Secretに入れることでGitHub設定画面とActionsログでの偶発表示を抑える。client secret、access token、refresh tokenはここへ入れない。
+`publish-pages.yml` は `${{ secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}` をworkflow環境変数 `VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` へ渡し、`pnpm run build` で公開JavaScriptへ埋め込む。Client IDは最終成果物から読める公開識別子だが、Secretに入れることでGitHub設定画面とActionsログでの偶発表示を抑える。client secret、access token、refresh tokenはここへ入れない。
 
 Secretが未登録または空ならDrive UIだけが未設定状態になり、buildとPages配信は成功する。Secretを変更しても既存の配信物は変化しないため、mainへの再pushまたはActionsの `workflow_dispatch` で必ず再build・再deployする。
 

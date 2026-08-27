@@ -9,7 +9,7 @@ alwaysApply: false
 
 変更の種類に応じて、次を実行し、未実施または失敗は明示してください。
 
-- Markdown、ルール、メモのみ: diff とリンク・パスの確認
+- Markdown、ルール、メモのみ: `pnpm run docs:lint`、diff、リンク・パスの確認
 - TypeScript、JavaScript、JSON、CSS: `pnpm run check`
 - 振る舞いの変更: `pnpm run test:ci`
 - 依存関係、ビルド設定、配布物への影響: `pnpm run build`

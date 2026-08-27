@@ -38,7 +38,7 @@ I --> E
 ```
 
 | カテゴリ | Busycubeでの主な役割 | 代表 API | 典型ギミック | 実装リスク |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 入力・感知 | 物理操作や状態変化を開錠条件にする | Geolocation, Keyboard, Pointer Events, Gamepad, Sensor APIs | 振る・傾ける・押す・向ける・近づく | 権限、端末差、デスクトップ非対応 |
 | 描画・DOM・表示 | 箱自体の見た目やヒントの提示 | DOM, HTML DOM API, Canvas, CSSOM, View Transitions, SVG | 箱面が変形、文字が浮かぶ、視差で暗号表示 | 表現実装量が増えやすい |
 | メディア・XR | 音・映像・カメラ・空間を鍵にする | Web Audio, Screen Capture, Media Capture, WebXR, WebCodecs | 声で唱える、映像に一致、ARで鍵穴出現 | 権限、CPU/GPU負荷、互換性 |

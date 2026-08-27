@@ -159,6 +159,7 @@
 | D-149 | D-148採用stageの既存stageとの差分と実装前ゲートを固定する | Fullscreenはvideo player stage S-350へ統合せず任意HTML要素内clickの専用stage、MediaSourceは完成済みMSE timelineをseekするS-810と分けてplayer自身がsegmentをappendするstage、WebVTTは固定字幕を選ぶS-350-B05と分けて再生中に`VTTCue`を生成するstageとする。Compression Streamsは3形式の伝達性を製品UXで再評価し、MediaSourceの具体的な映像内容はfixture生成前に再相談する。他の成功条件・負例・cleanupは`next-poc-and-stage-work.md`を現行キューの正とする（第21段階で決定） |
 | D-150 | DR-041 Popover APIを新規G-091 / S-920の3箱クリック迷路として実装する | hoverやcommand列の推理ではなく、宣言的invokerで入れ子Popoverを開閉し、固定treeの3終点にある実箱を押す体験へ確定する。各goalの影は、実経路と同じ部屋寸法・十字button位置・`position-area`・`position-try-fallbacks`を持つ非操作CSS anchor chainの終点として常時layoutする。座標をJavaScriptで測定・転記せず、画面幅・画面端で配置が変わっても同じCSSアルゴリズムで実goal Popoverと影を一致させる。runtimeの経路・座標判定はせず、既知goal内のtrusted clickだけを開箱条件にする（第22段階で確定） |
 | D-151 | S-920の迷路座標系を同一origin iframeの固定viewportへ閉じ込める | iframe外周をPopoverが越えられない実際の表示不可領域にする。外周は斜線の額縁で見せ、B01はinline、B02はblock方向の`position-try-fallbacks`を必ず踏む。実経路と影経路は同じiframe viewport内でbrowserのCSS layoutへ同時に追従し、親page scroll、iframe resizeともJavaScript再測定を行わない（第22段階で決定） |
+
 ## 仮置きしている事項
 
 | ID | 仮置き | 変更してよい条件 |

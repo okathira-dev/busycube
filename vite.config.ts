@@ -67,6 +67,7 @@ function paymentManifestLinkPlugin(): Plugin {
 export default defineConfig({
   base: "./",
   root,
+  publicDir: resolve(import.meta.dirname, "public"),
   envDir: import.meta.dirname,
   appType: "mpa",
   assetsInclude: ["**/*.pack"],
@@ -91,6 +92,8 @@ export default defineConfig({
           "presentation-receiver.html",
         ),
         "s710-tool": resolve(root, "tools", "s710", "index.html"),
+        privacy: resolve(root, "privacy", "index.html"),
+        terms: resolve(root, "terms", "index.html"),
       },
     },
   },

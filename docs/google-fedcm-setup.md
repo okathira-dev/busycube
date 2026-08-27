@@ -2,6 +2,8 @@
 
 更新段階: 第22段階
 
+Google Auth Platformの共通ブランディング、公開URL、ロゴ、連絡先、所有確認、検証手順は[Google Auth Platformブランディング](./google-auth-platform-branding.md)を正本とする。
+
 S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブラウザが仲介した手動FedCM結果だけを受け入れる。通常のOAuth popup / redirectやGoogle Drive認可は代替にならない。
 
 ## 公開クライアントの準備
