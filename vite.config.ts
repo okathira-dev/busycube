@@ -22,9 +22,9 @@ export default defineConfig({
   environments: {
     client: {
       build: {
-        // Scope every HTML entry to the browser build. A top-level input is
-        // inherited by the Worker environment and makes HTML virtual modules
-        // look like Worker entry points under Vite 8/Rolldown.
+        // HTML入口はすべてブラウザーbuildだけに限定する。最上位へinputを置くと
+        // Worker環境にも継承され、Vite 8／RolldownではHTMLの仮想moduleが
+        // Workerのentry pointとして扱われてしまう。
         rollupOptions: {
           input: {
             index: resolve(root, "index.html"),

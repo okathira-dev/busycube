@@ -1,0 +1,72 @@
+name: Preview Cloudflare Worker
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: cloudflare-workers-preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    # fork由来のPull RequestにはWorkersを変更できる認証情報を渡さない。
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-workers-preview
+    env:
+      # OAuth Client IDは公開bundleへ入る値である。Repository／Environment
+      # Variableを優先し、未設定時はSecretを参照する。
+      VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
+      VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Check
+        run: pnpm run check
+      - name: Test
+        run: pnpm run test:ci
+      - name: Build
+        run: pnpm run build
+      - name: Upload PR preview
+        id: upload
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
+          # PRごとの固定aliasを維持しつつ、各uploadは本番trafficを受けない
+          # 不変のWorker Versionとして保存する。
+          command: >-
+            versions upload
+            --tag pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+            --preview-alias pr-${{ github.event.pull_request.number }}
+            --message "PR #${{ github.event.pull_request.number }} at ${{ github.event.pull_request.head.sha }}"
+            --config dist/busycube/wrangler.json
+      - name: Publish preview summary
+        env:
+          WRANGLER_OUTPUT: ${{ steps.upload.outputs.command-output }}
+        run: |
+          preview_url="$(printf '%s\n' "$WRANGLER_OUTPUT" | sed -n 's/^Version Preview Alias URL: //p' | tail -n 1)"
+          if [ -z "$preview_url" ]; then
+            echo "Wrangler did not report a preview alias URL." >&2
+            exit 1
+          fi
+          {
+            echo "## Cloudflare Worker preview"
+            echo
+            echo "- PR: #${{ github.event.pull_request.number }}"
+            echo "- Commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "- URL: $preview_url"
+          } >> "$GITHUB_STEP_SUMMARY"

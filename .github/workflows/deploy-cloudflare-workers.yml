@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Workers
+name: Release Cloudflare Worker
 
 on:
   push:
@@ -10,23 +10,27 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # These are public OAuth client IDs embedded in the Vite bundle. Do not add
-  # a Google client secret, access token, refresh token, or personal address.
-  VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
-  VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ secrets.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
 
 concurrency:
   group: cloudflare-workers-production
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  candidate:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
-      name: cloudflare-workers-production
+      name: cloudflare-workers-preview
+    env:
+      # 本番へ昇格する候補には、本番と同じ公開OAuth Client IDを埋め込む。
+      # Repository／Environment Variableを優先し、未設定時はSecretを参照する。
+      VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
+      VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
       - name: Setup toolchain
         uses: ./.github/actions/setup-node-pnpm
       - name: Check
@@ -35,11 +39,63 @@ jobs:
         run: pnpm run test:ci
       - name: Build
         run: pnpm run build
-      - name: Deploy
+      - name: Upload release candidate
+        id: upload
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Vite's application root is src/, so point Wrangler at the output
-          # config generated beside the bundled Worker.
-          command: deploy --config dist/busycube/wrangler.json
+          packageManager: pnpm
+          # Viteのアプリケーションルートはsrc/なので、bundle済みWorkerの隣に
+          # 生成されたWrangler設定を明示する。
+          command: >-
+            versions upload
+            --tag main-${{ github.sha }}
+            --preview-alias release
+            --message "main at ${{ github.sha }}"
+            --config dist/busycube/wrangler.json
+      - name: Publish candidate summary
+        env:
+          WRANGLER_OUTPUT: ${{ steps.upload.outputs.command-output }}
+        run: |
+          preview_url="$(printf '%s\n' "$WRANGLER_OUTPUT" | sed -n 's/^Version Preview Alias URL: //p' | tail -n 1)"
+          if [ -z "$preview_url" ]; then
+            echo "Wrangler did not report a release candidate URL." >&2
+            exit 1
+          fi
+          {
+            echo "## Cloudflare Worker release candidate"
+            echo
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Version tag: \`main-${{ github.sha }}\`"
+            echo "- URL: $preview_url"
+            echo
+            echo "Verify this URL before approving the production environment."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: candidate
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-workers-production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Promote verified version
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
+          # 本番承認後に再buildせず、candidate jobがuploadした不変Versionを
+          # tagから解決してそのまま昇格する。
+          command: >-
+            versions deploy
+            --version-tag main-${{ github.sha }}@100%
+            --yes
+            --message "Promote main at ${{ github.sha }}"
+            --config wrangler.jsonc

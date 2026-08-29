@@ -5,13 +5,13 @@ type AssetBinding = {
 };
 
 type Bindings = {
-  // Static Assets normally bypass the Worker. This binding is the fallback for
-  // a request that entered one of the explicitly selected Worker routes.
+  // Static Assetsは通常Workerを通らない。明示的に選択したWorker routeへ
+  // 入ったrequestを静的assetへ戻す場合だけ、このbindingをfallbackに使う。
   ASSETS: AssetBinding;
 };
 
-// Keep these paths static: request data must never be reflected into a Link
-// header, and each URL is registered as a Payment Method identifier.
+// request由来の値をLink headerへ反映しないため、pathは静的な許可リストにする。
+// 各URLはPayment Methodの識別子として登録されるため、動的生成しない。
 const paymentManifestRoutes = {
   "/payment/method": "/payment/payment-method-manifest.json",
   "/poc/payment/method": "/poc/payment/payment-method-manifest.json",
@@ -23,15 +23,15 @@ export const app = new Hono<{ Bindings: Bindings }>();
 
 app.use("*", async (context, next) => {
   await next();
-  // public/_headers applies only to Static Assets, so Worker responses need
-  // their own copy of the relevant response hardening headers.
+  // public/_headersはStatic Assetsだけに適用されるため、Worker responseには
+  // 必要な防御用headerをここでも付与する。
   context.header("Referrer-Policy", "strict-origin-when-cross-origin");
   context.header("X-Content-Type-Options", "nosniff");
 });
 
 for (const [route, manifestPath] of Object.entries(paymentManifestRoutes)) {
-  // These endpoints publish metadata only: they do not accept credentials,
-  // mutate state, or opt into cross-origin reads with a CORS header.
+  // このendpointはmetadataを公開するだけで、credentialを受け取らず、状態も
+  // 変更しない。CORS headerを付けてcross-origin readを許可することもない。
   app.on(["GET", "HEAD"], route, (context) =>
     context.body(null, 204, {
       "Cache-Control": "no-store",
@@ -41,13 +41,13 @@ for (const [route, manifestPath] of Object.entries(paymentManifestRoutes)) {
   app.all(route, (context) => context.body(null, 405, { Allow: "GET, HEAD" }));
 }
 
-// The Service Worker uses this uncached, body-free response to distinguish a
-// real network round trip from a cached application response.
+// Service Workerはcacheされないbodyなしresponseを使い、実network往復と
+// cache済みapplication responseを区別する。
 app.get("/offline-beacon/network-probe", (context) =>
   context.body(null, 204, { "Cache-Control": "no-store" }),
 );
 
-// Production routing invokes Hono only for run_worker_first paths. Retaining
-// the binding fallback keeps preview/tests and future route patterns aligned
-// with Cloudflare Static Assets instead of inventing a second file server.
+// 本番routingはrun_worker_firstのpathだけでHonoを呼ぶ。binding fallbackを
+// 残すことで、別のfile serverを実装せず、preview／test／将来のrouteも
+// Cloudflare Static Assetsと同じ配信経路へ揃える。
 app.notFound((context) => context.env.ASSETS.fetch(context.req.raw));

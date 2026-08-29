@@ -26,7 +26,9 @@ S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブ�
 VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID=<public-web-client-id>
 ```
 
-GitHubではRepository Secret `BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ同じ公開client IDを登録する。`deploy-cloudflare-workers.yml`がbuild時に`VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ渡す。最終bundleでは読める公開識別子だが、Secretに入れることでGitHub設定画面とActionsログでの偶発表示を抑える。未設定時、S-770は設定不足を表示し、通常OAuthへfallbackしない。
+GitHubでは`BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`をRepository VariableまたはSecretとして登録でき、現在の運用ではSecretへ登録している。SecretはRepository Secretsまたは`cloudflare-workers-preview` EnvironmentのSecretsへ置く。Production Environmentだけに登録しても、Preview Environmentで行うbuildからは参照できない。
+
+CloudflareのPreviewとRelease Candidate workflowは同名のVariableを先に参照し、未登録または空の場合にSecretを参照して、build時に`VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ渡す。最終bundleでは読める公開識別子であり、VariableとSecretの両方へ重複登録する必要はない。client secretはどちらにも置かない。未設定時、S-770は設定不足を表示し、通常OAuthへfallbackしない。
 
 ## 成功境界と人手確認
 
