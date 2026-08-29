@@ -1,6 +1,6 @@
 # ステージMind Map設計
 
-> 履歴資料。第25段階にステージ一覧は関連線・map metadataを持たない独立カードへ移行した。現行のステージ契約は各`stages/S-xxx/manifest.ts`、生成index、[アーキテクチャ判断](./architecture-decisions.md)を参照する。
+> 履歴資料。第25段階にステージ一覧は関連線・map metadataを持たない独立カードへ移行した。現行のステージ契約は各`src/stages/S-xxx/manifest.ts`、生成index、[アーキテクチャ判断](./architecture-decisions.md)を参照する。
 
 ## 目的
 

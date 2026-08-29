@@ -212,7 +212,7 @@ DR-019で追加承認したB05〜B09は、文字倍率4箱とは別にUser Prefe
 - 開始前に、アプリは音声とtranscriptを保存しないこと、browserの認識実装が外部serviceへ音声を送る可能性があることを説明する。`processLocally`、`available()`、`install()`は実験的な別機能として台帳に残すが、この箱の成功条件や代替routeにはしない。
 - final result、`end`、`error`、stage離脱でrecognitionをstop / abortし、取得したmicrophone trackがある実装ではtrackもstopする。transcript、confidence、alternatives、音声は進捗やDriveへ保存しない。
 - DR-063追加B02は1〜12文字のASCII小文字だけを受ける。i文字目をalphabetで+i shiftしてzからaへwrapする。変換結果はDOM、status、accessible nameへ表示せず、`SpeechSynthesisUtterance`へ一文字ずつ区切った`en-US` textとして渡す。
-- B02はtrustedな提出ごとに既存queueを`cancel()`してから一つのutteranceを` speak()`する。変換結果が`busycube`、すなわち入力が`aspuxouw`であり、そのutteranceが実際に`start`した後、取消・errorなしで`end`した時だけ開く。文字列一致だけ、`start`だけ、直接`busycube`を入力した場合では開かない。
+- B02はtrustedな提出ごとに既存queueを`cancel()`してから一つのutteranceを`speak()`する。変換結果が`busycube`、すなわち入力が`aspuxouw`であり、そのutteranceが実際に`start`した後、取消・errorなしで`end`した時だけ開く。文字列一致だけ、`start`だけ、直接`busycube`を入力した場合では開かない。
 - 空欄、ASCII小文字以外、13文字以上は発話しない。入力、変換結果、試行回数、voice情報、発話履歴は保存・同期・送信しない。再提出、reset、離脱、abort時は`speechSynthesis.cancel()`し、utterance listenerと参照を破棄する。
 - `speechSynthesis`、`SpeechSynthesisUtterance`、利用可能voiceのいずれかがない場合と発話errorではB02を未観測とし、録音音声、画面表示、Web Audioによる代替clearを作らない。
 - 人手確認: H-006, H-007, H-019, H-020, H-023, H-025, H-027。B01のpermission、取消、no-speech、network、言語差、候補列に加え、B02のvoice準備、文字読み、queue取消、start / end / error、離脱cleanupを確認する。
@@ -303,7 +303,7 @@ DR-019で追加承認したB05〜B09は、文字倍率4箱とは別にUser Prefe
 - B02: 実在しない乱数credential IDだけを指定した専用requestが `NotAllowedError` で拒否された場合に判定する。script abort、短時間timeout、設定errorは数えず、生体照合失敗とは表現しない。
 - 保存: credential ID、SPKI公開鍵、COSE algorithm、必要なtransportだけをlocal recordへ保存する。private key、生体情報、PIN、attestation objectは保存しない。
 - cleanup: ユーザー操作で `signalUnknownCredential()` をbest effortで呼び、local recordを消す。provider側の削除は保証できないため手動削除方法も案内し、progress resetでも残留警告を出す。
-- 公開条件: credentialはURL pathで分離できないため、S-380はBusycube専用host名またはcustom subdomainで提供する。GitHub Pagesの共用host配下pathだけでは本番有効化しない。
+- 公開条件: credentialはURL pathで分離できないため、S-380はBusycube専用host名またはcustom subdomainで提供する。Cloudflare Workersの専用hostを本番originにする。
 - 人手確認: H-006, H-019, H-020, H-023。作成cancel、認証cancel、対象鍵なし、署名検証、ES256 / RS256、provider同期、cleanup非対応を確認する。
 
 ### 不採用: memory-only Web Crypto
@@ -595,7 +595,7 @@ DR-019で追加承認したB05〜B09は、文字倍率4箱とは別にUser Prefe
 - 各条件が成立した瞬間に対応箱だけを開く。取引結果label、完了message、固定flagを表示しない。handler window内は承認、拒否、instrument選択に必要な非言語UIだけにし、任意のWeb UIを作れることを利用した別パズルを埋め込まない。
 - payer name / email / phone、billing / shipping address、card、実payment credential、実通貨を要求しない。架空response details、current attempt、wallet IDはmemory内の判定後に破棄し、永続化するのは通常のB01〜B04解決済みproblem IDだけとする。
 - cancel、error、非対応、登録失敗、JIT install UI非表示は未観測にする。resetと離脱ではpending requestを可能な範囲でabortし、handler window、message channel、listener、一時response参照を解放する。Service Worker登録の保持・解除は他のBusycube worker scopeと衝突しない専用cleanup設計にする。
-- fixture testはmethod manifestが2 appを列挙し、名前、worker scope、icon、共有runtimeを同梱することを検証する。H-050で公開browserの2候補UI、◇workerのtrusted event、両handler window、`complete("success")` / `complete("fail")`、同一handler `retry()`を実動作確認する。公開先は通常のGitHub Pagesではなく、method URLへ`Link: rel="payment-method-manifest"`を返せるmanaged static hostを使う。
+- fixture testはmethod manifestが2 appを列挙し、名前、worker scope、icon、共有runtimeを同梱することを検証する。H-050で公開browserの2候補UI、◇workerのtrusted event、両handler window、`complete("success")` / `complete("fail")`、同一handler `retry()`を実動作確認する。公開先はHono Workerがmethod URLへ`Link: rel="payment-method-manifest"`を返すCloudflare Workersにする。
 
 ## S-790 活字の鍵（DR-137追加、未実装）
 

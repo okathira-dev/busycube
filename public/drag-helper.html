@@ -48,7 +48,7 @@
       type: "start",
       round,
       asset: "window",
-    }, "*");
+    }, location.origin);
     event.dataTransfer.setData("text/uri-list", new URL(image.src, location.href).href);
     event.dataTransfer.setData("text/plain", `busycube-round:${round}:window`);
     event.dataTransfer.effectAllowed = "copy";

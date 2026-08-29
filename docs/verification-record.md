@@ -186,7 +186,7 @@ Blackbox初期△28件・×1件の対話判断、新規G-033〜G-059、既存ス
 | 入場オブジェクト | 合格 | 全ステージが `ProblemHandle` の定義・今回状態・安定した `solve` を利用し、移行用 `problemState` / ID別 `solve` を削除 |
 | 表示ラベル境界 | 合格 | 日英ラベルは `label` と画面表示だけに残し、ファイル、export、registry、URL、保存、テストの識別はIDへ固定 |
 | JSDoc | 合格 | 全35ファイルに `Gimmick`、`Uses`、`Success`、`Privacy/Permission`、`Cleanup`、`Human verification`。全件を人手台帳H-001〜H-025へ接続 |
-| 共有化 | 合格 | 複数のcaptureステージで意味が同じMediaStream全track停止だけを `stages/shared/media.ts` へ抽出 |
+| 共有化 | 合格 | 複数のcaptureステージで意味が同じMediaStream全track停止だけを `src/stages/shared/media.ts` へ抽出 |
 | TypeScript / Biome / markuplint | 合格 | `tsc --noEmit`、Busycube 64ファイルのBiome、BusycubeのHTML/TSX markup検査 |
 | Jest | 合格 | 16 suites / 99 tests。registry 35件、問題42件、S-200入力境界、Service Worker振り分けを含む |
 | production build | 合格 | Vite buildが35個の `S-xxx` chunkを個別生成。既存の他entryに関するexternal化・500kB警告だけ継続 |

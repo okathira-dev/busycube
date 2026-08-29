@@ -1,0 +1,82 @@
+:root {
+  color: #f7f3ff;
+  background: #100d1d;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.65;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #282043 0, #100d1d 46rem);
+}
+
+a {
+  color: #d8c5ff;
+}
+
+.page-shell {
+  width: min(100% - 2rem, 52rem);
+  margin: 0 auto;
+  padding: 3rem 0 4rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header__brand {
+  color: #ffd166;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.page-header h1 {
+  margin: 1rem 0 0;
+  font-size: clamp(2rem, 7vw, 3rem);
+}
+
+.language-note,
+.notice {
+  padding: 1rem 1.25rem;
+  border: 1px solid #554774;
+  border-radius: 0.9rem;
+  background: #1c172de6;
+}
+
+.language-note {
+  margin: 0 0 2rem;
+}
+
+.policy-section {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid #443a59;
+  border-radius: 1rem;
+  background: #1c172de6;
+}
+
+.policy-section h2,
+.policy-section h3 {
+  margin-top: 0;
+}
+
+.policy-section ul {
+  padding-left: 1.25rem;
+}
+
+.page-footer {
+  margin-top: 2rem;
+  color: #c8bed8;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 36rem) {
+  .page-shell {
+    width: min(100% - 1.5rem, 52rem);
+    padding-top: 1.5rem;
+  }
+}

@@ -1,0 +1,124 @@
+name: Release Cloudflare Worker
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: cloudflare-workers-production
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      production-url: ${{ steps.candidate_url.outputs.production-url }}
+    environment:
+      name: cloudflare-workers-preview
+      url: ${{ steps.candidate_url.outputs.candidate-url }}
+    env:
+      # 本番へ昇格する候補には、本番と同じ公開OAuth Client IDを埋め込む。
+      # Repository／Environment Variableを優先し、未設定時はSecretを参照する。
+      VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
+      VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Check
+        run: pnpm run check
+      - name: Test
+        run: pnpm run test:ci
+      - name: Build
+        run: pnpm run build
+      - name: Upload release candidate
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
+          # Viteのアプリケーションルートはsrc/なので、bundle済みWorkerの隣に
+          # 生成されたWrangler設定を明示する。
+          command: >-
+            versions upload
+            --tag main-${{ github.sha }}
+            --preview-alias release
+            --message "main at ${{ github.sha }}"
+            --config dist/busycube/wrangler.json
+      - name: Resolve candidate URL
+        id: candidate_url
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          response="$(curl --fail-with-body --silent --show-error \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/subdomain" \
+            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
+          subdomain="$(printf '%s' "$response" | jq --exit-status --raw-output '.result.subdomain')"
+          echo "candidate-url=https://release-busycube.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
+          echo "production-url=https://busycube.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
+      - name: Publish candidate summary
+        env:
+          CANDIDATE_URL: ${{ steps.candidate_url.outputs.candidate-url }}
+        run: |
+          {
+            echo "## Cloudflare Worker release candidate"
+            echo
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Version tag: \`main-${{ github.sha }}\`"
+            echo "- URL: $CANDIDATE_URL"
+            echo
+            echo "疎通確認に成功すると、このVersionを自動で本番へ昇格します。"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Smoke test candidate
+        env:
+          CANDIDATE_URL: ${{ steps.candidate_url.outputs.candidate-url }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --retry 12 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --retry-max-time 60 \
+            --output /dev/null \
+            "$CANDIDATE_URL/"
+
+  deploy:
+    needs: candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: cloudflare-workers-production
+      url: ${{ needs.candidate.outputs.production-url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-node-pnpm
+      - name: Promote verified version
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: pnpm
+          # mainへのマージをリリース承認とみなし、candidate jobで検証した
+          # 不変Versionを再buildせずにtagから解決して自動昇格する。
+          command: >-
+            versions deploy
+            --version-tag main-${{ github.sha }}@100%
+            --yes
+            --message "Promote main at ${{ github.sha }}"
+            --config wrangler.jsonc

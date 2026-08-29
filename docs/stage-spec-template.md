@@ -6,10 +6,10 @@
 
 - ステージID:
 - 表示ラベル（日英、後で推敲可）:
-- 実装ディレクトリ: `stages/S-xxx/`
-- manifest: `stages/S-xxx/manifest.ts`（ID、表示名、play条件、ローカル箱ID、lazy loadだけを置く）
-- stage module: `stages/S-xxx/stage.tsx`（箱の見た目、配置、解法を置く）
-- stage-localization: `stages/S-xxx/locale.ts`（UIに表示する日本語・英語を置く）
+- 実装ディレクトリ: `src/stages/S-xxx/`
+- manifest: `src/stages/S-xxx/manifest.ts`（ID、表示名、play条件、ローカル箱ID、lazy loadだけを置く）
+- stage module: `src/stages/S-xxx/stage.tsx`（箱の見た目、配置、解法を置く）
+- stage-localization: `src/stages/S-xxx/locale.ts`（UIに表示する日本語・英語を置く）
 - 対応ギミックID:
 - 問題箱ID:
 - 大区分:

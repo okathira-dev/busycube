@@ -5,11 +5,11 @@
 
 ## 全体像
 
-本作はGitHub Pagesから配信する静的Webアプリであり、通常プレイと進捗保存はブラウザ内だけで完結する。
+本作はCloudflare Workers Static Assetsから配信するWebアプリであり、通常プレイと進捗保存はブラウザ内だけで完結する。Hono Workerは静的assetを補完するHTTP responseだけを扱い、ゲーム進捗や個人データを保存しない。
 
 | 領域 | 方針 |
 | --- | --- |
-| 配信 | 既存Viteプロジェクトの独立したエントリとしてビルドし、GitHub Pagesへ配信する |
+| 配信 | 既存Viteプロジェクトの独立したエントリとしてビルドし、Cloudflare Workers Static Assetsへ配信する |
 | 基本スタック | 既存リポジトリのReact、TypeScript、Viteを利用する |
 | 通常プレイ | 自前APIサーバーへ依存しない |
 | 主進捗 | IndexedDBを主保存先とし、ブラウザ内に保存する |
@@ -104,9 +104,9 @@ APIが存在しても、必要なハードウェア、ドライバー、コー�
 | `StageBoxHandle` | ステージ入場中 | 箱の静的定義、今回の箱状態、安定した `solve` をstage moduleへ渡す |
 | 生成stage index | アプリ起動中 | 各manifestを集め、一覧・進捗・遷移が使う最小catalogueを提供する |
 
-個別実装は `stages/S-xxx/` を1ステージの境界とし、`manifest.ts`、`locale.ts`、`stage.tsx` と隣接する補助ロジック・テストを置く。`manifest.ts` は箱の構成を公開してよいが、箱のアイコン・色・手掛かり・配置・解法は知ってはならない。ステージの日本語・英語ラベルは推敲可能な表示コピーであり、ファイル名、コンポーネント名、registry key、URL、保存ID、CSS class、テスト名の識別には使わない。
+個別実装は `src/stages/S-xxx/` を1ステージの境界とし、`manifest.ts`、`locale.ts`、`stage.tsx` と隣接する補助ロジック・テストを置く。`manifest.ts` は箱の構成を公開してよいが、箱のアイコン・色・手掛かり・配置・解法は知ってはならない。ステージの日本語・英語ラベルは推敲可能な表示コピーであり、ファイル名、コンポーネント名、registry key、URL、保存ID、CSS class、テスト名の識別には使わない。
 
-複数ステージで同じ資源解放や同じ純粋判定を本当に共有する場合だけ `stages/shared/` へ置く。API固有の閾値、状態機械、権限分岐を見かけだけ共通化せず、検索時に1ステージの意図とライフサイクルを1ファイルで追えることを優先する。
+複数ステージで同じ資源解放や同じ純粋判定を本当に共有する場合だけ `src/stages/shared/` へ置く。API固有の閾値、状態機械、権限分岐を見かけだけ共通化せず、検索時に1ステージの意図とライフサイクルを1ファイルで追えることを優先する。
 
 各 `S-xxx/stage.tsx` のステージコンポーネント直前には、日本語で `目的`、`最初の一手`、`箱ごとの解法`、`開かない操作`、`使用API`、`権限・privacy`、`cleanup`、`対応環境`、`人手確認` を記録する。`@humanTest` のような独自タグは使わない。人手確認IDは[人手確認台帳](./human-test-matrix.md)に存在するIDだけを列挙する。
 
@@ -148,15 +148,15 @@ PWAは単なる配布手段ではなく、一部ステージの条件にもな�
 - 更新後に古いHTMLと新しいJavaScriptが混在しない
 - オフライン用キャッシュとゲーム進捗を混同しない
 - 開発環境では古いService Workerを安全に解除できる
-- GitHub Pagesのサブパスでもmanifestとアセットが解決できる
+- 専用hostのroot scopeでmanifestとassetが解決できる
 
 ## 配信とルーティング
 
-GitHub Pagesのリポジトリ配下パスと、既存Vite設定の相対アセット方針を尊重する。初期実装では、サーバー側rewriteを必要としない遷移を優先する。
+Cloudflare Workersの専用host rootと、Vite設定のroot-relative asset方針を使う。stage URLはquery parameterを使い、server-side rewriteを必要としない。
 
-[GitHub PagesのHTTPS](https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https)を公開前提とし、混在コンテンツを許さない。
+Cloudflare WorkersのHTTPSを公開前提とし、混在コンテンツを許さない。
 
-URL自体をギミックに使う場合も、通常の再読み込みで404にならない設計にする。URL表現を決める前に、GitHub Pages上の直接アクセスとPWA起動を人手で確認する。
+URL自体をギミックに使う場合も、通常の再読み込みで404にならない設計にする。URL表現を決める前に、Cloudflare Workers上の直接アクセスとPWA起動を人手で確認する。
 
 ## テスト可能性
 
@@ -186,7 +186,7 @@ URL自体をギミックに使う場合も、通常の再読み込みで404に�
 - 権限プロンプトをユーザージェスチャー内へ保つ箇所
 - イベントやストリームを明示的に破棄する箇所
 - 同期競合でデータを消さないためのマージ規則
-- GitHub PagesのサブパスやService Worker scopeに関する制約
+- Cloudflare Workersのroot scopeやHTTP response headerに関する制約
 - セキュリティ・プライバシー上、あえて収集しない情報
 
 処理の逐語訳や、変更時にすぐ嘘になるコメントは避ける。

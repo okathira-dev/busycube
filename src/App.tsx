@@ -122,7 +122,7 @@ export function App() {
   return (
     <div className="app-shell">
       <header className="hero">
-        <a className="eyebrow" href="../index.html">
+        <a className="eyebrow" href="/">
           {productCopy.descriptor}
         </a>
         <h1>{productCopy.brandName}</h1>
@@ -326,6 +326,14 @@ export function App() {
               </div>
             )}
             <p className="privacy-note">{copy.privacy}</p>
+            <div className="about-links">
+              <a href={`./privacy/index.html?locale=${locale}`}>
+                {copy.privacyPolicy}
+              </a>
+              <a href={`./terms/index.html?locale=${locale}`}>
+                {copy.termsOfService}
+              </a>
+            </div>
           </section>
         )}
 
@@ -334,8 +342,11 @@ export function App() {
             <h2 id={headingIds.about}>{copy.about}</h2>
             <p>{copy.aboutBody}</p>
             <div className="about-links">
-              <a href="./docs/privacy-and-permissions.md">
-                {uiText(locale, "privacyPermissions")}
+              <a href={`./privacy/index.html?locale=${locale}`}>
+                {copy.privacyPolicy}
+              </a>
+              <a href={`./terms/index.html?locale=${locale}`}>
+                {copy.termsOfService}
               </a>
               <a href={`./licenses/index.html?locale=${locale}`}>
                 {copy.thirdPartyLicenses}

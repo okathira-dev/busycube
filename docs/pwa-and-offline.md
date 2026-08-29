@@ -2,9 +2,9 @@
 
 ## 配置とscope
 
-Service WorkerはBusycubeの `service-worker.js` から `./` scopeで登録する。公開時のscopeはリポジトリ全体ではなく、常に `.../busycube/` 配下だけである。トップページや他の実験アプリのリクエストを横取りしない。
+Service WorkerはBusycubeの `/service-worker.js` から `/` scopeで登録する。Cloudflare Workers用の専用hostだけをscopeにし、他のアプリのrequestを横取りしない。
 
-manifestの `start_url`、`id`、`scope` とアイコンはすべて相対URLにし、GitHub Pagesのリポジトリ名が変わっても同じ成果物を使えるようにする。
+manifestの `start_url`、`id`、`scope` とアイコンはroot-relative URLに統一する。専用hostのroot配信を前提にすることで、PWA起動・Service Worker・静的assetのURLを一致させる。
 
 ## キャッシュ方針
 
@@ -14,7 +14,7 @@ manifestの `start_url`、`id`、`scope` とアイコンはすべて相対URLに
 - Viteが生成する `/assets/` 配下のcontent hash付きJS、CSS、JSON、Wasmだけをcache-firstで実行時保存する。hashが変われば別URLになるため、古いchunkを新しいHTMLへ混在させない。
 - ソースコード、HMR、任意のGET、APIレスポンスはキャッシュ対象にしない。
 - 進捗はCache Storageへ置かず、IndexedDBだけを正とする。
-- キャッシュ名は用途別の `busycube-shell-v2` と `busycube-assets-v2`。版を上げたactivate時に過去の `busycube-` キャッシュだけを削除する。
+- キャッシュ名は用途別の `busycube-shell-v6` と `busycube-assets-v6`。版を上げたactivate時に過去の `busycube-` キャッシュだけを削除する。
 - 更新待機中は設定画面に明示操作を表示し、プレイ途中に自動再読込しない。
 
 初回訪問前の完全オフライン起動はできない。少なくとも一度オンラインでアプリ本体を読み込んだ後にオフライン確認を行う。遅延ロードするステージは、そのstage chunkを一度オンラインで読み込んだ後からオフラインで利用できる。

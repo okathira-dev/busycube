@@ -102,7 +102,7 @@ D-148でPOC-035〜054を全件レビューし、PoCのpositive / negativeとは�
 | 045 MessageChannel | IMPLEMENTED / MANUAL | iframeへtransferしたMessagePortだけでready/ackを交換 | iframe load、port close、wrong-port負例 |
 | 046 File System Access | IMPLEMENTED / MANUAL | `showSaveFilePicker()`の同一handleを再読込 | OS editor変更、permission revoke、cancel |
 | 047 File and Directory Entries | IMPLEMENTED / MANUAL | Explorerのdirectory dropを再帰的`readEntries()`で走査 | nested tree、flat file拒否、drag cleanup |
-| 048 Compression Streams | IMPLEMENTED / PASS-CANDIDATE | gzip → `DecompressionStream` → exact payloadのstream照合 |形式負例と全量bufferを避けた製品境界 |
+| 048 Compression Streams | IMPLEMENTED / PASS-CANDIDATE | gzip → `DecompressionStream` → exact payloadのstream照合 | 形式負例と全量bufferを避けた製品境界 |
 | 049 Streams backpressure | IMPLEMENTED / PASS-CANDIDATE | `WritableStream`遅延sinkとwriter.ready / desiredSizeを記録 | backpressure値、abort、再実行 |
 | 050 Trusted Types | IMPLEMENTED / PARTIAL | policy由来HTMLをsinkへ渡す入口を実装 | CSP `require-trusted-types-for` fixtureでenforcementを確認 |
 | 051 Fullscreen | IMPLEMENTED / MANUAL | 実fullscreen elementとfullscreenchangeを観測 | S-350-B08との差分、Esc、離脱cleanup |

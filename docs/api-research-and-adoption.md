@@ -34,7 +34,7 @@ GoogleはAttribution Reporting APIのretireを発表し、[Privacy Sandbox featu
 
 新規G-077 / S-780は当初「三つの財布（仮）」を任意Labs 3箱として採用し、D-147で「四つの財布」へ改訂した。B01はhandler windowで承認responseをmerchantが検証して`complete("success")`へ到達した時、B02は意図的拒否responseを検証して`complete("fail")`へ到達した時、B03は最初のresponseに`retry()`を行い、同じhandlerで二度目のresponseを成功完了した時に開く。これら3箱はwalletを限定しない。B04はbrowser所有chooserで◇walletを選び、そのworkerへcurrent requestのtrusted `PaymentRequestEvent`が届いた時に開き、その後のresponseは限定しない。
 
-実Google Pay / Apple Pay、card、実通貨、payer / shipping情報、payment credentialを要求せず、game製payment sheet、handler不在、browser cancel、例外を代替clearにしない。handler windowはpayment lifecycleに必要な非言語操作だけに制限し、一般的なWebパズルを埋め込まない。候補UI、trusted event、失敗完了、同一handler retryを実browserで確認してから公開する。DR-128のPayment Request却下は維持し、Payment Requestは架空handlerを起動する配線としてのみ使う。通常のGitHub Pagesだけではmethod URLの`Link` response headerを設定できないため、header ruleを持つmanaged static hostを公開条件にする。当初の計画値は履歴であり、現行件数は実装台帳を正とする。
+実Google Pay / Apple Pay、card、実通貨、payer / shipping情報、payment credentialを要求せず、game製payment sheet、handler不在、browser cancel、例外を代替clearにしない。handler windowはpayment lifecycleに必要な非言語操作だけに制限し、一般的なWebパズルを埋め込まない。候補UI、trusted event、失敗完了、同一handler retryを実browserで確認してから公開する。DR-128のPayment Request却下は維持し、Payment Requestは架空handlerを起動する配線としてのみ使う。method URLの`Link` response headerはCloudflare Workers上のHono Workerが返す。当初の計画値は履歴であり、現行件数は実装台帳を正とする。
 
 ## 第11段階 Payment Request API追加監査
 

@@ -124,4 +124,4 @@ H-025は全行に共通する公開前ゲートである。コード上は全問
 | 永続化 | ステージはIndexedDBへ直接触らず、共通進捗コントローラーへ解決・観測だけを渡す |
 | 再挑戦 | `StageHost` が入場時の永続履歴snapshotと今回開いた集合を分離し、入場ごとに閉箱へ戻す。AbortSignalとReact effect cleanupでイベント、stream、lock、channelを破棄する |
 
-ステージURLは `index.html?stage=S-xxx` とし、GitHub Pagesでrewriteを要求しない。履歴の戻る・進むと直接URL起動の両方を同じ入口で扱う。
+ステージURLは `/?stage=S-xxx` とし、Cloudflare Workersでrewriteを要求しない。履歴の戻る・進むと直接URL起動の両方を同じ入口で扱う。

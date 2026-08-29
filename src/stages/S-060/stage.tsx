@@ -118,7 +118,7 @@ function S060Stage(props: Props) {
       return;
     }
     setStatus(stageText(props.locale, locale.accepted));
-    const receiver = new URL("./index.html", window.location.href);
+    const receiver = new URL("./", window.location.href);
     receiver.searchParams.set("stage", manifest.id);
     receiver.searchParams.set("offline-beacon", nonce);
     window.location.assign(receiver);

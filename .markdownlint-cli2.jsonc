@@ -1,0 +1,46 @@
+{
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD024": {
+      "siblings_only": true
+    },
+    "MD033": false
+  },
+  "globs": ["**/*.md", "**/*.mdc"],
+  "ignores": ["node_modules/**", "dist/**", "coverage/**", "skills/**"],
+  "overrides": [
+    {
+      // The ledger intentionally repeats a heading for each dated consultation.
+      "filter": ["docs/blackbox-mechanism-ledger.md"],
+      "config": {
+        "MD024": false
+      },
+      "combine": "merge"
+    },
+    {
+      // These historical snapshots retain their original multi-paragraph notices.
+      "filter": [
+        "docs/current-environment-implementation-plan.md",
+        "docs/gimmick-backlog.md",
+        "docs/gimmick-coverage-plan.md",
+        "docs/poc-results.md",
+        "docs/stage-rollout-plan.md"
+      ],
+      "config": {
+        "MD028": false
+      },
+      "combine": "merge"
+    },
+    {
+      // Imported source documents preserve their source title hierarchy and tables.
+      "filter": ["docs/source/**/*.md"],
+      "config": {
+        "MD025": false,
+        "MD036": false,
+        "MD060": false
+      },
+      "combine": "merge"
+    }
+  ]
+}
