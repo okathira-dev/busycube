@@ -2,10 +2,11 @@ name: Preview Cloudflare Worker
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, closed]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
+  pull-requests: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -19,26 +20,42 @@ jobs:
     # fork由来またはDependabotのPull RequestにはWorkersを変更できる
     # Actions Secretを渡さない。通常のbuild checkは別Workflowで実行する。
     if: >-
-      github.event.action != 'closed' &&
       github.event.pull_request.user.login != 'dependabot[bot]' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
-      preview-url: ${{ steps.preview_url.outputs.url }}
+      preview-url: ${{ steps.preview_url.outputs.preview-url }}
     environment:
       name: cloudflare-workers-preview
-      url: ${{ steps.preview_url.outputs.url }}
+      url: ${{ steps.preview_url.outputs.preview-url }}
     env:
       # OAuth Client IDは公開bundleへ入る値である。Repository／Environment
       # Variableを優先し、未設定時はSecretを参照する。
       VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
       VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
+      CLOUDFLARE_WORKER_NAME: busycube
+      CLOUDFLARE_VERSION_TAG: pr-${{ github.event.pull_request.number }}-${{ github.repository_id }}-${{ github.run_id }}
+      CLOUDFLARE_VERSION_MESSAGE: >-
+        PR #${{ github.event.pull_request.number }} repository ${{ github.repository }}
+        head ${{ github.event.pull_request.head.sha }} merge ${{ github.sha }} run ${{ github.run_id }}
+      CLOUDFLARE_PREVIEW_ALIAS: pr-${{ github.event.pull_request.number }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
+      - name: Reject stale PR run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          current_head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+          if [ "$current_head_sha" != "$EXPECTED_HEAD_SHA" ]; then
+            echo "このWorkflow runは古いPR commitを指しているため、Previewを更新しません。" >&2
+            exit 1
+          fi
       - name: Setup toolchain
         uses: ./.github/actions/setup-node-pnpm
       - name: Check
@@ -47,54 +64,61 @@ jobs:
         run: pnpm run test:ci
       - name: Build
         run: pnpm run build
-      - name: Deploy PR preview
+      - name: Find existing PR preview version
+        id: existing_version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-ci.ts find-version
+      - name: Upload PR preview version
+        id: upload
+        if: steps.existing_version.outputs.found != 'true'
+        continue-on-error: true
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: pnpm
-          # PRごとに本番とは別のWorkerを作り、同じPRの更新時だけ上書きする。
-          # 本番Workerへ未確認のPR Versionをdeployしない。
+          # 本番WorkerへVersionだけを追加し、production trafficは変更しない。
+          # 同じPR番号のAliasは新しいrunのVersionへ付け替える。
           command: >-
-            deploy
-            --name busycube-pr-${{ github.event.pull_request.number }}
-            --tag pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
-            --message "PR #${{ github.event.pull_request.number }} at ${{ github.event.pull_request.head.sha }}"
+            versions upload
+            --tag ${{ env.CLOUDFLARE_VERSION_TAG }}
+            --preview-alias ${{ env.CLOUDFLARE_PREVIEW_ALIAS }}
+            --message "${{ env.CLOUDFLARE_VERSION_MESSAGE }}"
+            --strict
             --config dist/busycube/wrangler.json
+      - name: Resolve PR preview version
+        id: preview_version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-ci.ts wait-version
       - name: Resolve preview URL
         id: preview_url
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          WORKER_NAME: busycube-pr-${{ github.event.pull_request.number }}
-        run: |
-          response="$(curl --fail-with-body --silent --show-error \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/subdomain" \
-            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
-          subdomain="$(printf '%s' "$response" | jq --exit-status --raw-output '.result.subdomain')"
-          echo "url=https://${WORKER_NAME}.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
+        run: node scripts/cloudflare-ci.ts resolve-urls
       - name: Publish preview summary
         env:
-          PREVIEW_URL: ${{ steps.preview_url.outputs.url }}
+          PREVIEW_URL: ${{ steps.preview_url.outputs.preview-url }}
+          VERSION_ID: ${{ steps.preview_version.outputs.version-id }}
         run: |
           {
             echo "## Cloudflare Worker preview"
             echo
             echo "- PR: #${{ github.event.pull_request.number }}"
-            echo "- Commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "- Head commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "- Tested merge commit: \`${{ github.sha }}\`"
+            echo "- Version tag: \`$CLOUDFLARE_VERSION_TAG\`"
+            echo "- Version ID: \`$VERSION_ID\`"
             echo "- URL: $PREVIEW_URL"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Smoke test preview
         env:
-          PREVIEW_URL: ${{ steps.preview_url.outputs.url }}
-        run: |
-          curl --fail-with-body --silent --show-error \
-            --retry 12 \
-            --retry-all-errors \
-            --retry-delay 5 \
-            --retry-max-time 60 \
-            --output /dev/null \
-            "$PREVIEW_URL/"
+          BUSYCUBE_BASE_URL: ${{ steps.preview_url.outputs.preview-url }}
+        run: node scripts/cloudflare-ci.ts smoke
 
   publish:
     needs: preview
@@ -117,7 +141,8 @@ jobs:
             '## Cloudflare Worker preview' \
             '' \
             "- [Previewを開く]($PREVIEW_URL)" \
-            "- Commit: $HEAD_SHA")"
+            "- Commit: $HEAD_SHA" \
+            '- PR終了後もURLは残り、CloudflareのAlias保持上限で順次失効します。')"
           comment_id="$(gh api --paginate \
             "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
             --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- busycube-cloudflare-preview -->"))) | .id' \
@@ -129,58 +154,5 @@ jobs:
           else
             gh api --method POST \
               "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
-              --raw-field "body=$body" >/dev/null
-          fi
-
-  cleanup:
-    # PR内のWorkflow変更にcleanup用credentialを渡さず、base側のclosed eventで実行する。
-    if: >-
-      github.event.action == 'closed' &&
-      github.event.pull_request.user.login != 'dependabot[bot]' &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      pull-requests: write
-    environment:
-      name: cloudflare-workers-preview
-    steps:
-      - name: Delete PR preview
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          WORKER_NAME: busycube-pr-${{ github.event.pull_request.number }}
-        run: |
-          response_file="$(mktemp)"
-          status="$(curl --silent --show-error \
-            --output "$response_file" \
-            --write-out '%{http_code}' \
-            --request DELETE \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${WORKER_NAME}" \
-            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
-          if [ "$status" != '200' ] && [ "$status" != '204' ] && [ "$status" != '404' ]; then
-            echo "PR Preview Workerの削除に失敗しました（HTTP $status）。" >&2
-            cat "$response_file" >&2
-            exit 1
-          fi
-          echo "${WORKER_NAME}を削除しました。" >> "$GITHUB_STEP_SUMMARY"
-      - name: Mark preview as deleted
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          comment_id="$(gh api --paginate \
-            "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
-            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- busycube-cloudflare-preview -->"))) | .id' \
-            | head -n 1)"
-          if [ -n "$comment_id" ]; then
-            body="$(printf '%s\n' \
-              '<!-- busycube-cloudflare-preview -->' \
-              '## Cloudflare Worker preview' \
-              '' \
-              'PRが終了したため、Preview Workerを削除しました。')"
-            gh api --method PATCH \
-              "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
               --raw-field "body=$body" >/dev/null
           fi

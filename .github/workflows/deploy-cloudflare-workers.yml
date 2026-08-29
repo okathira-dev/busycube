@@ -20,16 +20,19 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    outputs:
-      production-url: ${{ steps.candidate_url.outputs.production-url }}
     environment:
       name: cloudflare-workers-preview
-      url: ${{ steps.candidate_url.outputs.candidate-url }}
+      url: ${{ steps.candidate_url.outputs.preview-url }}
     env:
       # 本番へ昇格する候補には、本番と同じ公開OAuth Client IDを埋め込む。
       # Repository／Environment Variableを優先し、未設定時はSecretを参照する。
       VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
       VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID || secrets.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
+      CLOUDFLARE_WORKER_NAME: busycube
+      CLOUDFLARE_VERSION_TAG: main-${{ github.repository_id }}-${{ github.run_id }}
+      CLOUDFLARE_VERSION_MESSAGE: >-
+        main repository ${{ github.repository }} at ${{ github.sha }} run ${{ github.run_id }}
+      CLOUDFLARE_PREVIEW_ALIAS: release-${{ github.run_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -43,56 +46,62 @@ jobs:
         run: pnpm run test:ci
       - name: Build
         run: pnpm run build
+      - name: Find existing release candidate version
+        id: existing_version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-ci.ts find-version
       - name: Upload release candidate
+        id: upload
+        if: steps.existing_version.outputs.found != 'true'
+        continue-on-error: true
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: pnpm
           # Viteのアプリケーションルートはsrc/なので、bundle済みWorkerの隣に
-          # 生成されたWrangler設定を明示する。
+          # 生成されたWrangler設定を明示する。Versionだけを追加しtrafficは変えない。
           command: >-
             versions upload
-            --tag main-${{ github.sha }}
-            --preview-alias release
-            --message "main at ${{ github.sha }}"
+            --tag ${{ env.CLOUDFLARE_VERSION_TAG }}
+            --preview-alias ${{ env.CLOUDFLARE_PREVIEW_ALIAS }}
+            --message "${{ env.CLOUDFLARE_VERSION_MESSAGE }}"
+            --strict
             --config dist/busycube/wrangler.json
+      - name: Resolve release candidate version
+        id: candidate_version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-ci.ts wait-version
       - name: Resolve candidate URL
         id: candidate_url
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          response="$(curl --fail-with-body --silent --show-error \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/subdomain" \
-            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
-          subdomain="$(printf '%s' "$response" | jq --exit-status --raw-output '.result.subdomain')"
-          echo "candidate-url=https://release-busycube.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
-          echo "production-url=https://busycube.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
+        run: node scripts/cloudflare-ci.ts resolve-urls
       - name: Publish candidate summary
         env:
-          CANDIDATE_URL: ${{ steps.candidate_url.outputs.candidate-url }}
+          CANDIDATE_URL: ${{ steps.candidate_url.outputs.preview-url }}
+          VERSION_ID: ${{ steps.candidate_version.outputs.version-id }}
         run: |
           {
             echo "## Cloudflare Worker release candidate"
             echo
             echo "- Commit: \`${{ github.sha }}\`"
-            echo "- Version tag: \`main-${{ github.sha }}\`"
+            echo "- Workflow run: \`${{ github.run_id }}\` (attempt \`${{ github.run_attempt }}\`)"
+            echo "- Version tag: \`$CLOUDFLARE_VERSION_TAG\`"
+            echo "- Version ID: \`$VERSION_ID\`"
             echo "- URL: $CANDIDATE_URL"
             echo
-            echo "疎通確認に成功すると、このVersionを自動で本番へ昇格します。"
+            echo "疎通確認に成功すると、このVersion IDを自動で本番へ昇格します。"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Smoke test candidate
         env:
-          CANDIDATE_URL: ${{ steps.candidate_url.outputs.candidate-url }}
-        run: |
-          curl --fail-with-body --silent --show-error \
-            --retry 12 \
-            --retry-all-errors \
-            --retry-delay 5 \
-            --retry-max-time 60 \
-            --output /dev/null \
-            "$CANDIDATE_URL/"
+          BUSYCUBE_BASE_URL: ${{ steps.candidate_url.outputs.preview-url }}
+        run: node scripts/cloudflare-ci.ts smoke
 
   deploy:
     needs: candidate
@@ -100,7 +109,12 @@ jobs:
     timeout-minutes: 15
     environment:
       name: cloudflare-workers-production
-      url: ${{ needs.candidate.outputs.production-url }}
+      url: ${{ steps.production_url.outputs.production-url }}
+    env:
+      CLOUDFLARE_WORKER_NAME: busycube
+      CLOUDFLARE_VERSION_TAG: main-${{ github.repository_id }}-${{ github.run_id }}
+      CLOUDFLARE_VERSION_MESSAGE: >-
+        main repository ${{ github.repository }} at ${{ github.sha }} run ${{ github.run_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -108,17 +122,63 @@ jobs:
           persist-credentials: false
       - name: Setup toolchain
         uses: ./.github/actions/setup-node-pnpm
+      - name: Resolve verified version
+        id: target_version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-ci.ts wait-version
+      - name: Resolve production URL
+        id: production_url
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cloudflare-ci.ts resolve-urls
+      - name: Check current deployment
+        id: current_deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_VERSION_ID: ${{ steps.target_version.outputs.version-id }}
+        run: node scripts/cloudflare-ci.ts deployment-status
       - name: Promote verified version
+        id: promote
+        if: steps.current_deployment.outputs.deployed != 'true'
+        continue-on-error: true
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           packageManager: pnpm
-          # mainへのマージをリリース承認とみなし、candidate jobで検証した
-          # 不変Versionを再buildせずにtagから解決して自動昇格する。
+          # tagは相関付けだけに使い、candidate jobで検証した不変Versionを
+          # 一意なVersion IDで指定する。Static Assetsのversion skewを避けるため100%にする。
           command: >-
             versions deploy
-            --version-tag main-${{ github.sha }}@100%
+            ${{ steps.target_version.outputs.version-id }}@100%
             --yes
-            --message "Promote main at ${{ github.sha }}"
+            --message "Promote main at ${{ github.sha }} from run ${{ github.run_id }}"
             --config wrangler.jsonc
+      - name: Confirm production deployment
+        id: confirmed_deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_VERSION_ID: ${{ steps.target_version.outputs.version-id }}
+        run: node scripts/cloudflare-ci.ts wait-deployment
+      - name: Smoke test production
+        env:
+          BUSYCUBE_BASE_URL: ${{ steps.production_url.outputs.production-url }}
+        run: node scripts/cloudflare-ci.ts smoke
+      - name: Publish production summary
+        env:
+          PRODUCTION_URL: ${{ steps.production_url.outputs.production-url }}
+          VERSION_ID: ${{ steps.target_version.outputs.version-id }}
+        run: |
+          {
+            echo "## Cloudflare Worker production"
+            echo
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Workflow run: \`${{ github.run_id }}\` (attempt \`${{ github.run_attempt }}\`)"
+            echo "- Version ID: \`$VERSION_ID\`"
+            echo "- URL: $PRODUCTION_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
