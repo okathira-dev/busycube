@@ -84,7 +84,9 @@ Merge Queueを有効にする場合、required checkを`merge_group` eventでも
 https://busycube-pr-<number>.<account-subdomain>.workers.dev
 ```
 
-同じPRの再実行では同じWorkerを更新し、別PRのPreviewには影響しない。URLはWorkflow runのSummaryで確認する。PRをマージまたはクローズすると`closed` eventのcleanup jobがWorkerを削除し、URLも無効になる。Preview Workerが作られる前にPRを閉じた場合や、すでに削除済みの場合もcleanupは成功扱いにする。forkからのPRはCloudflare credentialへアクセスさせず、remote Preview jobをskipする。
+同じPRの再実行では同じWorkerを更新し、別PRのPreviewには影響しない。URLはPRの会話欄にある`Cloudflare Worker preview`コメントと`View deployment`ボタンへ表示し、Workflow runのSummaryにも残す。再実行時は既存コメントを更新し、コメントを増やさない。
+
+PRをマージまたはクローズすると`closed` eventのcleanup jobがWorkerを削除し、PRコメントも削除済み表示へ更新する。Preview Workerが作られる前にPRを閉じた場合や、すでに削除済みの場合もcleanupは成功扱いにする。forkからのPRはCloudflare credentialへアクセスさせず、remote Preview jobをskipする。
 
 Preview URLは公開URLである。Google OAuthの最終originには使わず、通常play、直接stage URL、manifest、Service Worker、PWA、Hono route、Payment Handler、security headerを確認する。
 

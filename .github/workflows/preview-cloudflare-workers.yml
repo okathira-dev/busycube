@@ -24,8 +24,11 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      preview-url: ${{ steps.preview_url.outputs.url }}
     environment:
       name: cloudflare-workers-preview
+      url: ${{ steps.preview_url.outputs.url }}
     env:
       # OAuth Client IDは公開bundleへ入る値である。Repository／Environment
       # Variableを優先し、未設定時はSecretを参照する。
@@ -93,6 +96,42 @@ jobs:
             --output /dev/null \
             "$PREVIEW_URL/"
 
+  publish:
+    needs: preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Publish preview URL to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PREVIEW_URL: ${{ needs.preview.outputs.preview-url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          marker='<!-- busycube-cloudflare-preview -->'
+          body="$(printf '%s\n' \
+            "$marker" \
+            '## Cloudflare Worker preview' \
+            '' \
+            "- [Previewを開く]($PREVIEW_URL)" \
+            "- Commit: $HEAD_SHA")"
+          comment_id="$(gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- busycube-cloudflare-preview -->"))) | .id' \
+            | head -n 1)"
+          if [ -n "$comment_id" ]; then
+            gh api --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
+              --raw-field "body=$body" >/dev/null
+          else
+            gh api --method POST \
+              "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+              --raw-field "body=$body" >/dev/null
+          fi
+
   cleanup:
     # PR内のWorkflow変更にcleanup用credentialを渡さず、base側のclosed eventで実行する。
     if: >-
@@ -101,6 +140,9 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
     environment:
       name: cloudflare-workers-preview
     steps:
@@ -123,3 +165,22 @@ jobs:
             exit 1
           fi
           echo "${WORKER_NAME}を削除しました。" >> "$GITHUB_STEP_SUMMARY"
+      - name: Mark preview as deleted
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          comment_id="$(gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- busycube-cloudflare-preview -->"))) | .id' \
+            | head -n 1)"
+          if [ -n "$comment_id" ]; then
+            body="$(printf '%s\n' \
+              '<!-- busycube-cloudflare-preview -->' \
+              '## Cloudflare Worker preview' \
+              '' \
+              'PRが終了したため、Preview Workerを削除しました。')"
+            gh api --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
+              --raw-field "body=$body" >/dev/null
+          fi

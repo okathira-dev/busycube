@@ -20,8 +20,11 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      production-url: ${{ steps.candidate_url.outputs.production-url }}
     environment:
       name: cloudflare-workers-preview
+      url: ${{ steps.candidate_url.outputs.candidate-url }}
     env:
       # 本番へ昇格する候補には、本番と同じ公開OAuth Client IDを埋め込む。
       # Repository／Environment Variableを優先し、未設定時はSecretを参照する。
@@ -64,10 +67,11 @@ jobs:
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/subdomain" \
             --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
           subdomain="$(printf '%s' "$response" | jq --exit-status --raw-output '.result.subdomain')"
-          echo "url=https://release-busycube.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
+          echo "candidate-url=https://release-busycube.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
+          echo "production-url=https://busycube.${subdomain}.workers.dev" >> "$GITHUB_OUTPUT"
       - name: Publish candidate summary
         env:
-          CANDIDATE_URL: ${{ steps.candidate_url.outputs.url }}
+          CANDIDATE_URL: ${{ steps.candidate_url.outputs.candidate-url }}
         run: |
           {
             echo "## Cloudflare Worker release candidate"
@@ -80,7 +84,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Smoke test candidate
         env:
-          CANDIDATE_URL: ${{ steps.candidate_url.outputs.url }}
+          CANDIDATE_URL: ${{ steps.candidate_url.outputs.candidate-url }}
         run: |
           curl --fail-with-body --silent --show-error \
             --retry 12 \
@@ -96,6 +100,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: cloudflare-workers-production
+      url: ${{ needs.candidate.outputs.production-url }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
