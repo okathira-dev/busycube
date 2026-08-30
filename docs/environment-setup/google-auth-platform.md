@@ -28,7 +28,7 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 - アクセストークンを同期中のメモリだけに置くこと
 - ローカル進捗、Driveバックアップ、接続解除を別々に扱うこと
 
-公開ページの本文は`src/privacy/index.html`と`src/terms/index.html`を正本とする。設計上の詳しい方針は[権限・プライバシー方針](./privacy-and-permissions.md)に置く。
+公開ページの本文は`src/privacy/index.html`と`src/terms/index.html`を正本とする。設計上の詳しい方針は[権限・プライバシー方針](../specifications/privacy-and-permissions.md)に置く。
 
 ## Console設定手順
 
@@ -46,14 +46,14 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 
 Google Auth Platformの`Verify branding`は未完了である。Google DriveとFedCMの本番originにおける基本動作確認とは分けて、一般公開前に完了させる人手作業として扱う。
 
-Google Cloud Consoleで`Verify branding`が完了し、必要な公開操作まで終えた後、この記述と[リリース準備状況](./release-readiness.md)を更新する。未完了の間は、ブランディング検証済みとは表記しない。
+Google Cloud Consoleで`Verify branding`が完了し、必要な公開操作まで終えた後、この記述と[残作業](../notes/remaining-work.md)を更新する。未完了の間は、ブランディング検証済みとは表記しない。
 
 ## OAuth Clientとの対応
 
 | 機能 | Client ID | 設定文書 |
 | --- | --- | --- |
-| 任意のGoogle Driveバックアップ | `VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` | [Google Driveバックアップの設定と運用](./google-drive-setup.md) |
-| S-770のGoogle FedCM | `VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID` | [Google FedCM設定](./google-fedcm-setup.md) |
+| 任意のGoogle Driveバックアップ | `VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID` | [Google Driveバックアップの設定と運用](./google-drive.md) |
+| S-770のGoogle FedCM | `VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID` | [Google FedCM設定](./google-fedcm.md) |
 
 いずれもWeb applicationのClient IDを使う。Client IDは公開識別子であり、Client Secret、access token、refresh tokenはリポジトリ、GitHub Actions、Vite環境変数、配信物へ置かない。
 

@@ -6,7 +6,7 @@
 
 | 判定 | 意味 |
 | --- | --- |
-| 必須 | 初期リリースまたは該当ステージ公開前に合格が必要 |
+| 必須 | リリースまたは該当ステージ公開前に合格が必要 |
 | 条件付き必須 | 対象環境向けステージを公開する場合に合格が必要 |
 | 探索 | 対応可否やUXを知るための調査。未合格でも全体を止めない |
 
@@ -29,7 +29,7 @@
 
 ## 環境カバレッジ
 
-| 環境 | 初期版 | 用途 |
+| 環境 | リリース判定 | 用途 |
 | --- | --- | --- |
 | Windows + Chrome Stable | 必須 | 主開発・Baseline寄り・Chromium固有機能 |
 | Windows + Firefox Stable | 必須 | Baseline差、履歴、保存、権限差 |
@@ -41,7 +41,7 @@
 | Experimental対応環境 | ステージごと | Experimentalステージの公開判断 |
 | ペン入力対応端末 | ステージごと | Pointer Eventsのmouse、touch、pen識別 |
 
-初期版で用意できない環境は、該当ステージを未検証として明示し、推測だけで対応済みにしない。
+リリース時に用意できない環境は、該当ステージを未検証として明示し、推測だけで対応済みにしない。
 
 ## 確認ケース一覧
 
@@ -58,7 +58,7 @@
 | H-009 | Gamepad | 未接続、接続、切断、複数パッド、標準外マッピングを確認する | G-013 | 条件付き必須 |
 | H-010 | Bluetooth | 対応OSとブラウザで選択、キャンセル、範囲外、切断、再接続を確認する | G-025 | 条件付き必須 |
 | H-011 | HID / USB / MIDI | 対応機器で許可、データ受信、抜去、再接続、別機器選択を確認する | G-026 | 条件付き必須 |
-| H-012 | Screen Capture / PiP | 共有対象選択、キャンセル、共有停止、PiP終了、複数画面、別tabのmind map外縁marker探索、capture frame decode、直接URL非clearを確認する。PiPはS-350のnative playerにbrowserがcontrolを提示する環境で入場し、実`enterpictureinpicture`／`leavepictureinpicture`として観測できるか確認する。page製PiP要求は製品経路にしない | G-012, G-020 | 条件付き必須 |
+| H-012 | Screen Capture / PiP | 共有対象選択、キャンセル、共有停止、PiP終了、複数画面、別tabのcatalogue外縁marker探索、capture frame decode、直接URL非clearを確認する。PiPはS-350のnative playerにbrowserがcontrolを提示する環境で入場し、実`enterpictureinpicture`／`leavepictureinpicture`として観測できるか確認する。page製PiP要求は製品経路にしない | G-012, G-020 | 条件付き必須 |
 | H-013 | 複数タブ・窓 | 2タブ、3タブ、片方の終了、同時更新、ロック待機を確認する | G-017, G-018, G-022, G-049 | 必須 |
 | H-014 | Clipboard / File / Share | 権限、キャンセル、空データ、大きなファイル、共有先なしを確認する | G-006, G-007, G-021, G-042, G-048, G-049 | 必須 |
 | H-015 | Drive単一端末 | 接続、初回作成、再同期、失効、キャンセル、破損バックアップからの回復 | G-030 | 必須 |
@@ -95,7 +95,7 @@
 | H-047 | Contact Picker架空名刺 | 対応Android Chromeで固定name / email / tel / address / iconを持つ架空contactをOSへ追加し、B01で実native pickerから1件を選んで全5property一致、各field mismatch、複数値、表示記号、住所field順、icon crop / resize / recompressを確認する。独立したB02では同じ5propertyを要求し、全propertyを非共有にしたまま1件を確定して全配列が空または欠損で開くことを確認する。API結果からcontact identityは証明できないため「同じcontact」を成功条件にしない。0件、複数件、部分共有、取消、late result、reset、離脱、非対応browserでは開かず、全非共有をnative UIで確定できなければgame製UIへfallbackしない。登録前にOS account同期の可能性、完了後に架空contact削除を案内し、返却値とicon Blobが表示・保存・Drive同期・file export・analytics・network送信されないことも確認する | G-075 | 条件付き必須・Android実機 |
 | H-048 | Beaconオフライン郵便 | 最初にonlineでBusycube scopeがService Workerに制御されsender / receiver / receipt assetがcache済みであること、未制御時の一度だけのreload案内、offlineかつserver停止中のnative broken receipt表示、明示投函で実`sendBeacon()`が呼ばれることを確認する。`false`では遷移・開箱せず、`true`ではfull-document navigationし、workerが専用POSTとcurrent attemptを検証して`respondWith()`中にIndexedDB receiptをcommitした後、receiverがlistener設置→store照会の順でflagを開くことを確認する。same-document navigation、通常`fetch({keepalive:true})`、単純再訪、foreground直接write、tab close / visibilityだけ、wrong / stale attemptでは開かず、reload、message/query race、reset、site data削除、Chrome / Firefox / Safariの対応差を確認する。payloadに個人情報がなく、receiptがDrive同期・file export・analytics・外部requestへ出ないことも確認する | G-014 | 必須 |
 | H-049 | FedCM provider実連携 | 実装着手時に候補serviceの公式資料を再調査し、公式FedCM endpoint / SDK、一般向けRP登録、利用規約、managed運用、独自backend不要、FedCM専用resultの有無をprovider台帳へ記録する。採用providerごとに公開originとclientを登録し、実account、browser所有chooser、手動Continue、期待providerの肯定的FedCM証拠で対応箱だけが開くことを確認する。GoogleはDriveと別project / client、非空credential、`select_by === "fedcm"`を必須にする。auto / legacy result、OAuth redirect、popup、broker経由の通常SNS login、credential空、cancel、未login、非対応browser、network failure、late callback、reset、離脱では開かない。全providerでtokenとaccount属性をdecode、表示、log、保存、Drive同期、file export、analytics、Busycube backendや別endpointへ送らず、接続解除方法を案内する。Google 1箱を下限とし、追加箱はこの実登録・実account証跡後に計画数へ加える | G-076 | 条件付き必須・provider別実account / online |
-| H-050 | Payment Handler架空決済 | Cloudflare Workersの公開HTTPS originで架空method manifestが○/◇の2 Payment Appを列挙し、`/payment/method`が`Link: rel=payment-method-manifest`を返すこと、別scopeのService Worker登録、browser所有chooser、各handler windowを確認する。B01はどちらの財布でも承認responseと`complete("success")`、B02は意図的拒否responseと`complete("fail")`、B03は実`retry()`後の同一handler二度目の成功、B04はchooserで◇を選んでそのworkerへtrusted `PaymentRequestEvent`が届いた時だけ開くことを確認する。B04ではその後の✓／×／↻を限定せず、○選択、page click、偽message、stale request ID、game製picker、登録済み判定、`canMakePayment()`だけでは開かない。旧単一walletだけが残らないこと、cancel、例外、late / duplicate response、reset、離脱も確認する。payer / shipping情報、実payment method、credential、架空response detailsを保存・同期・外部送信しないことも確認する | G-077 | 必須・B01〜B03 PoC確認済み、B04と公開origin確認待ち |
+| H-050 | Payment Handler架空決済 | Cloudflare Workersの公開HTTPS originで架空method manifestが○/◇の2 Payment Appを列挙し、`/payment/method`が`Link: rel=payment-method-manifest`を返すこと、別scopeのService Worker登録、browser所有chooser、各handler windowを確認する。B01はどちらの財布でも承認responseと`complete("success")`、B02は意図的拒否responseと`complete("fail")`、B03は実`retry()`後の同一handler二度目の成功、B04はchooserで◇を選んでそのworkerへtrusted `PaymentRequestEvent`が届いた時だけ開くことを確認する。B04ではその後の✓／×／↻を限定せず、○選択、page click、偽message、stale request ID、game製picker、登録済み判定、`canMakePayment()`だけでは開かない。旧単一walletだけが残らないこと、cancel、例外、late / duplicate response、reset、離脱も確認する。payer / shipping情報、実payment method、credential、架空response detailsを保存・同期・外部送信しないことも確認する | G-077 | 必須・基本動作確認済み、正式証跡待ち |
 | H-051 | Local Font Access実活字 | 公開対象desktop ChromiumとWindows / macOS等の対象OSで、Git管理済み専用TTFのdownload、OS標準preview、user-scope install、再走査、browser所有`local-fonts` prompt、permission persistence、対象PostScript名だけの実`queryLocalFonts()`、`FontData.blob()`のmetadata / SHA-256、専用glyph表示とB01開箱を確認する。未install、0 / multiple result、同名別font、permissionだけ、全font列挙、`@font-face local()`だけ、file upload、bundled webfont、mock、cancel、deny、late result、reset、離脱、browser再起動、uninstall後、permission revoke、非対応browserでは開かないことを確認する。返却font情報とraw bytesが表示・log・保存・Drive同期・file export・analytics・network送信されず、FontFace / object URLが解放され、OS別uninstallとsite permission解除案内が正しいことも確認する | G-078 | 条件付き必須・desktop Chromium / OS変更 |
 | H-052 | Browser／OS media controls | Git管理するseek可能な短尺mediaを使い、browser native playerでseek、mute、実再生後pause、提示される場合のPiPを確認する。別のcontrolsなしmedia sessionではOS control surface、lock screen、media key、headset、browser media UIからのpause actionを確認し、通常のmedia element eventやpage内buttonではS-430-B01が開かないことを確認する。探索としてplay、seekbackward、seekforward、seekto、previoustrack、nexttrackの提示有無と受信action typeをOS／browser別に記録するが、sourceは推定せず、この探索だけで箱を追加しない | G-020, G-033, G-041 | 条件付き必須 |
 | H-053 | native video aspect-ratio seek | S-810で入場時に自動表示される固定スウィープ動画について、初期停止frameの1:1が直ちに開くこと、native controlsで停止または停止中にシークして4:3、16:9、9:20（各相対5%以内）の実`videoWidth` / `videoHeight`を確認する。通常再生中の比率通過、CSS変更、固定寸法の動画では開かず、3840pxの最大辺、reload・離脱でcallbackとobject URLが残らないことも確認する | G-080 | 必須・`resize`対応browser |
@@ -133,4 +133,4 @@
 
 人手確認が未実施の環境を「おそらく動く」として合格にしない。
 
-初期版全体の必須ケースに失敗があればリリースを止める。条件付き必須の失敗は、該当ステージだけを非公開または未検証扱いにできる。これにより、希少な外部機器やExperimental APIが、基礎ステージの公開を不必要に止めないようにする。
+全体の必須ケースに失敗があればリリースを止める。条件付き必須の失敗は、該当ステージだけを非公開または未検証扱いにできる。これにより、希少な外部機器やExperimental APIが、基礎ステージの公開を不必要に止めないようにする。

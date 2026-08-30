@@ -1,8 +1,6 @@
 # Google FedCM 設定
 
-更新段階: 第22段階
-
-Google Auth Platformの共通ブランディング、公開URL、ロゴ、連絡先、所有確認、検証手順は[Google Auth Platformブランディング](./google-auth-platform-branding.md)を正本とする。
+Google Auth Platformの共通ブランディング、公開URL、ロゴ、連絡先、所有確認、検証手順は[Google Auth Platform](./google-auth-platform.md)を正本とする。
 
 S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブラウザが仲介した手動FedCM結果だけを受け入れる。通常のOAuth popup / redirectやGoogle Drive認可は代替にならない。
 
@@ -34,4 +32,4 @@ CloudflareのPreviewとRelease Candidate workflowは同名のVariableを先に�
 
 製品stageはGIS callbackのcredentialが非空で、`select_by`が厳密に`fedcm`のときだけ開く。`fedcm_auto`を含む自動選択やlegacy結果は拒否する。credentialはdecode・表示・log・保存・同期・送信しない。
 
-公開originでのaccount chooser、手動Continue、取消、未login、network failure、late callback、provider側の接続解除は[H-049](./human-test-matrix.md)に従って人手確認する。
+公開originでのaccount chooser、手動Continue、取消、未login、network failure、late callback、provider側の接続解除は[H-049](../notes/human-test-matrix.md)に従って人手確認する。

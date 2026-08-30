@@ -1,66 +1,39 @@
 # Busycube 開発者向けドキュメント
 
-このディレクトリは、Busycubeの開発、運用、検証の入口です。ゲームの紹介とプレイヤー向け案内は、ルートの[README](../README.md)を参照してください。
+このディレクトリは、Busycubeの仕様、環境構築、現在の作業台帳の入口である。ゲームの紹介とプレイヤー向け案内は、ルートの[README](../README.md)を参照する。
 
-## 開発を始める
+## 仕様書
 
-必要な実行環境はNode.js 24.14以上とpnpm 11.24.0です。
+実装が維持する製品・設計上の契約を置く。現行コードと食い違う場合はコードを確認し、仕様か実装のどちらを直すかを明示してから更新する。
 
-```sh
-pnpm install --frozen-lockfile
-pnpm run dev
-```
+- [企画・プロダクト仕様](./specifications/product-spec.md)
+- [アーキテクチャ判断](./specifications/architecture-decisions.md)
+- [決定ログ](./specifications/decision-log.md)
+- [ローカル進捗スキーマ](./specifications/progress-schema.md)
+- [問題箱の形状と再挑戦モデル](./specifications/problem-box-state-model.md)
+- [PWA・オフライン仕様](./specifications/pwa-and-offline.md)
+- [権限・プライバシー方針](./specifications/privacy-and-permissions.md)
+- [ステージ・ギミック一覧](./specifications/stage-catalog.md)
+- [ステージ仕様・実装ガイド](./specifications/stage-authoring-guide.md)
 
-開発サーバー起動後は、表示されたURLの`/index.html`を開きます。
+`stage-catalog.md`はコードから生成する。個別ステージの厳密な解法は各`src/stages/S-xxx/stage.tsx`の日本語JSDocを正本とする。
 
-主な確認コマンドは次のとおりです。
+## 開発環境・デプロイ環境構築手順
 
-| 目的 | コマンド |
-| --- | --- |
-| Markdownの検査 | `pnpm run docs:lint` |
-| 実装の通常確認 | `pnpm run check` |
-| テスト | `pnpm run test:ci` |
-| 本番ビルド | `pnpm run build` |
-| Workersローカルプレビュー | `pnpm run preview` |
+ローカル開発、CI、Cloudflare、Google Cloudへ必要な設定手順を置く。アカウント固有値や認証情報は記録しない。
 
-## リポジトリ構成
+- [ローカル開発環境](./environment-setup/local-development.md)
+- [Cloudflare Workers](./environment-setup/cloudflare-workers.md)
+- [Google Auth Platform](./environment-setup/google-auth-platform.md)
+- [Google Drive](./environment-setup/google-drive.md)
+- [Google FedCM](./environment-setup/google-fedcm.md)
 
-- `src/`: Reactアプリ、共通UI、進捗、ステージ、公開ポリシーページ
-- `src/stages/`: ステージごとの`manifest.ts`、`locale.ts`、`stage.tsx`
-- `src/runtime/`: 生成済みステージ索引と共通ランタイム
-- `public/`: PWA、固定アセット、第三者ライセンス
-- `docs/`: 現行仕様、運用、リリース、人手確認、履歴
-- `scripts/`: ステージ索引とアセットの生成・検証
+## 一時的な開発メモ
 
-ステージの表示文言は各`src/stages/S-xxx/locale.ts`、現行の解法・実装意図は各`src/stages/S-xxx/stage.tsx`の日本語JSDocを正本とします。ID、URL、保存キー、テスト名には表示ラベルを使いません。
+完了すれば削除できる作業台帳だけを置く。仕様の正本として参照しない。
 
-## 現行の資料
+- [残作業](./notes/remaining-work.md)
+- [人手確認台帳](./notes/human-test-matrix.md)
+- [ステージレビュー](./notes/stage-review.md)
 
-- [現状・残問題・人手確認への引継ぎ](./current-status-and-handoff.md)
-- [ステージ実装状況](./stage-implementation-status.md)
-- [人手確認台帳](./human-test-matrix.md)
-- [検証記録](./verification-record.md)
-- [リリース準備状況](./release-readiness.md)
-- [アーキテクチャ判断](./architecture-decisions.md)
-- [権限・プライバシー方針](./privacy-and-permissions.md)
-- [Google Auth Platformブランディング](./google-auth-platform-branding.md)
-- [Google Driveバックアップの設定と運用](./google-drive-setup.md)
-- [Google FedCM設定](./google-fedcm-setup.md)
-- [Cloudflare Workersへのデプロイ](./cloudflare-workers-deployment.md)
-- [決定ログ](./decision-log.md)
-
-## 履歴資料
-
-調査、PoC、実装前計画は現在の仕様を決める資料ではありません。現行の箱ID、解法、API採否、進捗はコードと上記の現行資料を優先してください。
-
-- [履歴資料の扱い](./history/README.md)
-- `current-environment-implementation-plan.md`
-- `stage-rollout-plan.md`
-- `gimmick-backlog.md`
-- `gimmick-coverage-plan.md`
-- `poc-results.md`
-- `deep-research-idea-disposition-ledger.md`
-- `api-research-and-adoption.md`
-- `blackbox-mechanism-ledger.md`
-
-履歴資料は判断の経緯を残すために維持します。現行情報へのリンクが残っていても、リンク先の現行資料を優先してください。
+過去の実装計画、移行手順、PoC、調査原文はGit履歴で確認する。完了した資料を現行ドキュメントとして維持しない。

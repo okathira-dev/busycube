@@ -1,7 +1,8 @@
-# 現存全ステージ レビューチェックリスト
+# 全ステージ レビューチェックリスト
 
 現行の89ステージ・204箱を、実際の画面を見ながら一件ずつ確認するための作業台帳。
 解法仕様の正本は各 `src/stages/S-xxx/stage.tsx` の日本語JSDocであり、この文書は確認結果を記録するための索引とする。
+全項目の確認結果を正式なテスト証跡へ移した後は、この一時台帳を削除する。
 
 ## チェックの意味
 
@@ -248,7 +249,7 @@ TODO: ここまで人手レビュー済み
 - [ ] B02 録画の箱: 想定操作でこの箱だけが開く。
 - [ ] B03 中継の箱: 想定操作でこの箱だけが開く。
 - [ ] B04 外縁の印の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01 frame継続、B02 local recording、B03 observer relay、B04はround handshake済みmind map外縁markerを実frameからdecode。notification image marker B05は再現保証不能
+- [ ] 成立境界: B01 frame継続、B02 local recording、B03 observer relay、B04はround handshake済みcatalogue外縁markerを実frameからdecode。notification image marker B05は再現保証不能
 - [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
 
 - 関連する正式な人手確認: H-006, H-007, H-012, H-013, H-019, H-023
