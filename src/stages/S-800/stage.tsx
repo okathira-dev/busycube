@@ -41,16 +41,16 @@ function WordCanvas({ word }: { word: string }) {
 }
 
 /**
- * S-800 — address barのText Fragmentを自分で組み立て、hidden=until-foundの文をbrowserに表示させる。
- * 目的: page内inputや擬似highlightを使わず、URLの`#:~:text=`がブラウザ所有の一語highlightを作ることを体験する。
- * 最初の一手: B01のpercent-encoded fragmentをこのpageのURL末尾へ貼り付けて移動し、ブラウザが隠れた英文を開くことを確かめる。
- * 箱ごとの解法: B01は表示された`#:~:text=%20%63%6f%62%61%6c%74,-.`で`cobalt.`のcontainerを、B02はcanvasに見える`ember`から`#:~:text=%20ember,-.`を作り別containerを開く。対応containerの実`beforematch`で各箱が開く。
- * 開かない操作: page内URL入力欄、通常`#id`、自作CSS highlight、対象外語、script生成eventでは開かない。find-in-pageでもbeforematchが発火し得ることは、標準が起点を公開しない既知の制約としてH-055で扱う。
- * 使用API: URL Fragment Text Directives、`hidden="until-found"`、`beforematch`。target語はcanvasのaccessible name以外の検索対象DOM textへ重複させない。
- * 権限・privacy: 権限、network送信、永続入力は使わない。browserがfragment directiveを処理し、stageはreveal eventだけを観測する。
- * cleanup: `beforematch` listenerをstage離脱時に解除する。timer、observer、object URL、外部接続は作らない。
- * 対応環境: Chrome系のText FragmentとHidden Until Found対応を対象とする。対応しないbrowserはStageHostのprobeで操作を要求しない。
- * 人手確認: H-055でB01/B02をaddress barから実行し、UA highlight、beforematch、Back / reload、対象外語、Ctrl+Fの既知代替経路を確認する。
+ * S-800
+ *
+ * 目的: address barでText Fragmentを組み立て、`hidden="until-found"`の二つの文章をbrowser自身のmatch処理でrevealする。
+ * 最初の一手: 現在URL末尾へ表示済み`#:~:text=%20%63%6f%62%61%6c%74,-.`を貼って移動し、hiddenな`cobalt.`の文を開く。
+ * 箱ごとの解法:
+ * - B01「符号片の箱」: encoded fragmentが`cobalt.`を含むhidden containerへmatchし、そのelementで実`beforematch` eventを受けると開く。
+ * - B02「描画語の箱」: canvasに描かれた`ember`を読み、URL末尾へ`#:~:text=%20ember,-.`を作って移動し、別hidden containerの`beforematch`を受けると開く。
+ * 使用API: URL Fragment Text Directives、Hidden Until Found、`beforematch` event、Canvas 2Dによる検索DOM外のclue描画。
+ * 権限・privacy: 権限・network送信を使わず、browserのfragment matchによるreveal eventだけを観測する。検索語やURL履歴をstage側へ保存しない。
+ * 対応環境: Text Fragmentと`hidden="until-found"` / beforematchを実装するChromium系browser。
  */
 function S800Stage(props: Props) {
   const encodedProblem = props.boxes[manifest.box.B01];

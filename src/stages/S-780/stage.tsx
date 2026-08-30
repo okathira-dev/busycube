@@ -115,16 +115,18 @@ async function registerWallets(wallets: readonly Wallet[]): Promise<void> {
 }
 
 /**
- * S-780 — browser所有のPayment Handler chooserと架空BCU決済のlifecycleを観測する。
- * 目的: browserが仲介するpayment method、複数walletの選択、handler window、complete / retryを4箱へ分けて体験する。
- * 最初の一手: 「財布を開く」を押し、browserの決済UIに並ぶ○財布と◇財布のどちらかを選んでhandler windowを開く。
- * 箱ごとの解法: どちらの財布でも、✓の最初の承認responseをcomplete(success)まで完了するとB01、×の意図的な拒否responseをcomplete(fail)まで完了するとB02、↻で初回needs-retryを返し同じPaymentResponseへretry()を行った後に✓で二回目を完了するとB03が開く。browser所有chooserで◇財布を選び、そのwalletのService Workerへ実PaymentRequestEventが届くとB04が開く。B04後の承認・拒否・再試行は問わない。
- * 開かない操作: game内の表示だけを押す、通常のService Worker messageを偽装する、handler不在、browser側cancel、例外、最初から成功するだけの再試行、固定flagでは開かない。○財布を選んでもB04は開かない。
- * 使用API: PaymentRequest、PaymentResponse、Payment Handler Service Worker、PaymentManager.userHint、payment-method-manifest。
- * 権限・privacy: 実Payment、payer情報、credential、handlerの詳細情報を保存・送信しない。財布IDはその場の開箱判定にだけ使う。
- * cleanup: stage離脱・cancel・retry失敗時にhandler windowへの追加操作をせず、active request IDを破棄する。旧単一walletの製品workerだけはexact scope / script URL一致時に登録解除する。
- * 対応環境: PaymentRequest、Payment Handler、Service Worker、method manifestのLink response headerを提供する対応browserとsecure context。公開時はCloudflare Workers上のHono Workerがmethod routeへheaderを返す。
- * 人手確認: H-003/H-004/H-019/H-023/H-025/H-050。
+ * S-780
+ *
+ * 目的: browser所有Payment Handler chooserで架空BCU walletを選び、approved・declined・retry・特定wallet eventを四つのlifecycle結果へ分ける。
+ * 最初の一手: 「財布を開く」を押して○または◇walletを選び、handler windowの✓・×・↻を目的の箱に合わせて操作する。
+ * 箱ごとの解法:
+ * - B01「承認の箱」: response methodが登録methodと一致し、最初のdetailsが`outcome:"approved", accepted:true`で、`complete("success")`まで成功すると開く。
+ * - B02「拒否の箱」: 最初のdetailsが`outcome:"declined", accepted:false`で、`complete("fail")`まで成功すると開く。
+ * - B03「再試行の箱」: 最初が`needs-retry`で同じPaymentResponseの`retry()`を実行し、二回目がapproved/accepted trueで`complete("success")`すると開く。
+ * - B04「◇財布の箱」: chooserで◇walletを選び、そのexact worker scriptからcurrent request ID・trusted true・wallet diamondを持つ実handler-event messageを受けると開く。
+ * 使用API: Payment Request/PaymentResponse complete/retry、Payment Handler Service Worker/PaymentRequestEvent、PaymentManager.userHint、payment method manifest、Service Worker messaging。
+ * 権限・privacy: currency BCUの架空1.00だけを使い、実決済・payer情報・credentialを要求しない。wallet IDとrequest IDはattempt判定だけに使い、保存・送信しない。
+ * 対応環境: secure contextでPaymentRequest、Payment Handler、Service Worker、method manifest response headerと複数wallet chooserを提供するbrowser。
  */
 function S780Stage(props: Props) {
   const boxes = [

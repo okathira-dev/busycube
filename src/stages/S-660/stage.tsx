@@ -20,13 +20,17 @@ function boxIndexFor(state: PressureState) {
 }
 
 /**
- * S-660 — Compute Pressureの状態を負荷計ではなくbrowserの状態hintとして読む。
- * 目的: nominal、fair/serious、criticalの3箱を、ゲーム側の負荷なしで観測する。
- * 最初の一手: stageへ入ったまま自動購読を待ち、必要なら別作業負荷の変化を観察する。
- * 箱ごとの成功条件: B01はnominal、B02はfairまたはserious、B03はcriticalをPressureObserverから受けた時に開く。
- * 開かない操作: CPUをbusycube側で意図的に消費する、割合を推定する、status文字列を書き換える操作では開かない。
- * API/権限: PressureObserverのcpu source。権限・入力値・状態履歴は保存・送信しない。
- * cleanup/環境: hiddenでdisconnectし、visibleで再購読する。対応環境とPermissions Policyを含めH-004/H-019/H-023/H-025/H-035を確認する。
+ * S-660
+ *
+ * 目的: browserがprivacy保護済みhintとして公開するCPU pressureを、nominal・中間・criticalの三帯で観測する。
+ * 最初の一手: stageをvisibleのまま1秒間隔の自動観測を待つ。別app等の通常作業負荷を変えて異なるpressure stateを作る。
+ * 箱ごとの解法:
+ * - B01「nominalの箱」: CPU sourceの最新PressureRecord `state`が厳密に`nominal`なら開く。
+ * - B02「中間負荷の箱」: 最新stateが`fair`または`serious`のどちらかなら開く。
+ * - B03「criticalの箱」: 最新stateが厳密に`critical`なら開く。訪問をまたいだ三状態は通常進捗へ累積できる。
+ * 使用API: Compute Pressure APIの`PressureObserver.knownSources`、CPU `observe()`、PressureRecord state、Page Visibility API。
+ * 権限・privacy: Busycube自身は意図的なCPU負荷を生成せず、coarse stateだけを表示・判定する。利用率・process・状態履歴を保存・送信しない。
+ * 対応環境: CPU sourceのCompute Pressure APIを公開し、必要なPermissions Policyを満たすbrowser。hidden中は観測せずvisible復帰時に再購読する。
  */
 function S660Stage(props: Props) {
   const problems = [props.boxes.B01, props.boxes.B02, props.boxes.B03] as const;

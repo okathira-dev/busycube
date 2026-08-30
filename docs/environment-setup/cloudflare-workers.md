@@ -1,6 +1,6 @@
 # Cloudflare Workersへのデプロイ
 
-Busycubeは、Cloudflare Viteプラグインでブラウザ用assetとWorkerを同時にbuildし、Static Assetsが前者を、Hono Workerが動的なHTTP応答だけを配信する。GitHub Pages向けの配信workflowや、response headerをService Workerで補う回避策は使わない。
+Busycubeは、Cloudflare Viteプラグインでブラウザ用assetとWorkerを同時にbuildし、Static Assetsが前者を、Hono Workerが動的なHTTP応答だけを配信する。
 
 ## 構成
 
@@ -12,9 +12,9 @@ Busycubeは、Cloudflare Viteプラグインでブラウザ用assetとWorkerを�
 - `.github/workflows/preview-cloudflare-workers.yml`: リポジトリ内ブランチのPRごとの検査、build、本番WorkerへのPreview Version upload
 - `.github/workflows/deploy-cloudflare-workers.yml`: mainの検査、Release Candidate upload、検証済みVersion IDの自動deploy
 
-PWA用の`service-worker.js`はオフライン、通知、Background Syncなどブラウザ側の機能にだけ使う。COOP / COEPをService Workerで注入する仕組みや`coi-service-worker`は採用しない。
+PWA用の`service-worker.js`はオフライン、通知、Background Syncなどブラウザ側の機能にだけ使う。HTTP response headerはStatic Assetsの`public/_headers`とHono Workerが付与する。
 
-## ローカル確認
+## ローカルbuildとpreview
 
 ```sh
 pnpm run check
@@ -25,7 +25,7 @@ pnpm run preview
 
 `pnpm run build`は`dist/client/`へブラウザ用assetを、`dist/busycube/`へWorker bundleとデプロイ用`wrangler.json`を生成する。入力側の`wrangler.jsonc`へ`assets.directory`を固定せず、Viteプラグインが生成物間の正しい相対pathを出力する。Viteのapplication rootが`src/`でリポジトリrootと異なるため、deploy scriptとworkflowは生成後の`dist/busycube/wrangler.json`を明示してWranglerへ渡す。
 
-`pnpm run preview`はCloudflare Viteプラグインのpreview環境でStatic AssetsとHono Workerを同時に動かす。表示されたlocalhost URLで、少なくとも`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`を確認する。Payment Handlerのrouteは次のいずれかへ`GET`と`HEAD`を送り、204と`Link: <…>; rel=payment-method-manifest`を確認する。
+`pnpm run preview`はCloudflare Viteプラグインのpreview環境でStatic AssetsとHono Workerを同時に動かす。`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`を配信する。Payment Handlerの次のrouteは`GET`と`HEAD`に204と`Link: <…>; rel=payment-method-manifest`を返す。
 
 - `/payment/method`
 - `/poc/payment/method`
@@ -93,9 +93,11 @@ PRをマージまたはクローズしてもVersionとAliasは削除せず、PR�
 
 Preview URLは公開URLである。Google OAuthへ恒久登録せず、OAuthを含む移行確認が必要なPRだけ正確なPreview originを一時登録する。PR終了後はPreview URLが残っていても、Drive用とFedCM用のOAuth ClientからPreview originを削除する。
 
-## CIの再実行
+## CIのretryと再実行
 
-Cloudflareへの書き込み操作をshell loopで無条件にretryしない。`versions upload`または`versions deploy`の応答をRunnerが受け取れなくてもCloudflare側では成功している可能性があるため、各書き込みは一度だけ実行し、その前後を`Cloudflare Versions API`と`Deployments API`で照合する。
+このWorkflowは、GitHub Actionsの`Re-run failed jobs`によるretryに対応している。再実行時は同じ`github.run_id`から対象Versionを特定し、Cloudflareの実状態をAPIで確認して、未完了の処理だけを再開する。
+
+一方、1回のjob内ではCloudflareへの書き込み操作をshell loopで無条件にretryしない。`versions upload`または`versions deploy`の応答をRunnerが受け取れなくてもCloudflare側では成功している可能性があるため、各試行では書き込みを一度だけ実行し、その前後を`Cloudflare Versions API`と`Deployments API`で照合する。
 
 - Version tagが0件なら一度だけuploadし、1件なら既存Versionを再利用する
 - 同じtagが複数のVersionへ一致した場合は最新を選ばず失敗する
@@ -103,43 +105,18 @@ Cloudflareへの書き込み操作をshell loopで無条件にretryしない。`
 - deploy後は対象Version IDが100%になったことを確認する
 - APIのGETと公開URLのGET / HEADだけを回数制限付きで自動retryする
 
-通常はGitHub Actionsの`Re-run failed jobs`を使う。同じWorkflow runでは`github.run_id`が変わらないため、candidateの再実行は同じVersionを再検証し、deployの再実行は同じVersion IDを再昇格する。Secrets、Variables、またはmainの内容を変えた後は古いrunを再実行せず、新しいpushか`workflow_dispatch`で新しいrunを作る。Cloudflareのdeploy可能なVersion履歴やPreview Alias保持上限から対象が外れた場合も、新しいrunを作る。
+同じWorkflow runでは`github.run_id`が変わらないため、candidateの再実行は同じVersionを再利用して検証し、deployの再実行は同じVersion IDの配信状態を確認して、必要な場合だけ再昇格する。Secrets、Variables、またはmainの内容を変えた後は古いrunを再実行せず、新しいpushか`workflow_dispatch`で新しいrunを作る。Cloudflareのdeploy可能なVersion履歴やPreview Alias保持上限から対象が外れた場合も、新しいrunを作る。
 
 PR PreviewとRelease Candidateは共通スモークテストで、`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`、`/offline-beacon/network-probe`、`/payment/method`と必要なcache / security / Payment Manifest headerを確認する。本番昇格後も同じテストを本番URLへ実行する。
 
-## 初回移行フロー
+## 通常のリリースフロー
 
-初回移行は次の順序で行う。Googleへ存在しないURLを推測登録せず、Cloudflareで確定した完全なoriginを使う。
+同じリポジトリ内のブランチからPull Requestを作成または更新すると、通常のbuild checkとPreview deployが動く。mainへのマージをリリース承認とし、Release WorkflowがRelease Candidateへ自動スモークテストを実行した後、同じVersion IDを本番へ100%配信する。本番昇格後にも同じ自動スモークテストを実行する。
 
-1. Cloudflareの初期Worker、GitHub Environments、Secrets、main Rulesetを設定する。
-2. Drive用とFedCM用のOAuth Clientへ、本番originを登録する。OAuthをPRで確認する場合は、そのPRのPreview originも一時登録する。
-3. 移行PRを作成または更新し、最新commitをpushする。
-4. PR上で通常のbuild checkとPreview deployの成功を待つ。PRの`Cloudflare Worker preview`コメントまたは`View deployment`からPreviewを開く。
-5. [H-021](./human-test-matrix.md)に従い、`/`、`/?stage=S-090`、直接URLの再読込、`manifest.webmanifest`、Service Worker scope、security headerをChromeで確認する。あわせてGoogle Drive、[H-049](./human-test-matrix.md)、[H-050](./human-test-matrix.md)を確認する。
-6. 問題があれば同じPRへ修正をpushし、同じPreview Alias URLで手順4と5を繰り返す。新しいPRは作らない。
-7. 必須checkと人手確認が完了したらPRをmainへマージする。mainへのマージを本番リリースの承認とする。
-8. マージ後、PR Previewは履歴として残る。同時にRelease Workflowがrun固有tagとAliasを持つRelease Candidateをuploadし、候補URLの自動疎通確認後、同じVersion IDを本番へ自動昇格する。
-9. Actionsでcandidateとdeployの成功を確認し、`View deployment`から本番を開く。本番originで手順5を再実施し、`/privacy/`と`/terms/`も匿名ウィンドウで確認する。
-10. GoogleのDrive用とFedCM用OAuth Clientから一時登録したPR Preview originを削除する。本番originは残す。PR Preview URL自体はAliasローテーションまで残る。
-11. [Google Auth Platformブランディング](./google-auth-platform-branding.md)のホームページ、プライバシーポリシー、利用規約が本番URLと一致することを確認し、必要な検証と公開を完了する。
-12. 本番の正常なCloudflare Version IDとdeployment日時を記録してrollback地点を確定した後、GitHub Pagesのsourceを無効化する。
-
-```text
-PR更新 → build・Preview deploy → Chrome／Google確認 → mainへマージ
-                                                    ├─ PR Previewは履歴として保持
-                                                    └─ 候補検証 → Version IDを本番deploy
-                                                                        ↓
-                                                 本番確認 → PR origin削除 → Pages停止
-```
-
-GitHub Pagesでインストール済みのPWAとそのService Workerは、Pagesを停止しただけでは利用者の端末から即座に消えない。旧originのPWAを継続利用しないことを案内し、新しいWorkers originから改めてインストールしてもらう。旧originからの移行ページを用意する場合は、GitHub Pagesを停止する前に配信する。
-
-このリポジトリでは実hostnameを固定しない。Cloudflare accountの`workers.dev` subdomainやcustom domainはaccountごとに異なるため、存在しないURLをREADMEやGoogle Consoleへ推測で登録してはならない。
+Google OAuthを使うPR Previewだけ、そのPRの正確なPreview originをOAuth Clientへ一時登録し、PR終了後に削除する。本番originはOAuth Clientへ継続して登録する。
 
 ## 失敗時
 
 Workflowが失敗した場合は、まず同じrunの`Re-run failed jobs`を使う。Version tagの重複、message不一致、古いPR head、または保持上限外を示すエラーは安全のため自動回復しないため、原因を確認して新しいrunを作る。
 
-新しいdeploymentでアプリケーション上の問題があれば、Cloudflare dashboardで直前の正常deploymentへrollbackする。rollback後もGoogle Consoleのorigin、PWAのscope、Payment Handlerのheaderを再確認し、結果を人手確認台帳へ記録する。
-
-旧方式で作成した`busycube-pr-<number>`独立WorkerはPreview Aliasのローテーション対象外である。残っている場合はCloudflare Dashboardで利用状況を確認し、削除対象を明示して一度だけ整理する。通常WorkflowからWorker削除APIは呼ばない。
+新しいdeploymentでアプリケーション上の問題があれば、Cloudflare dashboardで直前の正常deploymentへrollbackする。

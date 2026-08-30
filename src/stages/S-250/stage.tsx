@@ -20,15 +20,14 @@ type Message = { type: "alive" | "closing"; color: Color; sender: string };
 /**
  * S-250
  *
- * 目的: 「一つだけの鍵」で、B01「白になる箱」、B02「閉じる順番の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-250の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをhuman-test-matrix.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: R/G/Bそれぞれのwindowが生存している同時状態と、三つを指定順に閉じたpage lifecycle messageを親windowで観測する。
+ * 最初の一手: 「次の色を開く」を3回押してR・G・B windowを全部残し、白になった後にB→G→Rの順で閉じる。
+ * 箱ごとの解法:
+ * - B01「白になる箱」: R/G/B windowが500 msごとに送る`alive`を親が受け、直近1,800 ms以内の三色が同時に揃うと開く。
+ * - B02「閉じる順番の箱」: 各色windowの`pagehide`による`closing` messageを連続してB・G・Rの順に受けると開く。prefixが崩れた時点で列をresetする。
+ * 使用API: `window.open()`、Broadcast Channel API、`pagehide`、interval、sessionStorage、`Date.now()`、Web Crypto UUID。
+ * 権限・privacy: 権限を要求せず、channelには色・生存/終了種別・一時sender IDだけを流す。window内容や時刻履歴を保存・外部送信しない。
+ * 対応環境: secure contextでBroadcastChannelと複数window/tabを利用できるbrowser。capability判定ではWeb Locks APIも必要とする。
  */
 function S250Stage(props: Props) {
   const white = props.boxes[manifest.box.B01];

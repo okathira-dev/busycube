@@ -23,15 +23,15 @@ import { locale } from "./locale";
 /**
  * S-380
  *
- * 目的: 「三つの資格情報」で、B01「保存の箱」、B02「利用成功の箱」、B03「利用失敗の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-380の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをhuman-test-matrix.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: discoverable passkeyの作成、conditional mediationでの利用成功、意図的に壊したcredential IDによる利用失敗を分けて観測する。
+ * 最初の一手: 🔑でpasskeyを作成し、username欄から🔒のconditional UIでそのpasskeyを選ぶ。最後に⊘で不正IDの認証を試す。
+ * 箱ごとの解法:
+ * - B01「保存の箱」: resident key必須・user verification preferredで`navigator.credentials.create()`がPublicKeyCredentialを返し、そのrawIdをlocal保存すると開く。
+ * - B02「利用成功の箱」: `mediation: "conditional"`の`credentials.get()`で任意のcredentialが正常に返ると開く。
+ * - B03「利用失敗の箱」: 保存rawIdの先頭byteを反転したallowCredentials IDで認証し、`NotAllowedError`または`InvalidStateError`になれば開く。
+ * 使用API: WebAuthn/Credential Management API、PublicKeyCredential、conditional mediation、Web Crypto random、localStorage。
+ * 権限・privacy: authenticator UIで利用者確認を行い、attestationは`none`。localStorageにはcredential rawIdだけを保持し、秘密鍵・biometric・assertionを取得・送信しない。
+ * 対応環境: secure contextでresident passkey作成とconditional WebAuthn認証を提供するbrowser、OS、authenticator。
  */
 function S380Stage(props: Props) {
   const createBox = props.boxes[manifest.box.B01];

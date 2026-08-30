@@ -35,16 +35,17 @@ function directionArrow(dx: number, dy: number) {
 }
 
 /**
- * S-820 — Pointer Lock中のmovementX/Yだけで二次元平面を移動し、遠方の箱を中心reticleで押す。
- * 目的: 通常pointer座標が端で止まる操作ではなく、pointer lockが返す相対移動量で無限の空間を歩く感覚を作る。
- * 最初の一手: 「ポインターを固定する」を押し、Escで解除できる状態でマウスを動かす。周囲の矢印と距離が各箱への向きを示す。
- * 箱ごとの解法: B01は(800,-600)、B02は(-3000,4000)、B03は(6000,8000)の中心64px以内まで`movementX/Y`だけで到達し、lock中のtrusted clickで中央に現れた実ProblemGiftBoxを押すと開く。
- * 開かない操作: lock前のpointer座標、wheel、keyboard、script生成mousemove/click、距離だけを表示上で合わせる、中心外のclickでは開かない。迷路やgame製の移動buttonは置かない。
- * 使用API: Pointer Lock API、`movementX`、`movementY`、`pointerlockchange`。位置は訪問内memoryにだけ持ち、再訪問時は原点へ戻る。
- * 権限・privacy: browserのpointer lock以外の権限、保存、送信は行わない。mouse移動の履歴を保存しない。
- * cleanup: Esc、blur、pointerlockerror、stage abortでlistenerを外し、stageのplaneがlock中なら`exitPointerLock()`する。
- * 対応環境: desktop mouseでPointer Lockを許可できるbrowser。touch-only環境ではStageHostがunsupported表示にする。
- * 人手確認: H-056で3座標、lock外click、Esc、blur、再入場、各距離表示を確認する。
+ * S-820
+ *
+ * 目的: pointer lockの相対`movementX/Y`だけで無限平面を移動し、遠方三座標の64 px以内へreticleを合わせて箱をclickする。
+ * 最初の一手: 「ポインターを固定する」を押し、画面下の矢印と距離を見ながらmouseを動かして最初の(800,-600)へ近づく。
+ * 箱ごとの解法:
+ * - B01「近い座標の箱」: lock中の累積位置を(800,-600)の64 px以内へ入れ、中央に現れた箱をtrusted clickすると開く。
+ * - B02「遠い座標の箱」: 同じ累積位置を(-3000,4000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
+ * - B03「最遠座標の箱」: 同じ累積位置を(6000,8000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
+ * 使用API: Pointer Lock APIのrequest/exit/change/error、MouseEvent `movementX` / `movementY` / isTrusted、window blur。
+ * 権限・privacy: pointer lockはbutton操作で要求し、現在の累積x/yだけを訪問memoryに持つ。mouse pathやdevice情報を保存・送信しない。
+ * 対応環境: desktop mouseとPointer Lock APIを提供し、長い相対移動を継続取得できるbrowser。
  */
 function S820Stage(props: Props) {
   const planeRef = useRef<HTMLDivElement>(null);

@@ -19,4 +19,4 @@ Busycube は、ブラウザー Web API を題材にしたステージ制のパ�
 - `skills/`: FSL Skills の公式正本
 - `.agents/skills/`, `.cursor/skills/`: エージェント別の FSL アダプター
 
-パッケージ管理は pnpm です。本番はCloudflare Workers Static AssetsとHono Workerで配信し、mainへの反映後は`deploy-cloudflare-workers.yml`が検査・build・deployを行います。詳しい初期設定と手動確認は`docs/cloudflare-workers-deployment.md`を参照してください。
+パッケージ管理は pnpm です。本番はCloudflare Workers Static AssetsとHono Workerで配信し、mainへの反映後は`deploy-cloudflare-workers.yml`が検査・build・deployを行います。詳しい初期設定と手動確認は`docs/environment-setup/cloudflare-workers.md`を参照してください。

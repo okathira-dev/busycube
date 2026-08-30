@@ -118,16 +118,17 @@ function uriFromTransfer(transfer: DataTransfer) {
 }
 
 /**
- * S-510 — 同じD&Dでも、ページ内画像・OSファイル・別window画像で境界が変わることを体験する。
- * 目的: HTML Drag and DropのDataTransferがdocument、OS、window境界でどう変わるかを、見た目とカーソルで推理できるようにする。
- * 最初の一手: B01のページ内画像をそのまま左のドロップ欄へドラッグし、受け付けるカーソルと欄の色を確認する。
- * 箱ごとの解法: B01は固定fixtureのページ内画像URLとSHA-256を実dropで一致させる。B02はdraggable=falseの画像を保存し、OSのファイル管理画面から`drag-file.png`を実Fileとしてdropする。B03はiframe画像が禁止カーソルになることを確認し、別windowを開いて`drag-window.png`をdropする。各箱は対応する実操作だけで開く。
- * 開かない操作: 同じページの画像をB02へ落とす、B01/B03へFileを落とす、iframeの画像をB03へ落とす、file inputで選ぶ、script生成DragEvent、DevToolsでDOMやDataTransferを改変する操作では開かない。
- * 使用API: HTML Drag and Drop、DataTransfer、File、`text/uri-list`、`window.open`、`postMessage`、SHA-256。画像は固定fixtureとしてGit管理し、外部へ送信しない。
- * 権限・privacy: OSファイルはdropされた一枚のPNGをメモリ上で照合するだけで、保存・upload・外部送信を行わない。別windowは同一originの固定helperを開く。
- * cleanup: stage離脱時にmessage listener、iframe、別window、5秒のarm timerを解除し、drop状態と一時的な照合状態を破棄する。
- * 対応環境: desktop browserの実native D&Dを対象とする。touch-only環境やiframeからのD&Dを受け付けないbrowserでは、欄を赤い禁止状態として表示し、操作を要求しない。
- * 人手確認: H-001/H-002/H-003/H-005/H-013/H-014/H-019/H-020/H-023/H-025で、3箱のカーソル、保存経路、別window経路、再入場とcleanupを確認する。
+ * S-510
+ *
+ * 目的: page内URI、OS file、別window URIという三つのnative drag sourceをDataTransferの形式と固定fixture hashで識別する。
+ * 最初の一手: 左列の画像を同じ列へdragする。次に中央画像をdownloadしてfile managerからdropし、最後に別windowを開いてその画像を右列へdragする。
+ * 箱ごとの解法:
+ * - B01「ページ画像の箱」: trusted dropがFilesを含まず`text/uri-list`を持ち、URIのorigin/pathが`drag-page.png`、fetchしたbytesのSHA-256が固定digestと一致すると開く。
+ * - B02「ファイルの箱」: 中央fixtureをOSへdownloadし、file managerからFiles付きtrusted dropを行い、先頭File bytesのSHA-256が`drag-file.png`の固定digestと一致すると開く。
+ * - B03「別窓画像の箱」: 同一origin別windowのdrag開始messageで5秒間armし、FilesなしURI・`busycube-round:{round}:window` marker・`drag-window.png`のorigin/path/hashが全て一致すると開く。
+ * 使用API: HTML Drag and Drop/DataTransfer/File、`text/uri-list`、fetch、Web Crypto SHA-256、`window.open()`、cross-window `postMessage()`、Web Crypto UUID。
+ * 権限・privacy: Git管理済み3画像だけを照合し、OSからdropされた先頭fileはmemory上でhash化するだけでuploadしない。file名・画像bytes・drag履歴を保存・送信しない。
+ * 対応環境: native desktop drag-and-drop、OS file drop、複数windowとDataTransfer URIを提供するbrowser。touch-only環境は対象外。
  */
 function S510Stage(props: Props) {
   const pageProblem = props.boxes[manifest.box.B01];

@@ -52,15 +52,13 @@ function loadGoogleIdentityServices(): Promise<void> {
 /**
  * S-770
  *
- * 目的: 通常OAuth loginではなく、公式managed IdPとbrowserが仲介するFedCM account chooserで身分証を一度だけ手動提示する。
- * 最初の一手: 公開originに専用Google Web client IDが設定された状態で「Googleの身分証を提示」を押し、browser所有UIのContinueを手動で完了する。
- * 箱ごとの解法: 公式Google Identity Services callbackが非空credentialと厳密な`select_by === "fedcm"`をcurrent attemptへ返した時だけB01を開く。token内容は読まない。
- * 開かない操作: `fedcm_auto`、`auto`、`user`、`btn`等、popup / redirect OAuth、Drive認可、mock provider、空token、取消、late callback、game製chooserでは開かない。
- * 使用API: FedCM、Google Identity Services JavaScript API、IdentityCredentialのbrowser mediation。
- * 権限・privacy: tokenをdecode、検証、表示、console出力、storage、Drive、analytics、backend、別endpointへ渡さず、callback内のboolean判定後に参照を破棄する。account属性を取得しない。
- * cleanup: cancel、reset、stage離脱、abortでGIS promptをcancelしattempt generationを更新してlate / duplicate callbackを拒否する。provider側grantは自動revokeしない。
- * 対応環境: FedCM対応browser、Google account、online接続、公開originへ登録した専用client IDが必要。通常OAuthへfallbackしない。
- * 人手確認: H-003/H-004/H-019/H-023/H-025/H-049でclient登録、native UI、manual Continue、cancel、automatic拒否、解除案内、token非保存を確認する。
+ * 目的: 通常OAuthではなく、Google managed IdPとbrowserが仲介するFedCM account chooserで利用者が一度だけ手動Continueする。
+ * 最初の一手: 公開origin用Google FedCM client IDを設定し、「Googleの身分証を提示」を押してbrowser所有account UIから手動で続行する。
+ * 箱ごとの解法:
+ * - B01「手動FedCMの箱」: current generationのGoogle Identity Services callbackが非空`credential`と厳密な`select_by === "fedcm"`を返すと開く。
+ * 使用API: FedCM/IdentityCredential、公式Google Identity Services JavaScript APIのinitialize/prompt/cancel、外部GIS script load。
+ * 権限・privacy: callback tokenは非空判定だけ行い、decode・表示・console・storage・Drive・analytics・backendへ渡さない。account属性を取得しない。
+ * 対応環境: secureな公開origin、登録済み専用Google Web client ID、online Google account、FedCM/IdentityCredential対応browser。
  */
 function S770Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

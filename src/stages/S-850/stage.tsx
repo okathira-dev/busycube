@@ -23,16 +23,15 @@ function copyDocumentStyles(target: Document) {
 }
 
 /**
- * S-850 — Document Picture-in-Pictureのdocumentへ実ProblemGiftBoxをReact portalで移動する。
- * 目的: video PiPや通常popupではなく、別documentを持つbrowser所有の浮かぶwindowへUIが移る感覚を体験する。
- * 最初の一手: 「浮かぶ画面を開く」を押し、main pageの台座から消えた箱を新しい常時手前windowで探す。
- * 箱ごとの解法: B01は`documentPictureInPicture.requestWindow()`の返したdocumentにportalした実ProblemGiftBoxへのtrusted clickで開く。clickのownerDocumentとviewがPiP側であることを確認する。
- * 開かない操作: main pageの台座、通常`window.open`、iframe、video PiP、script click、別documentの模倣箱では開かない。
- * 使用API: Document Picture-in-Picture、React `createPortal`、`pagehide`。必要なstylesheetだけをPiP documentへcloneする。
- * 権限・privacy: popup情報、camera、画面共有、保存、送信を使わない。browserが開いたPiP windowだけを保持する。
- * cleanup: PiPのpagehide、stage abort、再試行でportal stateとlistenerを解除し、保持しているPiP windowをcloseする。
- * 対応環境: Document Picture-in-Pictureを提供するdesktop Chromium系browser。通常PiPへのfallbackは作らない。
- * 人手確認: H-059で実PiP、close / reopen、通常popup等の負例、style、keyboard click、離脱cleanupを確認する。
+ * S-850
+ *
+ * 目的: browser所有Document Picture-in-Picture windowの別documentへ実GiftBoxをReact portalで移し、そのwindow内で操作する。
+ * 最初の一手: 「浮かぶ画面を開く」を押し、常時手前のPiP windowへ移った箱を探してclickする。
+ * 箱ごとの解法:
+ * - B01「浮かぶ文書の箱」: `requestWindow()`が返したdocumentへportalした箱をtrusted clickし、ownerDocumentがPiP document、native event viewが保持中PiP windowと一致すると開く。
+ * 使用API: Document Picture-in-Picture API、React `createPortal()`、cross-document stylesheet clone、Window pagehide。
+ * 権限・privacy: camera・screen capture・window内容を取得せず、browserが返したPiP Window/Document参照だけを表示中に保持する。dataを保存・送信しない。
+ * 対応環境: Document Picture-in-Pictureを提供するdesktop Chromium系browser。
  */
 function S850Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

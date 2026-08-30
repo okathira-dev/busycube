@@ -43,16 +43,17 @@ async function isMissing(directory: FileSystemDirectoryHandle, name: string) {
 }
 
 /**
- * S-870 — 空の使い捨てfolderにgameがseedした3ファイルを、OS側で編集・削除・作成する。
- * 目的: page内のfile inputではなく、playerが選んだdirectoryの外部file操作をbrowserが再読込できる体験にする。
- * 最初の一手: 「空のフォルダーを選ぶ」から新規の空folderを選ぶ。空でないfolderは安全のため受け付けず何も変更しない。
- * 箱ごとの解法: B01は`rewrite-me.txt`をUTF-8で`busycube{edited_outside_the_page}`一行（BOMと末尾改行は許容）へ、B02は`delete-me.txt`を削除、B03は非空の通常`create-me.txt`を作る。画面へ戻ってvisible中の実directory再走査で開く。
- * 開かない操作: game内textarea、表示の文言変更、選択前のfolder、非空folder、synthetic File、hidden input、ページを閉じた間のtimer、別名fileでは開かない。
- * 使用API: File System Access API、`showDirectoryPicker({mode:"readwrite"})`、`FileSystemDirectoryHandle`、`getFileHandle`、`createWritable`、focus / visibility時の限定polling。
- * 権限・privacy: user gesture中に使い捨てfolderだけを選ばせる。handleはmemoryだけに置き、IndexedDB保存・アップロード・既存fileの削除はしない。
- * cleanup: stage離脱でinterval / focus / visibility listenerを解除する。選択folderとseed fileは自動削除しないため、playerがOS側で手動削除できる。
- * 対応環境: secure contextでFile System Access APIを提供するChromium系browser。permission拒否・cancelを成功へfallbackしない。
- * 人手確認: H-061でempty / non-empty拒否、3種類のOS操作、BOM・改行、visible時だけの確認、re-entry cleanupを確認する。
+ * S-870 — OSで書き換わるフォルダー
+ *
+ * 目的: 選択した空フォルダーへゲームが用意したファイルを、ページ外のファイル管理・編集操作で変化させ、その実体を再読込する。
+ * 最初の一手: 「空のフォルダーを選ぶ」を押し、削除してよい新規の空フォルダーを読み書き可能として選ぶ。ゲームが`rewrite-me.txt`と`delete-me.txt`を作った後、OS側で操作する。
+ * 箱ごとの解法:
+ * - B01: OSのテキストエディターで`rewrite-me.txt`を開き、内容を`busycube{edited_outside_the_page}`と末尾改行だけにして保存する。画面へ戻った時の`File.text()`がその文字列と完全一致すると開く。
+ * - B02: OSのファイル管理画面で`delete-me.txt`を削除する。画面へ戻った再走査で`getFileHandle("delete-me.txt")`が`NotFoundError`になると開く。
+ * - B03: 同じフォルダーへ`create-me.txt`という通常ファイルを新規作成し、1 byte以上の内容を保存する。再走査した`File.size`が0より大きいと開く。
+ * 使用API: File System Access APIの`showDirectoryPicker({mode:"readwrite"})`、`FileSystemDirectoryHandle`、`getFileHandle()`、`createWritable()`、`File.text()`、`File.size`。
+ * 権限・privacy: 空であることを確認した選択フォルダーだけへseedファイルを書き、handleはmemory内だけに保持する。ファイル内容やhandleを保存・送信しない。
+ * 対応環境: secure contextでFile System Access APIのdirectory pickerとread/write handleを提供するChromium系browser。
  */
 function S870Stage(props: Props) {
   const rewriteProblem = props.boxes[manifest.box.B01];

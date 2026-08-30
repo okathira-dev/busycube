@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-380 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "三つの資格情報", en: "Three credentials" },
   passkeyAccount: { ja: "passkeyアカウント", en: "Passkey account" },

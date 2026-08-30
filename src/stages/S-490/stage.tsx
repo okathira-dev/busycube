@@ -15,15 +15,13 @@ import { locale } from "./locale";
 /**
  * S-490
  *
- * 目的: 「名前を置く」で、B01「busycubeの箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-490の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをhuman-test-matrix.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: 自由入力欄へstage名の正規形を置き、caseや空白を補正しない完全一致を確認する。
+ * 最初の一手: 箱の下のtext inputへ半角小文字で`busycube`と入力する。
+ * 箱ごとの解法:
+ * - B01「busycubeの箱」: inputのchangeごとに現在valueを読み、値が厳密に8文字の`busycube`と一致した時点で開く。
+ * 使用API: HTML text inputとReactのcontrolled `onChange` event。
+ * 権限・privacy: 権限を要求せず、入力値はこのcomponentのmemory内表示・一致判定にだけ使い、保存・送信しない。
+ * 対応環境: 標準HTML text inputへkeyboard、IME、paste等で文字列を入力できる一般的なbrowser。
  */
 function S490Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

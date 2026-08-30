@@ -19,20 +19,18 @@
 - [Vite environment variables](https://vite.dev/guide/env-and-mode)
 - [GitHub Actions variables](https://docs.github.com/actions/concepts/workflows-and-actions/variables)
 
-確認順: 第2段階。
-
 ## Google Cloud設定
 
 1. Google Cloudで本番用プロジェクトを作成または選択し、Google Drive APIを有効にする。開発用と本番用を分離する場合は、それぞれ別のClient IDとoriginを持たせる。
-2. Google Auth PlatformのBrandingは、[Google Auth Platformブランディング](./google-auth-platform-branding.md)の公開値、ロゴ、連絡先方針、所有確認、検証手順に従って登録する。
+2. Google Auth PlatformのBrandingは、[Google Auth Platform](./google-auth-platform.md)の公開値、ロゴ、連絡先方針、所有確認、公開設定に従って登録する。
 3. Audienceを設定する。開発中はTestingとして利用者をTest usersへ追加する。一般公開時はExternal / In productionへ移し、表示されるVerification Centerの要件を完了する。
 4. Data Accessへ `https://www.googleapis.com/auth/drive.appdata` だけを追加する。Cloud設定とコードの両方で同じ最小scopeにする。
 5. ClientsでApplication typeが「Web application」のOAuth Clientを作成する。
 6. Authorized JavaScript originsへ、実際に配信するoriginを完全一致で登録する。
    - ローカル例: `http://localhost:5173`。ポートが変わる場合はそのoriginも登録する。
-   - 本番例: Cloudflare Workersへ設定した`https://<production-host>`。
+   - 本番: `https://<production-host>`。
    - pathやアプリ内のHTMLパスはoriginへ含めない。
-   - 実在しない`workers.dev` URLを推測で登録しない。本番hostnameは[デプロイ手順](./cloudflare-workers-deployment.md)に従って確定する。
+   - 実在しない`workers.dev` URLを推測で登録しない。本番hostnameは[デプロイ手順](./cloudflare-workers.md)に従って確定する。
 7. 本実装はGIS token modelのポップアップcallbackを使うため、Authorized redirect URIは使用しない。
 8. 発行されたブラウザ用OAuth Client IDをローカルまたはGitHub Actionsの設定へ登録する。Client Secretは使用しない。
 
@@ -82,7 +80,7 @@ CloudflareのPreviewとRelease Candidate workflowは、同名のVariableを先�
 
 VariableとSecretがどちらも未登録または空なら、Drive UIだけが未設定状態になり、buildとWorkers配信は成功する。値を変更しても既存の配信物は変化しないため、mainへの再pushまたはActionsの`workflow_dispatch`でRelease Candidateを再buildし、自動deployを実行する。
 
-Workers本番で認可エラーになった場合は、次を順に確認する。
+Workers本番で認可エラーになった場合の診断順は次のとおりである。
 
 1. workflowのbuildが新しいVariableまたはSecretの設定後に実行された。
 2. Client IDがGoogle Auth PlatformのWeb application clientと一致する。
@@ -113,6 +111,6 @@ Workers本番で認可エラーになった場合は、次を順に確認する�
 
 同期失敗時に、ゲームはローカル進捗を変更しない。通信・認可・競合では再試行、再接続、Driveを変更せずローカルで続ける選択を出す。破損replicaでは対象raw JSONの保存、対象replicaだけの削除、ローカル継続を選べる。未来versionでは更新／再読込、ローカル進捗の書き出し、ローカル継続を案内し、対象replicaの削除は失われる可能性を確認してから実行する。
 
-## 既知の挙動と公開ゲート
+## 既知の挙動
 
-`drive.appdata` だけではGoogleアカウントのIDを取得しない。このため「前回と同じアカウントか」は判定・表示しない。毎回account selectorを出し、選んだアカウントの進捗と現在のローカル進捗をgrow-only統合する。H-017では、AからBへ切り替えた際にこの説明どおり両方のクリアが残り、拒否・取消・通信失敗時にはローカル進捗が変更されないことを確認する。
+`drive.appdata` だけではGoogleアカウントのIDを取得しない。このため「前回と同じアカウントか」は判定・表示しない。毎回account selectorを出し、選んだアカウントの進捗と現在のローカル進捗をgrow-only統合する。拒否・取消・通信失敗時にはローカル進捗を変更しない。

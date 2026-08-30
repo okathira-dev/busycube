@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-620 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   loadingFont: {
     ja: "Unicode用fixtureフォントを読み込み中…",

@@ -10,7 +10,7 @@
 | D-001 | タイトルは `Busycube: Web API Explorer` とする | 技術的な核であるWeb APIを名称に残すため |
 | D-002 | キャッチコピーは「いつものブラウザが、パズルになる。」とする | 一般ユーザーへ体験を短く伝えるため |
 | D-003 | 日英対応を初期スコープに含める | 非言語中心でも権限・設定・プライバシー説明が必要なため |
-| D-004 | Cloudflare Workers Static Assetsと最小のHono Workerで配信する | ブラウザだけで成立する体験を保ちつつ、Payment Handlerに必要なHTTP response headerと専用originを提供するため |
+| D-004 | 静的WebアプリとしてGitHub Pagesで配信する | ブラウザだけで成立する体験と、自前サーバーを持たない方針を両立するため |
 | D-005 | 進捗はIndexedDBを主保存先とするローカルファースト構成にする | 未連携でも遊べ、通信やOAuth障害で進捗を失わないため |
 | D-006 | Google Drive `appDataFolder` は任意のバックアップ・引き継ぎに使う | ユーザー自身の保存領域を使い、自前DBを避けるため |
 | D-007 | 全クリ前提にしない | API、権限、ハードウェア、OS、ブラウザの差をゲームの一部にするため |
@@ -156,34 +156,23 @@
 | D-146 | S-810をVFR cadence判定からnative seek停止時のアスペクト比判定へ更新する | 固定MSE assetの提示frameをplayerが自分で探す体験を残しつつ、1:1、4:3、16:9、9:20の4箱へ明確に分ける。`seeked`後の`requestVideoFrameCallback()`で実`videoWidth / videoHeight`を読み、各相対5%以内だけを開く。通常再生、pause、CSS寸法、script自動seekは成功条件にしない（第19段階で決定） |
 | D-147 | S-780を4箱へ拡張し、browser所有chooserで指定walletを選ぶ問題を追加する | ○/◇の2 Payment Appを同じ架空methodへ登録する。B01承認、B02拒否、B03再試行はwalletを限定せず従来どおりにし、B04だけは◇workerへcurrent requestのtrusted `PaymentRequestEvent`が届いた時点で開く。その後のApprove / Decline / retryは限定せず、game製picker、page click、登録済み判定、stale / untrusted messageを代替clearにしない。通常のGitHub Pagesでは任意routeの`Link: rel="payment-method-manifest"` response headerを設定できないため、公開時はheader ruleを持つmanaged static hostを用いる。現行コードは69stage・159箱（第20段階で決定） |
 | D-148 | POC-035〜054の個別レビューを完了し、10件を新規stage候補、10件をstage不採用へ確定する | 採用はPointer Lock 3箱、Idle Detection 2箱、IntersectionObserver 1箱、Document PiP 1箱、EditContext 3箱、File System Access 3箱、Compression Streams 3箱、任意element Fullscreen 1箱、MediaSource継ぎ足し1箱、runtime WebVTT cue生成1箱。不採用はKeyboard Layout Map、URL navigation、Sanitizer、WebGL2、Fetch conditional、MessageChannel、File and Directory Entries、Streams、Trusted Types、WebCodecs。PoCがpositiveでも、player固有の操作やbrowser / OS所有surfaceがなくgame製UIだけで代替できるものはstage化しない。内部実装での利用は採用stage・箱・API件数へ数えない。新規stage IDと全体件数は実装時まで予約・加算しない（第21段階で決定） |
-| D-149 | D-148採用stageの既存stageとの差分と実装前ゲートを固定する | Fullscreenはvideo player stage S-350へ統合せず任意HTML要素内clickの専用stage、MediaSourceは完成済みMSE timelineをseekするS-810と分けてplayer自身がsegmentをappendするstage、WebVTTは固定字幕を選ぶS-350-B05と分けて再生中に`VTTCue`を生成するstageとする。Compression Streamsは3形式の伝達性を製品UXで再評価し、MediaSourceの具体的な映像内容はfixture生成前に再相談する。他の成功条件・負例・cleanupは`next-poc-and-stage-work.md`を現行キューの正とする（第21段階で決定） |
+| D-149 | D-148採用stageの既存stageとの差分と実装前ゲートを固定する | Fullscreenはvideo player stage S-350へ統合せず任意HTML要素内clickの専用stage、MediaSourceは完成済みMSE timelineをseekするS-810と分けてplayer自身がsegmentをappendするstage、WebVTTは固定字幕を選ぶS-350-B05と分けて再生中に`VTTCue`を生成するstageとする。Compression Streamsは3形式の伝達性を製品UXで再評価し、MediaSourceの具体的な映像内容はfixture生成前に再相談する。他の成功条件・負例・cleanupも実装前に固定する（第21段階で決定） |
 | D-150 | DR-041 Popover APIを新規G-091 / S-920の3箱クリック迷路として実装する | hoverやcommand列の推理ではなく、宣言的invokerで入れ子Popoverを開閉し、固定treeの3終点にある実箱を押す体験へ確定する。各goalの影は、実経路と同じ部屋寸法・十字button位置・`position-area`・`position-try-fallbacks`を持つ非操作CSS anchor chainの終点として常時layoutする。座標をJavaScriptで測定・転記せず、画面幅・画面端で配置が変わっても同じCSSアルゴリズムで実goal Popoverと影を一致させる。runtimeの経路・座標判定はせず、既知goal内のtrusted clickだけを開箱条件にする（第22段階で確定） |
 | D-151 | S-920の迷路座標系を同一origin iframeの固定viewportへ閉じ込める | iframe外周をPopoverが越えられない実際の表示不可領域にする。外周は斜線の額縁で見せ、B01はinline、B02はblock方向の`position-try-fallbacks`を必ず踏む。実経路と影経路は同じiframe viewport内でbrowserのCSS layoutへ同時に追従し、親page scroll、iframe resizeともJavaScript再測定を行わない（第22段階で決定） |
-
-## 仮置きしている事項
-
-| ID | 仮置き | 変更してよい条件 |
-| --- | --- | --- |
-| T-001 | 大区分は5系統とする | API棚卸しまたはMVP試作で分類が体験を損なうと分かった場合 |
-| T-002 | 大区分の仮称に「基盤」「端末」「保存」「通路」「実験」を使う | アート・ゲームデザイン検討でより適切な名称が決まった場合 |
-| T-003 | 初期版は各系統から少数のステージを選ぶ | 試作評価に必要な組み合わせが変わった場合 |
-| T-004 | 既存リポジトリ内の1つのViteエントリとして配置する | PWAスコープやService Worker分離に重大な問題がある場合 |
+| D-152 | D-004のGitHub Pages配信を廃止し、Cloudflare Workers Static Assetsと最小のHono Workerへ移行する | root scopeのPWAと複数HTML assetをCloudflare Viteプラグインでbuildし、Payment Handler manifestとnetwork probeだけをHono routeで返す。HTTP response headerをService Workerで補わず、PR Preview、検証済みVersion IDの本番昇格、冪等なCI再実行をWorkersのVersion APIで管理する。これによりD-147のmanaged host要件も満たす（第26段階で決定） |
+| D-153 | D-054とD-068のmind map／6 cluster配置を廃止し、ステージをplay条件別の3つのflatな独立groupへ並べる | 現行の89stageでは関連線とmap metadataの保守がJSDoc・manifestと重複し、攻略順やcross-stage clueを暗黙に固定するため。カード全面button、累積`x/n`、semantic list、keyboard順、S-190のcatalogue外縁markerは維持し、map topologyとclue edgeだけを持たない（第25段階で決定） |
+| D-154 | Google Auth PlatformのBranding検証と公開操作は完了した | Google Cloud Consoleの確認ステータスが「ブランディングは検証済みで、ユーザーに表示されています。」となったため、O-005を解決する（2026-08-30確認） |
+| D-155 | 最終名称を`Busycube`とし、公開問い合わせ先とGoogle Cloud Console上の連絡先を現行設定で運用する | 名称利用、利用者向け窓口、Googleからの連絡を受ける窓口に問題がないことを確認したため、O-008を解決する。連絡先の実値はリポジトリへ記録しない（2026-08-30確認） |
 
 ## 未決事項
 
 | ID | 論点 | 決定に必要な材料 | 決定期限 |
 | --- | --- | --- | --- |
-| O-001 | 箱を中核にした最終アートディレクションと大区分名 | 競合作品調査、複数の画面試作、非言語での理解度 | UI実装前 |
-| O-002 | 初期ステージの正確な組み合わせ | API再調査、試作コスト、対応環境、ギミック重複確認 | ステージ実装前 |
-| O-003 | ステージ一覧の最終レイアウト | D-054でmind mapを採用済み。枝数、mobile viewport、keyboard順を技術スパイクで確定する | 解決済み・D-054参照 |
-| O-004 | どの途中状態をDrive同期するか | 競合例、データ量、別端末UX | Drive実装前 |
-| O-005 | Google OAuth公開設定とブランド確認の範囲 | Google Cloud Consoleの現行要件、公開ドメイン | 公開設定前 |
-| O-006 | サーバー依存APIを本編へ含めるか | 静的配信との両立方法、外部依存の保守コスト | API拡張フェーズ |
-| O-007 | アクセシビリティ用ヒントの粒度 | 非言語性との両立、テスト参加者の所見 | 初期リリース前 |
-| O-008 | `Busycube` の最終名称利用可否 | 商標・検索・既存OSSとの混同調査 | 公開告知前 |
+| O-006 | Honoの動的routeをゲーム本編へ広げるか | 最小Worker境界、外部依存、security、監視・保守コスト | API拡張時 |
+| O-007 | アクセシビリティ用ヒントの粒度 | 非言語性との両立、テスト参加者の所見 | 次回の公開判定前 |
 
 ## 更新ルール
 
 - 決定を変える場合は、既存行を書き換えるだけでなく、理由と前後関係を追記する。
-- ブラウザ対応状況のように時間で変わる情報は、この文書ではなくAPI調査台帳へ記録する。
+- ブラウザ対応状況のように時間で変わる情報は、各ステージのJSDoc、manifest、人手確認台帳へ記録する。
 - 実装都合だけでプロダクト方針を変えない。変更が必要なら、先にこのログへ論点を追加する。

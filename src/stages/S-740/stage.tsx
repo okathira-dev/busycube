@@ -40,15 +40,13 @@ function publicUrl(path: string): string {
 /**
  * S-740
  *
- * 目的: installed PWAを閉じてwindow clientが0件になった後も、browser schedulerが実Service Workerを起こせる性質を植物の成長として見せる。
- * 最初の一手: 「温室を預ける」で製品workerとPeriodic Background Sync tagを登録し、水を預けてBusycubeの全windowを閉じる。
- * 箱ごとの解法: 水を預けた後のclient 0件の実`periodicsync`で発芽し、再訪して光を預けた後の別の実eventで開花assetがCache Storageへ届く。再訪時にphase 2、clientless event 2回、cache済み開花画像を確認するとB01が開く。
- * 開かない操作: foregroundでの読込、timer、通常Background Sync、synthetic event、DevTools発火、通知、日時変更、水と光の連打、cache URLの直接閲覧では開かない。
- * 使用API: Periodic Background Sync、Service Worker、Clients API、IndexedDB、Cache Storage。
- * 権限・privacy: 世話の種類とphaseだけをlocal storageへ置き、時刻、通知、account、network情報を保存・同期・送信しない。
- * cleanup: 長期ギミックなのでstage離脱では登録を保持する。「温室を片付ける」だけがtag、registration、cache、IndexedDBを明示削除する。
- * 対応環境: 公開HTTPSでinstall済みPWAかつPeriodic Background Syncを許可するbrowser。localhostのproperty存在だけでは成功にしない。
- * 人手確認: H-005/H-014/H-018/H-019/H-021/H-023/H-025/H-045で二回の実background event、window 0件、長期再訪、取消、cleanupを確認する。
+ * 目的: installed PWAのwindowが0件でもbrowser schedulerがService Workerを起動するPeriodic Background Syncを、二回の植物成長として確認する。
+ * 最初の一手: 「温室を預ける」でtagを登録し、「水を預ける」を押してBusycubeの全windowを閉じ、browserによる実periodic syncを待つ。
+ * 箱ごとの解法:
+ * - B01「開花の箱」: client 0件のperiodicsyncでpending waterをphase 1へ進め、再訪してpending lightを預け、別のclientless eventでphase 2へ進める。再訪時にclientlessEventsが2以上かつCache Storageに`bloom.svg`があれば開く。
+ * 使用API: Periodic Background Sync、Service Worker/Clients API、IndexedDB、Cache Storage、PWA installation。
+ * 権限・privacy: 保存するのはphase、pending care種別、event countだけで、時刻・account・network・通知情報を保持しない。stage離脱後も長期ギミック用にlocal registration/stateを維持する。
+ * 対応環境: 公開HTTPSでinstall済みPWAへPeriodic Background Syncを許可し、window 0件でもworkerを二回起動できるbrowser/OS。
  */
 function S740Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

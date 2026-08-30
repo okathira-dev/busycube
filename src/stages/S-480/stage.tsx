@@ -77,15 +77,21 @@ const preferenceDefinitions = [
 /**
  * S-480
  *
- * 目的: browser既定文字サイズの4帯と、User Preferences APIが実際に上書きした5種類の`prefers-*`状態を別々の箱で観測する。
- * 最初の一手: 上段はbrowserの既定文字サイズを変更し、下段は各設定buttonからbrowser所有のoverride要求を開始する。
- * 箱ごとの解法: B01〜B04は隠した1rem probeの実computed font-sizeが各帯へ入ると開く。B05〜B09は対応`requestOverride()`が成功し、PreferenceObjectの`override`または`value`と実`matchMedia()`が要求値へ一致した時だけ開く。
- * 開かない操作: page zoom、CSS class、合成media-query event、API欠損時の独自toggle、別設定のoverride、request失敗では開かない。
- * 使用API: CSS Fonts、getComputedStyle、ResizeObserver、User Preferences API、matchMedia。
- * 権限・privacy: preference値は現在のstage内で照合するだけで保存・同期・送信しない。override要求はplayerの明示buttonからだけ行う。
- * cleanup: clear button、stage離脱、abortでこのstageが設定した全overrideを`clearOverride()`し、observerを解除してprobeを削除する。
- * 対応環境: B01〜B04はResizeObserver対応browser。B05〜B09は`navigator.preferences`と対応PreferenceObjectを公開するbrowserだけで操作可能にする。
- * 人手確認: H-003/H-004/H-019/H-020/H-023/H-025で各overrideのnative UI、実media query、拒否、clear、再入場を確認する。
+ * 目的: browser既定文字sizeの四つの実測帯と、User Preferences APIで明示overrideした五種類の`prefers-*`状態を個別に観測する。
+ * 最初の一手: browser設定の既定font sizeを変えて上段4箱を集め、下段は各「〜にする」buttonから対応preference overrideを要求する。
+ * 箱ごとの解法:
+ * - B01「小さい文字の箱」: bodyへ置いた`font-size:1rem` probeのcomputed font sizeが15 px未満なら開く。
+ * - B02「標準文字の箱」: 同じcomputed font sizeが15 px以上18 px未満なら開く。
+ * - B03「大きい文字の箱」: 同じcomputed font sizeが18 px以上22 px未満なら開く。
+ * - B04「最大文字の箱」: 同じcomputed font sizeが22 px以上なら開く。既定font sizeを変えながら4帯を訪問間で累積できる。
+ * - B05「暗い配色の箱」: `colorScheme.requestOverride("dark")`成功後、objectのoverride/valueがdarkで`prefers-color-scheme: dark`もmatchすると開く。
+ * - B06「高コントラストの箱」: `contrast.requestOverride("more")`成功後、報告値がmoreで`prefers-contrast: more`もmatchすると開く。
+ * - B07「動きを減らす箱」: `reducedMotion.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-motion: reduce`もmatchすると開く。
+ * - B08「透明度を減らす箱」: `reducedTransparency.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-transparency: reduce`もmatchすると開く。
+ * - B09「通信量を減らす箱」: `reducedData.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-data: reduce`もmatchすると開く。
+ * 使用API: `getComputedStyle()`、ResizeObserver、User Preferences APIのvalidValues/requestOverride/clearOverride、`matchMedia()`。
+ * 権限・privacy: overrideは各button操作時だけ要求し、font size/preference値は現在判定にだけ使って保存・送信しない。このstageが設定したoverrideはclear操作または離脱時に解除する。
+ * 対応環境: B01〜B04はcomputed styleとResizeObserver、B05〜B09は`navigator.preferences`の対応PreferenceObjectと各media featureを実装するbrowser。
  */
 function S480Stage(props: Props) {
   const textProblems = [

@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-330 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "消えない灯り", en: "The light that stays" },
   keepAwake: { ja: "灯りを保つ", en: "Keep the light awake" },

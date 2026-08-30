@@ -4,7 +4,7 @@
 
 Busycubeは、ブラウザそのものを手掛かりにするパズルゲームです。画面の中だけでなく、タブ、URL、ファイル、端末、権限、ブラウザの反応を観察して、箱を開けていきます。
 
-[Busycubeを遊ぶ](https://okathira-dev.github.io/busycube/)
+[Busycubeを遊ぶ](https://busycube.okathira.workers.dev/)
 
 ## 遊び方
 
@@ -16,8 +16,8 @@ Busycubeは、ブラウザそのものを手掛かりにするパズルゲーム
 
 カメラ、マイク、位置情報、通知、外部機器などの権限は、必要な箱を自分で操作したときだけ求めます。許可しない場合も、ゲーム全体は利用できます。
 
-進捗は通常、このブラウザに保存されます。希望する場合だけ、Google Driveのアプリ専用領域へバックアップできます。詳しくは[プライバシーポリシー](https://okathira-dev.github.io/busycube/privacy/)と[利用規約](https://okathira-dev.github.io/busycube/terms/)を確認してください。
+進捗は通常、このブラウザに保存されます。希望する場合だけ、Google Driveのアプリ専用領域へバックアップできます。詳しくは[プライバシーポリシー](https://busycube.okathira.workers.dev/privacy/)と[利用規約](https://busycube.okathira.workers.dev/terms/)を確認してください。
 
 ## 開発者向け
 
-セットアップ、実装方針、検証、Google Auth Platform設定、現行資料と履歴資料の区別は、[開発者向けドキュメント](./docs/README.md)を参照してください。
+仕様、ローカル開発、デプロイ環境構築、Google Auth Platform設定、現在の残作業は、[開発者向けドキュメント](./docs/README.md)を参照してください。

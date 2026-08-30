@@ -14,13 +14,16 @@ import { manifest } from "./manifest";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 /**
- * 目的: 再訪とoffline beaconを観測する。
- * 最初の一手: ステージへ入り直すか、offline beaconを受け取る。
- * 箱ごとの解法: B01は再訪、B02はbeacon条件を満たす。
- * 開かない操作: 保存値や画面表示だけの変更。
- * API/権限: Service WorkerとIndexedDBを使い、権限は不要。
- * cleanup/環境: listenerとDB要求を離脱時に止め、対応環境で動作する。
- * 人手確認: H-001。
+ * S-060
+ *
+ * 目的: 初回訪問とは別の再入場と、offline中に送ったbeaconをService Workerが受領した事実をそれぞれ確認する。
+ * 最初の一手: いったん別stageへ移動して戻りB01を開く。B02はworker制御下で端末をofflineにして「投函する」を押す。
+ * 箱ごとの解法:
+ * - B01「再訪の箱」: 初回入場で`entered` markerと同期flagを記録し、後の入場開始時点でどちらかが既に存在すれば開く。
+ * - B02「オフライン投函の箱」: offlineかつService Worker制御中に生成したnonceを`sendBeacon`で投函し、遷移後の`offline-beacon` queryとIndexedDBの`receipts`に同じnonceの受領記録があれば、そのrecordを消費して開く。
+ * 使用API: stage進捗marker、同期revisit flag、`navigator.onLine`、online/offline event、Service Worker controller、`navigator.sendBeacon()`、IndexedDB、`location.assign()`、`crypto.randomUUID()`。
+ * 権限・privacy: 権限を要求せず、再訪flagと一回限りのrandom nonceだけを保存する。receiptは成功判定時に削除し、beacon本文へ個人情報を含めない。
+ * 対応環境: Service Workerに制御され、offline navigation・Beacon API・IndexedDBを利用できるsecure contextのbrowser。
  */
 function S060Stage(props: Props) {
   const returnBox = props.boxes.B01;

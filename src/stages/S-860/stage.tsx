@@ -110,16 +110,17 @@ function corruptedCopy(locale: Locale) {
 }
 
 /**
- * S-860 — EditContextを通常の見出しと本文へattachし、共通copyの誤字・脱字・余分語を直接直す。
- * 目的: input / textarea / contenteditableではない文章が、IMEやselectionを含むbrowserの編集surfaceになる感覚を体験する。
- * 最初の一手: 題名、説明、コピーの行をクリックまたはTabでfocusし、見えている文章へそのまま入力する。
- * 箱ごとの解法: B01は`Busycuve`を`Busycube`へ、B02はlocaleごとのsubtitleへ欠落した一語を戻し、B03はtaglineから余分な一語を消す。共通product copyと`messages`の完全一致で対応箱が開く。
- * 開かない操作: input、textarea、contenteditable、別の隠しinput、DOM textだけの書換え、synthetic InputEventでは開かない。EditContextの実textupdateだけで状態を更新する。
- * 使用API: EditContext、textupdate、selection、character/control/selection bounds、ResizeObserver。正答copyはAppと共有しstage内へ重複しない。
- * 権限・privacy: 権限、保存、送信は行わない。編集中の文字列はstage memoryにだけ保持し、成功時は既存progressへ事実だけを渡す。
- * cleanup: stage離脱で各HTMLElementからEditContextをdetachし、event listenerとResizeObserverを解除する。
- * 対応環境: `window.EditContext`を提供するbrowser。未対応時はStageHostが操作を要求しない。
- * 人手確認: H-060で日英、keyboard、IME、paste、selection、再入場、通常inputがないことを確認する。
+ * S-860
+ *
+ * 目的: input/contenteditableではない見出し・本文へEditContextをattachし、共通product copyの誤字・欠語・余分語を直接校正する。
+ * 最初の一手: 題名行をclickまたはTab focusし、`Busycuve`のvをbへ直して`Busycube: Web API Explorer`にする。残り2行も見本どおり校正する。
+ * 箱ごとの解法:
+ * - B01「題名校正の箱」: EditContext `textupdate`後の題名が厳密に`Busycube: Web API Explorer`なら開く。
+ * - B02「説明校正の箱」: 日本語は欠けた`新感覚`を戻して`ブラウザそのものが鍵となる新感覚パズル。`、英語は`game`を戻して共通subtitleと完全一致すると開く。
+ * - B03「コピー校正の箱」: 日本語は余分な`突然`、英語は`suddenly`を削り、共通tagline（`いつものブラウザが、パズルになる。` / `Your everyday browser becomes the puzzle.`）と一致すると開く。
+ * 使用API: EditContextのtextupdate/updateText/updateSelection、control/selection/character bounds、ResizeObserver、通常HTMLElement focus。
+ * 権限・privacy: 権限を要求せず、編集文字列は各lineのcomponent memoryにだけ保持する。入力内容やselectionを保存・送信しない。
+ * 対応環境: EditContextとIME/selection連携、ResizeObserverを実装するbrowser。
  */
 function S860Stage(props: Props) {
   const titleProblem = props.boxes[manifest.box.B01];

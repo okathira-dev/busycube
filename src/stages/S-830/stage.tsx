@@ -15,16 +15,16 @@ import { stageText } from "../locale";
 import { locale } from "./locale";
 
 /**
- * S-830 — IdleDetectorが返す実idle/unlockedとscreen lockedを別々の箱へ記録する。
- * 目的: timerやvisibilityでは代用できない、OSとbrowserが共同で判断する端末の離席状態を体験する。
- * 最初の一手: 見守りを始めるbuttonからIdle Detectionを許可し、60秒thresholdの実detectorを開始する。
- * 箱ごとの解法: B01は実`userState === "idle"`かつ`screenState === "unlocked"`、B02は実`screenState === "locked"`をchange eventで観測した時だけ開く。順序は問わない。
- * 開かない操作: 60秒timer満了、Page Visibility、blur、画面の見た目だけのlock、synthetic change eventでは開かない。permission拒否は成功にしない。
- * 使用API: Idle Detection API、`IdleDetector.requestPermission()`、`IdleDetector.start()`、AbortSignal。detector stateだけを訪問中に読む。
- * 権限・privacy: Idle Detection許可を明示操作の後だけ求める。離席時刻、入力内容、端末識別子は保存・送信しない。
- * cleanup: stage離脱・再開始でAbortControllerをabortし、change listenerを解除する。lockを観測済みなら既存progressへ直ちに成功を渡す。
- * 対応環境: secure contextでIdleDetectorを提供するbrowser。permission policyやuser拒否ではunsupported / denied状態を説明する。
- * 人手確認: H-057でallow / deny、60秒idle-unlocked、OS lock、復帰、abort、foreground timerだけの負例を確認する。
+ * S-830
+ *
+ * 目的: OSとbrowserが共同で判断するidle/unlocked状態とscreen locked状態をIdleDetectorから別々に観測する。
+ * 最初の一手: 「見守りを始める」を押してIdle Detectionを許可し、端末へ触れず60秒待つ。もう一方はOSの実screen lockを行う。
+ * 箱ごとの解法:
+ * - B01「離席の箱」: threshold 60,000 msのdetectorで`userState === "idle"`かつ`screenState === "unlocked"`をchange後またはstart直後に観測すると開く。
+ * - B02「画面ロックの箱」: 同じdetectorの`screenState`が厳密に`locked`なら開く。二状態の観測順序は問わない。
+ * 使用API: Idle Detection APIの`requestPermission()`、IdleDetector start/state/change、AbortController。
+ * 権限・privacy: Idle Detection permissionは明示button後に要求し、現在のcoarse stateだけを判定する。離席時刻・入力内容・端末IDを保存・送信しない。
+ * 対応環境: secure contextでIdleDetectorとOS screen lock stateを公開し、permission policyを満たすbrowser/OS。
  */
 function S830Stage(props: Props) {
   const idleProblem = props.boxes[manifest.box.B01];

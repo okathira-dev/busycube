@@ -16,15 +16,15 @@ import { useRef } from "react";
 /**
  * S-560
  *
- * 目的: 「三軸の一回転」で、B01「X回転の箱」、B02「Y回転の箱」、B03「Z回転の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-560の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをhuman-test-matrix.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: gyroscopeの角速度絶対値を時間積分し、端末が各axis回りに累計1回転分動いたことを軸別に集める。
+ * 最初の一手: 「センサーを開始」を押し、端末をX軸回りに一回転させ、続いてY軸・Z軸回りにも一回転させる。
+ * 箱ごとの解法:
+ * - B01「X回転の箱」: X角速度の絶対値×経過秒を累積し、2π rad以上になると開く。
+ * - B02「Y回転の箱」: Y角速度の絶対値×経過秒を累積し、2π rad以上になると開く。
+ * - B03「Z回転の箱」: Z角速度の絶対値×経過秒を累積し、2π rad以上になると開く。各sampleの積分時間は最大0.1秒に制限する。
+ * 使用API: Generic Sensor APIの`Gyroscope({frequency:60})`、x/y/z角速度とsensor timestamp、`performance.now()` fallback。
+ * 権限・privacy: motion sensor accessは明示buttonから開始し、軸別累積角だけをmemoryに持つ。生角速度・姿勢履歴を保存・送信しない。
+ * 対応環境: Gyroscopeとtimestamp付き三軸角速度を十分な頻度で提供するbrowser/端末。
  */
 function S560Stage(props: Props) {
   const problems = [

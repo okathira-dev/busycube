@@ -121,16 +121,18 @@ function createSweepMediaSource(signal: AbortSignal) {
 }
 
 /**
- * S-810 — 固定assetをMSEで連結したVP8 WebMをnative controlsでシークする。
- * 目的: CSSで引き伸ばした表示ではなく、シークを止めた実提示frameのnative寸法からアスペクト比を読む。
- * 最初の一手: 入場時に表示される固定スウィープassetを、native controlsで止めるか停止中にシークする。
- * 箱ごとの解法: B01は1:1、B02は4:3、B03は16:9、B04は9:20を、停止中の提示frameのnative寸法で観測する。初期frameは1:1なのでB01は入場直後に開く。寸法がまだ取得できない場合だけ`requestVideoFrameCallback()`を待つ。比率の許容差は相対5%以内。
- * 開かない操作: 通常再生中の比率通過、CSSサイズ変更、固定画像では開かない。pause、ended、停止中のnative seekは提示frameの実寸で判定する。
- * 使用API: MediaSource/SourceBuffer、固定WebMasset、video resize、seeked、requestVideoFrameCallback。
- * 権限・privacy: 権限・送信・保存はなく、固定assetと表示寸法だけを扱う。
- * cleanup: appendとAbortSignal、video callback、blob URLを離脱時に破棄する。
- * 対応環境: MSE WebM VP8と表示中frameの寸法を観測できるbrowser。
- * 人手確認: H-001/H-002/H-003/H-019/H-020/H-023/H-025/H-053で4比率のnative seekと再入場を確認する。
+ * S-810
+ *
+ * 目的: MSEで連結した固定VP8 segmentをnative controlsでseekし、停止中に提示されたframeのnative width/heightから四つのaspect ratioを読む。
+ * 最初の一手: 初期停止frameでB01を確認し、native timelineを別segmentへseekしてpauseしたまま4:3、16:9、縦長9:20を探す。
+ * 箱ごとの解法:
+ * - B01「1:1の箱」: pausedかつ非seeking frameの`videoWidth/videoHeight`が1:1から相対5%以内なら開く。初期frameがこの比率になる。
+ * - B02「4:3の箱」: 停止中frameのnative aspect ratioが4:3から相対5%以内なら開く。
+ * - B03「16:9の箱」: 停止中frameのnative aspect ratioが16:9から相対5%以内なら開く。
+ * - B04「9:20の箱」: 停止中frameのnative aspect ratioが9:20から相対5%以内なら開く。寸法未確定時は次のvideo frame callbackで判定する。
+ * 使用API: Media Source Extensions/SourceBuffer segments、HTMLVideoElement native dimensions/events、`requestVideoFrameCallback()`、Blob URL、AbortSignal。
+ * 権限・privacy: 権限・外部mediaを使わず、Git管理済み固定assetと現在frame寸法だけを扱う。視聴操作を保存・送信しない。
+ * 対応環境: MSE WebM VP8と提示frameのnative寸法、video frame callbackを提供するbrowser。
  */
 function S810Stage(props: Props) {
   const problems = [

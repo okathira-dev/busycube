@@ -15,15 +15,14 @@ import { useEffect, useRef, useState } from "react";
 /**
  * S-040
  *
- * 目的: 「見ない時間」で、B01「見ない時間の箱」、B02「長い不在の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-040の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをhuman-test-matrix.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: このpageがhiddenになってからvisibleへ戻るまでの実経過時間を測り、短い不在と長い不在を区別する。
+ * 最初の一手: 別tabまたは別appへ切り替えてこのpageを見えない状態にし、まず2秒以上待ってから戻る。
+ * 箱ごとの解法:
+ * - B01「見ない時間の箱」: `visibilityState`が`hidden`になった後、2,000 ms以上経過して`visible`へ戻ると開く。
+ * - B02「長い不在の箱」: 同じhidden期間を25分以上保ってから`visible`へ戻ると開く。25分の復帰ではB01の条件も同時に満たす。
+ * 使用API: Page Visibility APIの`document.visibilityState`と`visibilitychange`、単調増加時計`performance.now()`。
+ * 権限・privacy: 権限を要求せず、直近のhidden開始時刻と復帰までの秒数だけをmemory上で扱い、時刻・閲覧先・滞在履歴は保存・送信しない。
+ * 対応環境: Page Visibility APIとHigh Resolution Time APIを実装し、tab/app切替でpageがhiddenになるbrowser。
  */
 function S040Stage(props: Props) {
   const hiddenAt = useRef<number | null>(null);
