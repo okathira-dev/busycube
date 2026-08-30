@@ -272,13 +272,18 @@ function routeDetails(path: readonly NodeId[]) {
 }
 
 /**
- * S-720 — 動画ノードと変換ノードをBezierケーブルで配線するpatch bay。
- * 目的: 動画を実際に変換し、QRが読める正しい経路だけを発見する。
- * 最初の一手: sourceのoutを変換in、変換outを次のin、最後をoutputへ順に接続する。
- * 箱ごとの成功条件: B01〜B04は正規routeを実行して出力QRを読み、共通flagを入力する。
- * 開かない操作: 分岐、cycle、入力側から始める接続、異なるflag、文字列の一部一致では開かない。固定flagの正答入力は、ギミックの事前達成状態に依存しない。
- * API/権限: SVG/Canvasケーブル、HTMLMediaElement、MediaBunny、Canvas。権限・送信・回答保存はない。
- * cleanup/環境: 変換中のAbortSignalとblob URLを破棄し、出力videoを停止する。H-001/H-002/H-003/H-004/H-014/H-019/H-020/H-023/H-025/H-043を確認する。
+ * S-720
+ *
+ * 目的: 三つのsourceとswap/merge/odd-even transform nodeをpatch cableで配線し、実変換videoに復元されたQR flagを読む。
+ * 最初の一手: sourceのoutをtransformのinへ、同transformのoutを次のnodeまたはOUTPUTのinへ順番にclickして一筆のrouteを作る。
+ * 箱ごとの解法:
+ * - B01「左右交換の箱」: `source1 → T1(swap halves) → output`を再生してQRを読み、`busycube{swap_halves}`を完全一致で入力すると開く。
+ * - B02「フレーム合成の箱」: `source2 → T2(merge frames) → output`を再生してQRを読み、`busycube{merge_frames}`を完全一致で入力すると開く。
+ * - B03「奇偶片側の箱」: `source3 → T3(select half) → T2(merge) → output`から`busycube{odd_even_alpha}`を得て完全一致で入力すると開く。
+ * - B04「複合経路の箱」: `source3 → T1 → T3 → T2 → T1 → output`から`busycube{swap_route_beta}`を得て完全一致で入力すると開く。
+ * 使用API: Canvas 2D cable描画/frame変換、MediaBunny decode/CanvasSink/VP8 encode、HTMLVideoElement、Blob URL、AbortSignal。
+ * 権限・privacy: Git管理済みfixtureだけをclient内でdecode・変換・再encodeし、mediaや回答を保存・送信しない。
+ * 対応環境: Canvas 2D、WebM/VP8 decode・encodeとMediaBunnyが動作するbrowser。
  */
 function S720Stage(props: Props) {
   const problems = [

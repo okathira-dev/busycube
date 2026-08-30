@@ -56,15 +56,15 @@ const remoteSlots = assetManifest.assets as [RemoteSlot, ...RemoteSlot[]];
 /**
  * S-700
  *
- * 目的: 同じmediaを外部再生先へ送るRemote Playbackの二経路と、独立receiver documentを外部画面へ開くPresentation APIを一つの映写stageで対比する。
- * 最初の一手: B01/B02は「再生先を選ぶ」でbrowserのRemote Playback pickerを完了する。B03は別buttonからPresentation chooserを完了する。
- * 箱ごとの解法: B01はconnected中にcurrent slotの0〜4秒を外部再生し、外部画面だけに出た二語の文字鍵を手元欄へ一致入力すると開く。B02は同じ接続で4〜8秒のslot別QRを再生済みにし、手元cameraの実`BarcodeDetector`がcurrent tokenを読むと開く。B03はcurrent roundのreceiver初期描画readyを実PresentationConnectionから受けると開く。
- * 開かない操作: `prompt()`完了だけ、connecting、local再生、PiP、screen mirroring、固定／旧slot鍵、手入力QR、画像upload、jsQR、通常window、iframe、合成messageでは開かない。
- * 使用API: Remote Playback、HTMLMediaElement、Barcode Detection、getUserMedia、PresentationRequest、PresentationConnection。
- * 権限・privacy: device名、接続先、camera frame、decoded token、入力鍵、connection IDを保存・同期・送信しない。camera frameはnative detectorへ一時的に渡すだけにする。
- * cleanup: reset、stage離脱、abortでmediaをpause、time reset、camera track停止、scan loop中断、event解除、Presentation connection terminate、object参照破棄を行う。
- * 対応環境: Remote Playback外部再生先、cameraとnative QR BarcodeDetector、またはPresentation対応displayを持つsecure context。各箱は独立し、欠損APIをlibraryで代替しない。
- * 人手確認: H-001/H-003/H-004/H-006/H-019/H-020/H-023/H-025/H-040/H-041で実receiver、鍵転記、camera QR、Presentation、取消、切断、cleanupを確認する。
+ * 目的: mediaを外部再生先へ送るRemote Playbackの文字・QR経路と、独立receiver documentを開くPresentation APIを対比する。
+ * 最初の一手: 「再生先を選ぶ」で外部displayへ接続し、「文字を映す」で外部画面の二語を手元へ転記する。QRとPresentationは各専用buttonで続ける。
+ * 箱ごとの解法:
+ * - B01「外部文字の箱」: connected中にrandom slotの0〜3.8秒を再生済みにし、外部画面の鍵（`silver orbit` / `quiet prism` / `amber signal` / `violet harbor`のcurrent一つ）をtrim・小文字化一致で入力すると開く。
+ * - B02「外部QRの箱」: connected中に同じslotの4〜7.8秒を再生済みにし、背面cameraのnative BarcodeDetectorが15秒以内にcurrent slot固有QR tokenを読み、接続も維持中なら開く。
+ * - B03「プレゼンテーションの箱」: random round付きreceiver URLを`PresentationRequest.start()`で外部displayへ開き、そのPresentationConnection messageが厳密に`ready:{round}`なら開く。
+ * 使用API: Remote Playback/HTMLMediaElement、Barcode Detection API、`getUserMedia()`、Presentation API、Web Crypto random/UUID。
+ * 権限・privacy: cameraはQR scan中だけ使用し、frameをnative detectorへ一時的に渡す。display/device名、frame、token、鍵、connection IDを保存・送信しない。
+ * 対応環境: secure contextでRemote Playback receiverとnative QR BarcodeDetector付きcamera、またはPresentation対応displayを利用できるbrowser/OS。
  */
 function S700Stage(props: Props) {
   const textProblem = props.boxes[manifest.box.B01];

@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-310 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "もう一度の起動", en: "Launch once more" },
   relaunchHint: {

@@ -24,13 +24,18 @@ function currentTrail() {
 }
 
 /**
- * S-220 — same-document履歴とNavigation APIの枝分かれを読む。
- * 目的: browserのBack、reload、forward枝の破棄を、ページ内のボタンと実履歴の組合せで体験する。
- * 最初の一手: B01は3段の履歴を積んでbrowser Backを3回、B02/B03は実Back-forwardとreloadを行う。B04はA→B→Back→Cへ進む。
- * 箱ごとの成功条件: B01はdepth 0への復帰、B02はback_forward、B03はreload、B04は旧entryのdisposeとcanGoForward=falseを観測した時に開く。
- * 開かない操作: pushStateだけの模倣、URL文字列の一致、page内Backボタン、forward枝を残したままでは開かない。
- * API/権限: History API、PerformanceNavigationTiming、pageshow、Navigation API。状態はdepth/readyと一時roundだけで、送信・個人情報保存はない。
- * cleanup/環境: pageshow・Navigation listenerを離脱時に外し、履歴の深さを3段に制限する。H-001/H-002/H-003/H-022/H-025を確認する。
+ * S-220
+ *
+ * 目的: same-document historyの深さ、実back/forward・reload navigation、forward枝を新しいnavigationで破棄する動作を別々に観測する。
+ * 最初の一手: 「3段の足跡を作る」を押してbrowser Backを3回使う。続いてreloadとback/forwardを行い、枝分かれはA→B→Back→Cの順で作る。
+ * 箱ごとの解法:
+ * - B01「三歩戻る箱」: ready付きdepth 0〜3のhistoryを作り、browser Backでready付きdepth 0 entryへ戻ると開く。
+ * - B02「往復の箱」: document navigation timingのtypeが`back_forward`、またはBFCache復帰の`pageshow.persisted`が`true`なら開く。
+ * - B03「再読込の箱」: browser reload後、先頭の`PerformanceNavigationTiming.type`が厳密に`reload`なら開く。
+ * - B04「消える枝の箱」: Navigation APIでentry Bを作った後browser BackでAへ戻り、そこからCをnavigateして監視中entryの`dispose` eventを受けると開く。
+ * 使用API: History API、Performance Navigation Timing、PageTransitionEvent、Navigation APIのnavigate/currententrychange/dispose、sessionStorage、Web Crypto UUID。
+ * 権限・privacy: 権限を要求せず、history stateにはdepth/ready、sessionには枝操作回数、URLにはrandom branch IDだけを置き、閲覧履歴や個人情報を送信しない。
+ * 対応環境: B01〜B03はHistory/Performance APIsを持つ一般的なbrowser、B04はNavigation APIのentry disposalを実装するbrowser。
  */
 function S220Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

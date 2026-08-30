@@ -24,15 +24,13 @@ interface BadgeNavigator extends Navigator {
 /**
  * S-210
  *
- * 目的: 「外側の数字」で、B01「外側の数字の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-210の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: page外のapp iconやtaskbar等に表示されるbadge numberを、成功したApp Badging API呼出しで1から3へ進める。
+ * 最初の一手: install済みappとして開き、「外側を一つ進める」を3回押して外側のbadgeが1→2→3になることを確認する。
+ * 箱ごとの解法:
+ * - B01「外側の数字の箱」: `setAppBadge(1)`、`setAppBadge(2)`、`setAppBadge(3)`がこのattemptで順に成功し、内部levelが3へ到達すると開く。
+ * 使用API: App Badging APIの`navigator.setAppBadge()`と`clearAppBadge()`。
+ * 権限・privacy: 権限や個人dataを使用せず、固定の1〜3だけをapp badgeへ表示する。stage離脱時にはbadgeをclearする。
+ * 対応環境: secure contextでApp Badging APIを実装し、install済みWeb App等の外側UIへbadgeを表示できるbrowser/OS。
  */
 function S210Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

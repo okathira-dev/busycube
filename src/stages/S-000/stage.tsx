@@ -10,13 +10,15 @@ import { manifest } from "./manifest";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 /**
- * 目的: 最初の箱を直接操作する。
- * 最初の一手: 箱をクリックする。
- * 箱ごとの解法: B01をクリックする。
- * 開かない操作: 合成イベントや表示だけの変更。
- * API/権限: 特別なAPI・権限は使わない。
- * cleanup/環境: 後始末を必要としない。
- * 人手確認: H-001。
+ * S-000
+ *
+ * 目的: 最初のギフトボックスを通常のUI操作で開き、箱を直接操作する基本ルールを理解する。
+ * 最初の一手: 画面中央の「クリックする箱」へポインターを合わせてクリックする。
+ * 箱ごとの解法:
+ * - B01「クリックする箱」: 箱自身をクリックし、`StageProblemGiftBox`の`onClick`が呼ばれた時点で開く。
+ * 使用API: HTML button相当のクリック操作とReactの`onClick` handler。
+ * 権限・privacy: 権限、端末情報、入力内容、外部通信を使用せず、開箱状態だけを通常進捗として扱う。
+ * 対応環境: buttonをクリックまたは同等のkeyboard操作でactivateできる一般的なbrowser。
  */
 function S000Stage(props: Props) {
   const box = props.boxes.B01;

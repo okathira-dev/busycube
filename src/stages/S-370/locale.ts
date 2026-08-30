@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-370 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "電気の境目", en: "Battery boundaries" },
   B01: { ja: "接続の箱", en: "Plugged-in box" },

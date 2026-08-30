@@ -16,13 +16,17 @@ import { stageText } from "../locale";
 import { locale } from "./locale";
 
 /**
- * S-610 — dialogの閉じ方をブラウザ固有の3経路として見せる。
- * 目的: ×ボタン、外側クリック、Escapeが別イベントになることを体験する。
- * 最初の一手: dialogを開き、3種類の閉じ方をそれぞれ一度ずつ試す。
- * 箱ごとの成功条件: B01はdialog内ボタン、B02はnative light dismiss、B03はtrustedなEscapeのcancel→close。
- * 開かない操作: scriptのclose、単なる再描画、閉じた後の無関係なclickでは開かない。
- * API/権限: HTMLDialogElementのshowModal、close、cancel、closedby。権限・外部送信・永続保存はない。
- * cleanup/環境: 離脱時にlistenerを外し、開いたdialogを閉じる。closedby対応ブラウザで人手確認する（H-001/H-002/H-003/H-004/H-019/H-020/H-025）。
+ * S-610
+ *
+ * 目的: modal dialogを内側button、backdrop light dismiss、Escape cancelという三つのnative経路で閉じ分ける。
+ * 最初の一手: 「ダイアログを開く」を押し、まずdialog内の閉じるbuttonを使う。再び開いて外側、もう一度開いてEscapeを試す。
+ * 箱ごとの解法:
+ * - B01「内側ボタンの箱」: dialog内buttonがclose kindを`button`にして`dialog.close()`し、その後の`close` eventで開く。
+ * - B02「外側クリックの箱」: `closedby="any"`のmodal backdrop自身をclickしてkindを`dismiss`にし、native light dismiss後の`close` eventで開く。
+ * - B03「Escapeの箱」: dialog上のEscape keydownまたはnative`cancel` eventでkindが`cancel`になり、その後の`close` eventで開く。
+ * 使用API: HTMLDialogElementの`showModal()` / `close()`、`closedby`、cancel/close events、backdrop clickとkeyboard event。
+ * 権限・privacy: 権限・入力dataを使用せず、直近のclose kindだけをmemoryで判定し、操作履歴を保存・送信しない。
+ * 対応環境: modal dialogと`closedby="any"`によるnative light dismiss、cancel/close eventsを実装するbrowser。
  */
 function S610Stage(props: Props) {
   const button = props.boxes[manifest.box.B01];

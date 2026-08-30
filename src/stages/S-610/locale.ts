@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-610 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "閉じ方の三態", en: "Three ways to close" },
   openDialog: { ja: "dialogを開く", en: "Open dialog" },

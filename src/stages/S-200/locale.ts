@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-200 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "同時に押す", en: "Press together" },
   pressed: { ja: "押下", en: "Pressed" },

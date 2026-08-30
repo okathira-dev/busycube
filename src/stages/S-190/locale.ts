@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-190 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "画面の中の画面", en: "A screen within the screen" },
   relayedScreen: { ja: "中継された画面", en: "Relayed screen" },

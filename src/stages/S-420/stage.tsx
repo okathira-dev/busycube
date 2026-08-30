@@ -17,15 +17,13 @@ import { locale } from "./locale";
 /**
  * S-420
  *
- * 目的: 「通知の金庫」で、B01「金庫の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-420の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: notification actionで4桁の左右codeを入力し、最後に通知bodyを開いてService Workerからattempt列を返す。
+ * 最初の一手: 「金庫を通知へ送る」を押し、通知actionを右→左→左→右（RLLR）の順に押した後、actionではなく通知本体を押す。
+ * 箱ごとの解法:
+ * - B01「金庫の箱」: Service WorkerがL/R action列を通知dataへ引き継ぎ、body clickで`vault-attempt=RLLR`へ戻した時だけ✓を表示し、600 ms後に開く。
+ * 使用API: Notifications APIのactions/data、Service Worker `notificationclick` / `showNotification()`、Clients API、URL/History API、timer。
+ * 権限・privacy: 通知権限はbutton操作後だけ要求し、通知dataとURLにはL/R列だけを載せる。入力列を成功判定後にURLから除き、外部送信しない。
+ * 対応環境: notification actionと通知body clickを区別し、Service Workerからclientをopen/focusできるbrowser/OS。
  */
 function S420Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

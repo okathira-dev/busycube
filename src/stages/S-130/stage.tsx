@@ -39,15 +39,14 @@ function isKeyFile(
 /**
  * S-130
  *
- * 目的: 「箱の外の鍵」で、B01「鍵を外へ出す箱」、B02「鍵を戻す箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-130の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: このattemptで生成した鍵fileをbrowser外へdownloadし、同じfileをfile pickerから戻して往復を確認する。
+ * 最初の一手: 「鍵を外へ出す」で`.busykey` fileをdownloadし、続けて「鍵を戻す」からそのfileを選ぶ。
+ * 箱ごとの解法:
+ * - B01「鍵を外へ出す箱」: 18 random byteのtokenを生成してSHA-256 hashをattempt内に保持し、`busycube-key.busykey`のdownloadを開始すると開く。
+ * - B02「鍵を戻す箱」: 4,096 byte以下で`format === "busycube-key-v1"`とstring tokenを持つJSON fileを選び、そのtokenのSHA-256が直前に生成したattempt内hashと一致すると開く。
+ * 使用API: Web Cryptoの`getRandomValues()` / `subtle.digest()`、Blob URL、download属性付きanchor、File APIとnative file picker。
+ * 権限・privacy: file選択は利用者操作に限定し、選んだfileは形式とtoken一致の判定にだけ使う。token/hash/file内容を永続保存・外部送信しない。
+ * 対応環境: secure contextでWeb Crypto、Blob URL、file downloadとfile input uploadを利用できるbrowser。
  */
 function S130Stage(props: Props) {
   const exportProblem = props.boxes[manifest.box.B01];

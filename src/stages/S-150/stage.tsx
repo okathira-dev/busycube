@@ -28,17 +28,17 @@ const selectOptions = [
 ];
 
 /**
- * S-150 — キーボードだけで届く場所
+ * S-150
  *
- * 目的: ポインターでクリックできない標準UIにも、ブラウザのfocus移動・selectのtypeahead・detailsの排他表示という別の操作経路があることを体験する。
- * 最初の一手: B01はTabでフォーカスを移動する。B02はselectをフォーカスしてから「open」と入力する。B03は同じnameを持つ複数のdetailsを順に開く。
- * 箱ごとの解法: B01はtrustedなfocusイベント、B02はnative selectが`open busycube`を選んだchangeイベント、B03は一つだけopenになるnative detailsの状態で開く。
- * 開かない操作: B01のポインタークリックやscriptによるfocus、B02の文字列だけの入力、B03のDOM属性を書き換えるだけの操作は成功に数えない。
- * 使用API: HTMLButtonElement、HTMLSelectElement、details/nameの標準挙動とtrusted event。
- * 権限・privacy: 権限要求・外部送信・永続保存は行わない。
- * cleanup: stageを離れるとdetailsのlistenerを解除する。
- * 対応環境: 標準HTML controlsとキーボード操作に対応するブラウザ。
- * 人手確認: H-001/H-002/H-003/H-020/H-025。
+ * 目的: native HTML controlsのfocus、select選択、同名detailsの排他toggleという三種類の標準UI挙動を使う。
+ * 最初の一手: Tabで最初のbuttonへfocusを移し、次にselectで`open busycube`を選び、最後にA/B/Cのdetailsを二つ以上順番に開く。
+ * 箱ごとの解法:
+ * - B01「フォーカスの箱」: 「見えない入口」buttonがfocusを受けるか、button自身がclickされると開く。
+ * - B02「選択の箱」: 49項目のnative selectで中央の`open busycube`を選び、change時のvalueが完全一致すると開く。
+ * - B03「排他表示の箱」: 同じ`name`を持つA/B/Cのdetailsでtoggleを2回以上発生させ、その時点でopenなdetailsがちょうど1個なら開く。
+ * 使用API: HTMLButtonElementのfocus/click、HTMLSelectElementのchangeとnative typeahead、`details` / `summary` / `name`の排他accordion挙動。
+ * 権限・privacy: 権限を要求せず、選択値とtoggle回数はこのattemptの判定にだけ使って保存・送信しない。
+ * 対応環境: keyboard focus、native select、details toggleを実装するbrowser。capability判定では`MutationObserver`も必要とする。
  */
 function S150Stage(props: Props) {
   const focusProblem = props.boxes[manifest.box.B01];

@@ -38,15 +38,14 @@ function iconUrl(): string {
 /**
  * S-760
  *
- * 目的: page内formではなくOS所有のContact Pickerで、架空contactの5property共有と、一件を選びながら全propertyを伏せた結果を対比する。
- * 最初の一手: 画面のname / email / tel / address / iconを端末の連絡先へ架空人物として追加し、最初のbuttonからOS pickerを開く。
- * 箱ごとの解法: B01は一件のname、email、正規化tel、addressの4 token、非空icon Blobが名刺と一致すると開く。B02は同じ5propertyを要求した実pickerが一件を返し、その五つがすべて空または欠損なら開く。
- * 開かない操作: pageへの手入力、game製picker、取消、0件、複数件、contact identityだけ、共有拒否理由の推定、iconなし、部分一致では開かない。
- * 使用API: Contact Picker API、ContactsManager.select、ContactInfo、Blob。
- * 権限・privacy: 返却contactはcurrent call内でboolean照合後に破棄し、名前、電話、住所、画像、生dataをDOM、console、storage、同期、送信へ残さない。
- * cleanup: pickerは一回ごとのpromiseだけを持ち、完了・取消・stage離脱後にContactInfo参照を保持しない。OS側contact削除はplayerが端末で行う。
- * 対応環境: Contact Pickerを公開するAndroid等のsecure context。非対応desktopへ独自選択UIを出さない。
- * 人手確認: H-003/H-004/H-019/H-023/H-025/H-047で架空contact作成、5property、全非共有、取消、削除、非保存を確認する。
+ * 目的: OS Contact Pickerで架空contactの5 propertyを共有した結果と、contactを一件選びながら全propertyを伏せた結果を対比する。
+ * 最初の一手: 画面の名刺どおりに`Busycube Courier`を端末連絡先へ登録し、iconも保存・設定して「5項目を共有」を押す。
+ * 箱ごとの解法:
+ * - B01「全項目の箱」: pickerが一件を返し、name、case-insensitive email、正規化tel `+81300000000`、address内4 token、size 0超icon Blobがすべて名刺と一致すると開く。
+ * - B02「非共有の箱」: 同じname/email/tel/address/iconを要求するpickerで一件を選び、返却contactの五propertyがすべて欠損または空配列なら開く。
+ * 使用API: Contact Picker APIの`navigator.contacts.select()`、ContactInfo arrays、structured address、Blob icon。
+ * 権限・privacy: 返却contactは一回のboolean照合後に破棄し、名前・email・電話・住所・画像をDOM/console/storage/serverへ残さない。作成contactの削除はOS連絡先側で行う。
+ * 対応環境: secure contextでContact Pickerとproperty単位の共有制御を提供するAndroid等のbrowser/OS。
  */
 function S760Stage(props: Props) {
   const fullProblem = props.boxes[manifest.box.B01];

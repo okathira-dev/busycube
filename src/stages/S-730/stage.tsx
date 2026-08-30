@@ -31,15 +31,14 @@ import { locale } from "./locale";
 /**
  * S-730
  *
- * 目的: WebXR固有のimmersive session起動と、XR空間上の箱へ実XRInputSourceのselect rayを当てる二段階だけを体験する。
- * 最初の一手: AR / VR機器を接続し、「XR空間を開く」からbrowser所有の開始UIを完了する。
- * 箱ごとの解法: B01は`immersive-vr`または`immersive-ar` sessionで最初の非null viewer poseを得ると開く。B02はそのsessionの実`select` eventに含まれるtarget-ray poseが正面1.5mの箱meshと交差すると開く。
- * 開かない操作: inline session、通常page click、DOM overlay、mouse座標、模擬pose、XR開始promiseだけ、箱以外を向いたselectでは開かない。
- * 使用API: WebXR Device API、XRSession、XRFrame、XRReferenceSpace、XRInputSourceと、最小のThree.js描画・raycast。
- * 権限・privacy: poseとrayは現在frameの交差判定だけに使い、座標、部屋、機器名、映像を保存・同期・送信しない。
- * cleanup: end button、session `end`、stage離脱、abortでanimation loop、event、geometry、material、renderer、XRSessionを終了する。
- * 対応環境: immersive WebXRと対応AR / VR機器を公開するsecure context。inlineやgame製3D previewへfallbackしない。
- * 人手確認: H-001/H-002/H-003/H-004/H-014/H-019/H-023/H-044でVR / AR、ray hit / miss、取消、機器切断、再入場を確認する。
+ * 目的: immersive WebXR sessionを開始し、XR空間の正面1.5 mに置いたboxへ実input sourceのtarget rayを当てる。
+ * 最初の一手: AR/VR機器を接続し「XR空間を開く」からbrowser開始UIを完了する。正面の紫boxへcontrollerを向けてselectする。
+ * 箱ごとの解法:
+ * - B01「XR姿勢の箱」: `immersive-vr`優先、非対応なら`immersive-ar` sessionを開始し、animation frameで最初の非null viewer poseを得ると開く。
+ * - B02「XR選択の箱」: B01後の実`select` eventからtargetRaySpace poseを得てraycastし、0.4 m角・正面z=-1.5 mのbox meshと交差すると開く。
+ * 使用API: WebXR Device APIのsupport/requestSession/reference space/viewer pose/input select、WebGLとThree.js renderer/raycast。
+ * 権限・privacy: XR sessionは明示buttonから開始し、pose/rayは現在frameの交差判定だけに使う。部屋映像・座標履歴・device情報を保存・送信しない。
+ * 対応環境: secure contextでimmersive-vrまたはimmersive-arと対応AR/VR hardware、WebGLを提供するbrowser。
  */
 function S730Stage(props: Props) {
   const sessionProblem = props.boxes[manifest.box.B01];

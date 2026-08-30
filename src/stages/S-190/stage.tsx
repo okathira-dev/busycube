@@ -51,15 +51,16 @@ function containsArmedMarker(
 /**
  * S-190
  *
- * 目的: 「画面の中の画面」で、B01「再帰画面の箱」、B02「録画の箱」、B03「中継の箱」、B04「外縁の印の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-190の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: browserの画面共有streamを、browser surface・MediaRecorder・別windowへのWebRTC relay・共有映像内の色markerという四方向から検証する。
+ * 最初の一手: 「観測窓を開く」と「地図を開く」で同じroundの二つのtabを用意し、「画面を取り込む」から地図tabをbrowser tabとして共有する。
+ * 箱ごとの解法:
+ * - B01「再帰画面の箱」: 共有videoを150 ms間隔で12 frame以上読み、共有trackの`displaySurface`が厳密に`browser`なら開く。
+ * - B02「録画の箱」: 共有streamから`MediaRecorder`を1,000 ms timesliceで開始し、`dataavailable`でsize 0超のrecorded chunkを得ると開く。
+ * - B03「中継の箱」: 同じroundの観測窓と`BroadcastChannel`でWebRTC signalingし、観測窓側`RTCPeerConnection`の`track` eventで共有映像を受信・再生できると開く。
+ * - B04「外縁の印の箱」: 同じroundの地図tabをchannel handshakeでarmし、その共有映像を160×90 canvasへscanしてcyan・magenta・yellow・blackの厳密な色pixelを各18個以上検出すると開く。
+ * 使用API: `getDisplayMedia()`、MediaStreamTrack settings、HTMLVideoElement、MediaRecorder、RTCPeerConnection、BroadcastChannel、Canvas 2D pixel読取、Web Crypto UUID。
+ * 権限・privacy: screen共有権限はbutton操作時にbrowser標準pickerで要求する。選択surfaceはlocal preview・同一端末tab間relay・一時的な色判定にだけ使い、録画chunkやframeを保存・server送信しない。
+ * 対応環境: secure contextでscreen capture、browser-tab `displaySurface`、MediaRecorder、WebRTC、BroadcastChannel、Canvas 2Dを利用できるbrowser。
  */
 function S190Stage(props: Props) {
   const recursive = props.boxes[manifest.box.B01];

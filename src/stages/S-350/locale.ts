@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-350 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "映像の手触り", en: "Touching the timeline" },
   videoToOperate: { ja: "操作する映像", en: "Video to operate" },

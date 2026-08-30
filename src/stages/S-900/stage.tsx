@@ -153,16 +153,15 @@ async function createSplicedVideo(
 }
 
 /**
- * S-900 — 固定VP8 WebM segmentを実MediaSource / SourceBufferへ順にappendし、完成videoを再生する。
- * 目的: playlist表示だけでなく、player自身が選んだ順のbyte streamをbrowserの映写機が再生可能なmediaへ組み立てる感覚を作る。
- * 最初の一手: A〜Dのリールを4つの空き枠へ一度ずつ選ぶ。選んだ順は枠に残るので、必要なら「並びを消す」でやり直せる。
- * 箱ごとの解法: B01はA→B→C→Dで4枠を埋め、「映写機へ送る」を押す。固定lead-inと各固定WebM segmentを`MediaSource`の`SourceBuffer`へ実appendしたoutput videoをnative controlsで最後まで再生すると開く。
- * 開かない操作: cardの見た目だけの並び、4本未満、同じreelの重複、assembleだけ、videoの途中停止、synthetic ended event、DOM上の順序変更では開かない。
- * 使用API: MediaSource、SourceBuffer、`appendBuffer`、`updateend`、固定WebM asset、HTMLVideoElementのtrusted ended event。
- * 権限・privacy: 権限・保存・送信は使わず、同梱した5つの固定assetだけをfetchする。
- * cleanup: stage離脱・再組立時はappend AbortSignal、video playback、blob URLを破棄する。workerやtimerを残さない。
- * 対応環境: VP8 WebMをMediaSourceでappendできるbrowser。fallback videoや疑似progressは作らない。
- * 人手確認: H-064で正順・誤順、未完成、再組立、native ended、network失敗、離脱時abortを確認する。
+ * S-900 — MediaSource映写機
+ *
+ * 目的: 選んだ順番の独立WebM segmentを実`SourceBuffer`へappendし、browserが連続再生できる一本の映像に組み立てる。
+ * 最初の一手: リールをA、B、C、Dの順で押して4枠へ入れ、「映写機へ送る」を押す。
+ * 箱ごとの解法:
+ * - B01: 枠をA→B→C→Dで埋める。lead-inと4本のVP8 WebMをframe数由来の`timestampOffset`で順にappendした後、現れたnative videoを末尾まで再生し、trusted `ended` eventが発生すると開く。
+ * 使用API: Media Source Extensionsの`MediaSource`、`SourceBuffer.mode`、`timestampOffset`、`appendBuffer()`、`updateend`、`endOfStream()`、HTMLVideoElementの`ended` event。
+ * 権限・privacy: 権限・端末media・保存・外部送信は使わず、同梱したmanifestと5つの固定WebM assetだけをfetchする。
+ * 対応環境: `video/webm; codecs="vp8"`をMediaSourceで扱え、native video controlsを提供するbrowser。
  */
 function S900Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

@@ -17,15 +17,13 @@ import { locale } from "./locale";
 /**
  * S-340
  *
- * 目的: 「形をつなぐ」で、B01「画面遷移の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-340の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: 三つのshapeの並び替えをView Transitionとして完了させ、単なるstate変更ではなくtransitionの終了を待つ。
+ * 最初の一手: 「形をつなぐ」を押し、◆・●・▲の並び替えanimationが終わるたびにもう一度押して計3回進める。
+ * 箱ごとの解法:
+ * - B01「画面遷移の箱」: `document.startViewTransition()`内でstepを1ずつ進め、各`finished` promiseがresolveした後のstepが3以上になると開く。
+ * 使用API: View Transitions APIの`document.startViewTransition()` / `ViewTransition.finished`とReact `flushSync()`。
+ * 権限・privacy: 権限・外部入力を使用せず、attempt内stepだけを表示・判定し、操作履歴を保存・送信しない。
+ * 対応環境: same-document View Transitions APIを実装し、transitionの完了promiseを提供するbrowser。
  */
 function S340Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

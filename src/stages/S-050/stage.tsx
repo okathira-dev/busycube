@@ -27,15 +27,13 @@ function isChannelMessage(value: unknown): value is ChannelMessage {
 /**
  * S-050
  *
- * 目的: 「二つの窓」で、B01「二つの窓の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-050の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: 同一originで同じstageを開いた二つの独立したwindow/tabが、互いの存在をchannel越しに確認する。
+ * 最初の一手: 「もう一つ開く」を押して同じURLを新しいwindow/tabに開き、両方を閉じずに待つ。
+ * 箱ごとの解法:
+ * - B01「二つの窓の箱」: 各contextが固有sender ID付き`hello`を送信し、自分以外のsenderによる正しい`hello`または`ack`を`BroadcastChannel`で受信すると開く。
+ * 使用API: `window.open()`、Web Cryptoの`crypto.randomUUID()`、Broadcast Channel APIのmessage送受信。
+ * 権限・privacy: 権限を要求せず、tab間にはmessage種別と一時的なrandom sender IDだけを流し、閲覧内容や個人情報は保存・外部送信しない。
+ * 対応環境: 同一originの複数window/tab間で`BroadcastChannel`を共有でき、popupまたは新規tabを開けるbrowser。
  */
 function S050Stage(props: Props) {
   const sender = useMemo(() => crypto.randomUUID(), []);

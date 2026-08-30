@@ -33,16 +33,15 @@ const cueTextKeys: Record<
 };
 
 /**
- * S-910 — 再生中のvideoへruntime TextTrackとVTTCueを加え、実activeCuesが対応時刻に重なることを観測する。
- * 目的: 既存VTT fileのtrack切替ではなく、playerの操作でその瞬間のWebVTT cueをvideoへ生み出す体験にする。
- * 最初の一手: native videoを再生し、画面上に赤い円・青い三角・黄色い四角が現れるそれぞれの時間に、同じ字幕buttonを押す。
- * 箱ごとの解法: B01はcircle / triangle / squareの3 cueを正しい出現区間へ追加する。`video.addTextTrack()`と`new VTTCue()`へ追加したcueの実`cuechange`で`activeCues`に対応textが現れた時だけ、3つ揃って開く。
- * 開かない操作: 字幕buttonを動画停止中に押す、違う記号の時に押す、static VTT asset、画面上の文字だけ、synthetic cuechange、video時間をDOMで偽装する操作では開かない。
- * 使用API: HTMLVideoElement、TextTrack、WebVTT `VTTCue`、`addCue`、`cuechange`、`activeCues`。3記号はFFmpeg生成済みの固定WebMそのものへ焼き込む。
- * 権限・privacy: 権限・保存・送信は使わない。作成したcueと達成状態は訪問中memoryだけである。
- * cleanup: stage離脱・作り直し時にtrackのcueをremoveし、cuechange listenerを解除し、videoをpauseする。
- * 対応環境: native videoとruntime TextTrack / VTTCueを提供するbrowser。WebVTT parserや字幕libraryのfallbackは使わない。
- * 人手確認: H-065で3正解、停止中・誤記号の負例、cuechange / activeCues、reset、re-entry cleanupを確認する。
+ * S-910 — 再生中に作る字幕
+ *
+ * 目的: videoの現在時刻に合わせてruntime `VTTCue`を作り、実`TextTrack.activeCues`へ入る瞬間を3種類そろえる。
+ * 最初の一手: native videoを再生し、赤い円が映っている間に「赤い円」の字幕buttonを押す。その後も映像の記号と同じbuttonを押す。
+ * 箱ごとの解法:
+ * - B01: 再生中、赤い円にはcircle、青い三角にはtriangle、黄色い四角にはsquareのcueをそれぞれ追加する。各cueの`cuechange`時にIDと映像の現在区間が一致し、3 IDすべてが記録されると開く。
+ * 使用API: HTMLVideoElementの`currentTime`と`paused`、`addTextTrack()`、WebVTT `VTTCue`、`TextTrack.addCue()`、`cuechange`、`activeCues`。
+ * 権限・privacy: 権限・保存・送信は使わず、生成したcueと一致済みIDは現在のstage訪問中のmemoryだけで扱う。
+ * 対応環境: native WebM video、runtime TextTrack、`VTTCue`、`activeCues`を提供するbrowser。
  */
 function S910Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

@@ -16,15 +16,16 @@ import { useEffect, useState } from "react";
 /**
  * S-370
  *
- * 目的: 「電気の境目」で、B01「接続の箱」、B02「取り外しの箱」、B03「75%以上の箱」、B04「75%未満の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-370の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: 端末batteryの充電接続変化と残量75%の境界をBattery Status APIの別状態として収集する。
+ * 最初の一手: 入場後の残量でB03/B04を確認し、chargerを一度接続してから取り外してB01/B02を開く。
+ * 箱ごとの解法:
+ * - B01「接続の箱」: `chargingchange` event発生時に`battery.charging === true`なら開く。
+ * - B02「取り外しの箱」: `chargingchange` event発生時に`battery.charging === false`なら開く。
+ * - B03「75%以上の箱」: `getBattery()`取得直後または`levelchange`時に`battery.level >= 0.75`なら開く。
+ * - B04「75%未満の箱」: 同じ残量観測で`battery.level < 0.75`なら開く。訪問をまたいで両側の残量を通常進捗へ累積できる。
+ * 使用API: Battery Status APIの`navigator.getBattery()`、BatteryManager `charging` / `level`とchange events。
+ * 権限・privacy: 権限を要求せず、充電booleanと丸めた残量だけを判定・表示し、battery履歴や端末情報を保存・送信しない。
+ * 対応環境: Battery Status APIをpageへ公開し、charger接続とlevel変化をeventとして報告するbrowser/端末。
  */
 function S370Stage(props: Props) {
   const plugged = props.boxes[manifest.box.B01];

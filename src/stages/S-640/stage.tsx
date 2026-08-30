@@ -18,13 +18,22 @@ import { stageText } from "../locale";
 import { locale } from "./locale";
 
 /**
- * S-640 — 文字化けを元の符号化へ戻す並列問題。
- * 目的: 文字コードを推理し、表示された8枚を一つの回答欄で復号する。
- * 最初の一手: 各カードの崩れた文字列と、カードの2種類の符号化を照合する。
- * 箱ごとの成功条件: B01〜B08は対応する元文字列を正確に入力した時だけ開く。
- * 開かない操作: 符号化名の入力、別カードの文字列、部分一致では開かない。
- * API/権限: TextDecoderのlegacy encodingとGit管理fixture。権限・送信・回答保存はない。
- * cleanup/環境: 共通回答欄は入場中だけ保持する。legacy encoding対応ブラウザでH-001/H-002/H-003/H-004/H-014/H-020/H-025/H-033を確認する。
+ * S-640
+ *
+ * 目的: 8個の固定byte列を誤ったlegacy encodingで表示したmojibakeから、元encodingの正しい文字列を復元する。
+ * 最初の一手: B01の`cafÃ© franÃ§ais`がUTF-8 bytesをWindows-1252表示した結果だと見抜き、共通欄へ`café français`と入力する。
+ * 箱ごとの解法:
+ * - B01「文字コードの箱 1」: UTF-8→Windows-1252のmojibakeへ、正解`café français`を完全一致で入力すると開く。
+ * - B02「文字コードの箱 2」: KOI8-R→Windows-1251のmojibakeへ、正解`русский ящик`を完全一致で入力すると開く。
+ * - B03「文字コードの箱 3」: KOI8-U→IBM866のmojibakeへ、正解`український код`を完全一致で入力すると開く。
+ * - B04「文字コードの箱 4」: Macintosh→x-mac-cyrillicのmojibakeへ、正解`åbn æsken`を完全一致で入力すると開く。
+ * - B05「文字コードの箱 5」: Windows-1255→ISO-8859-7のmojibakeへ、正解`תיבת קוד`を完全一致で入力すると開く。
+ * - B06「文字コードの箱 6」: Windows-874→Windows-1252のmojibakeへ、正解`กล่อง รหัส`を完全一致で入力すると開く。
+ * - B07「文字コードの箱 7」: ISO-8859-2→Macintoshのmojibakeへ、正解`český kód`を完全一致で入力すると開く。
+ * - B08「文字コードの箱 8」: GBK→Big5のmojibakeへ、正解`编码 宝箱`を完全一致で入力すると開く。
+ * 使用API: Encoding StandardのTextDecoder対応を前提に検証済みの固定byte/encoding fixtureとHTML text input。
+ * 権限・privacy: 権限を要求せず、Git管理済みfixtureと共通回答値だけを扱う。入力回答は入場中のmemoryにだけ保持し、保存・送信しない。
+ * 対応環境: TextDecoderとfixtureで使うUTF/legacy encoding label、各scriptのfont描画を実装するbrowser。
  */
 function S640Stage(props: Props) {
   const [answer, setAnswer] = useState("");

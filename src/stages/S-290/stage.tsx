@@ -43,15 +43,13 @@ interface HidNavigator extends Navigator {
 /**
  * S-290
  *
- * 目的: 「生の入力」で、B01「入力レポートの箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-290の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: 利用者が選んだHID deviceを開き、抽象化済みkey eventではなくdeviceの生input report到着を観測する。
+ * 最初の一手: 「入力レポートを待つ」を押してHID deviceを選択し、deviceのbutton・key・sensor等を一度操作する。
+ * 箱ごとの解法:
+ * - B01「入力レポートの箱」: 選択したdeviceのopen後、`inputreport` eventで`DataView.byteLength`が1以上の最初のreportを受けると開く。
+ * 使用API: WebHIDの`navigator.hid.requestDevice()`、HIDDevice `open()` / `inputreport` / `close()`。
+ * 権限・privacy: device accessはbutton操作とbrowser pickerで要求し、report payloadは空でないことだけを判定する。内容・device情報を保存・表示・送信しない。
+ * 対応環境: secure contextでWebHIDを実装し、browserが許可するHID peripheralを接続できるdesktop browser/OS。
  */
 function S290Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

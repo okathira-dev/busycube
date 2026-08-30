@@ -85,16 +85,17 @@ function shadowAnchorName(goalId: string, step: number) {
 }
 
 /**
- * S-920 — 入れ子の実Popoverを宣言的buttonでたどり、画面端でのAnchor Positioning fallbackも含めて3つの終点を探す。
- * 目的: tooltip風のhoverやpage製absolute panelではなく、clickでtop layerへ入るPopoverと、その入れ子・light dismiss・CSS Anchor Positioningの画面端fallbackを迷路として体験する。
- * 最初の一手: 「迷路を開く」を押して最初の浮かぶ部屋を開き、部屋内の方向buttonを押して次の部屋を開く。
- * 箱ごとの解法: B01〜B03は固定treeの別々の終点。各経由部屋は十字配置の最大3択で、各正解経路は曲がり方・手数・終点方向が異なる。迷路は額縁付きの同一origin iframe viewport内にあり、斜線の外周はPopoverを表示できない。B01はinline端、B02はblock端を越えて`position-try-fallbacks`による反射を必ず起こし、B03は非対称な混合経路になる。各影は実経路と同じ部屋寸法・方向button位置・`position-area`・fallback列を持つ非操作CSS anchor chainの終点であり、座標を測定・転記しない。影と同じCSSアルゴリズムで配置された実goal Popover内のProblemGiftBoxをtrusted clickすると対応箱が開く。行き止まりはEscまたは外側clickで閉じ、起点から入り直す。
- * 開かない操作: 通常DOMの影の箱、goal以外のPopover、script click、画面上の見た目だけの座標一致、Popoverを開かずに箱を押す操作では開かない。経路や画面座標を成功条件として再計算しない。
- * 使用API: Popover APIの`popover="auto"`、`popovertarget`、`:popover-open`、CSS Anchor Positioningのimplicit / explicit anchor、`anchor-name`、`position-anchor`、`position-area`、`position-try-fallbacks`。
- * 権限・privacy: 権限要求、端末情報、viewport座標のJavaScript取得、保存、送信を使わない。
- * cleanup: stage離脱時は開いている実Popoverを子から閉じ、abort listenerを解除する。影は通常DOMの非操作CSS anchor chainなのでlistener、observer、animation frameを持たない。
- * 対応環境: Popover APIとCSS Anchor Positioning / `position-try-fallbacks`に対応するbrowser。mouse、touch、keyboardはいずれもnative buttonで操作でき、非対応時のabsolute layout fallbackは作らない。
- * 人手確認: H-066で3終点、各経由部屋の十字最大3択、行き止まり、Esc、外側light dismiss、keyboard / touch、額縁と斜線外周、B01 inline反射、B02 block反射、狭い幅・連続iframe resize・親page scroll中もCSSだけで追従する影と実箱の一致、再入場cleanupを確認する。
+ * S-920 — Popover迷路
+ *
+ * 目的: iframe内のtop layerへ開く入れ子の実Popoverを方向buttonで進み、CSS Anchor Positioningの画面端fallbackを通った3つの終点へ到達する。
+ * 最初の一手: 準備完了後に「迷路を開く」を押し、最初の浮かぶ部屋から矢印buttonを選ぶ。行き止まりではEscか外側clickで閉じて入り直す。
+ * 箱ごとの解法:
+ * - B01: 起点から右→右→上→右→右→下→右と進み、inline端でfallback配置されたamber終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
+ * - B02: 起点から下→左→下→下と進み、block端でfallback配置されたcyan終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
+ * - B03: 起点から左→上→左→上→左→下と進み、混合方向のviolet終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
+ * 使用API: Popover APIの`popover="auto"`、`popoverTarget`、`:popover-open`、CSS Anchor Positioningの`anchor-name`、`position-anchor`、`position-area`、`position-try-fallbacks`。
+ * 権限・privacy: 権限・端末情報・保存・送信を使わず、JavaScriptでviewport座標を取得せずにCSSだけで実Popoverと経路silhouetteを配置する。
+ * 対応環境: Popover APIとCSS Anchor Positioningの`position-area`および`position-try-fallbacks`をiframe内でも提供するbrowser。
  */
 function S920Stage(props: Props) {
   const frameRef = useRef<HTMLIFrameElement>(null);

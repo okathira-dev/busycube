@@ -18,13 +18,16 @@ function normalizeSpeech(value: string) {
 }
 
 /**
- * S-580 — SpeechRecognitionとSpeechSynthesisを、文字入力なしで体験する。
- * 目的: UI言語ではなく認識側をen-USに固定し、busycubeという音声を聞き取る。
- * 最初の一手: B01は「聞き取る」でbusycubeを発話し、B02はずれた一文字ずつの音声を聞いて元の語を推理する。
- * 箱ごとの成功条件: B01はrecognized transcriptがbusycube、B02はsynthesis終了後の実utterance列を観測した時だけ開く。
- * 開かない操作: テキスト欄、status文字列の編集、synthesis開始だけ、別言語の発話では開かない。
- * API/権限: SpeechRecognitionとSpeechSynthesis。マイクはB01の明示操作時だけ要求し、音声・認識履歴は保存・送信しない。
- * cleanup/環境: recognitionをabortし、utteranceとspeech synthesisをcancelする。en-US音声が使える環境でH-006/H-007/H-019/H-020/H-023/H-025/H-027を確認する。
+ * S-580
+ *
+ * 目的: 英語音声のspeech recognitionと、一文字ずつ連続するspeech synthesisを文字入力なしで完了させる。
+ * 最初の一手: 「聞き取る」を押してmicrophoneへ`busycube`と発話する。次に「ずれた音を聞く」で8文字の読み上げを最後まで聞く。
+ * 箱ごとの解法:
+ * - B01「聞き取りの箱」: en-US SpeechRecognitionの全alternative transcriptを小文字化し、空白・句読点・記号を除いたどれかが厳密に`busycube`なら開く。
+ * - B02「読み上げの箱」: en-USの一文字utteranceで`aspuxouw`を先頭から順に読み、少なくとも一つがstartし、errorなしで全8個の`end`を連鎖完了すると開く。
+ * 使用API: Web Speech APIのSpeechRecognition/webkitSpeechRecognition、SpeechSynthesis、SpeechSynthesisUtterance events。
+ * 権限・privacy: microphone accessはB01のbutton操作時だけ利用し、音声とtranscriptを保存・送信しない。B02は固定文字だけを端末の音声engineへ渡す。
+ * 対応環境: en-USのspeech recognitionとspeech synthesis voiceを提供し、Web Speech API eventsを実装するbrowser/OS。
  */
 function S580Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

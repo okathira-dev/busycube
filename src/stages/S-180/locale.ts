@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-180 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "見えない受け渡し", en: "An invisible handoff" },
   copyReversed: { ja: "逆さの名前をコピー", en: "Copy the reversed name" },

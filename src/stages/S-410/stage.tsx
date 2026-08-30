@@ -17,15 +17,13 @@ import { locale } from "./locale";
 /**
  * S-410
  *
- * 目的: 「通知の迷路」で、B01「通知操作の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-410の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: page外のnotification actionだけで左右のsequenceを入力し、Service Workerが正解prefixを保ちながらclientへ戻す。
+ * 最初の一手: 「通知迷路を始める」を押して通知を許可し、通知上のactionを左→右→右→左（LRRL）の順に押す。
+ * 箱ごとの解法:
+ * - B01「通知操作の箱」: Service Workerが通知actionをL/Rへ変換し、prefixを外す入力では列をreset、`LRRL`完成時に開く`?stage=S-410&notification-sequence=S-410-ok`を入場URLで確認すると開く。
+ * 使用API: Notifications APIのactions/data、Service Worker `notificationclick`、`showNotification()`による更新、Clients API、URL/History API。
+ * 権限・privacy: 通知権限はbutton操作後だけ要求し、通知dataにはstage ID・L/R列・固定targetだけを持つ。入力列を永続保存・外部送信しない。
+ * 対応環境: notification action buttonとService Worker notification clickを実装し、actionごとの通知再表示を許すbrowser/OS。
  */
 function S410Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

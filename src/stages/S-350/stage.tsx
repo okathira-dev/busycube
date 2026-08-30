@@ -36,13 +36,21 @@ const captionSources = {
 } as const;
 
 /**
- * S-350 — browser標準の動画プレイヤー操作をそのまま解法にする。
- * 目的: game製の再生UIではなく、native controlsのseek、mute、pause、速度、字幕、PiP、fullscreenを観測する。
- * 最初の一手: 音声付き動画を再生し、B01は途中seek、B02はmute/音量0、B03は終了前pause、B04は速度変更を行う。B05は字幕メニューでBusycubeを選び、B06はPiP、B08はfullscreenへ入る。
- * 箱ごとの成功条件: 各操作が実videoイベント・textTrack状態・documentPiP/fullscreen状態として報告された時だけ対応箱が開く。終了後の先頭復帰seekは除外する。
- * 開かない操作: page内の模倣ボタン、ended後の自動seek、scriptによるrate変更／PiP要求、字幕文字列の入力では開かない。
- * API/権限: HTMLMediaElement、TextTrack、Picture-in-Picture、Fullscreen。音声・映像は保存・送信しない。PiP/fullscreenはbrowserの明示操作を要求する。
- * cleanup/環境: videoを停止し、PiP/fullscreenとlistenerを離脱時に解放する。H-001/H-002/H-003/H-012/H-019/H-020/H-023/H-025/H-030/H-052を確認する。
+ * S-350
+ *
+ * 目的: browser native video controlsからseek・音量・pause・速度・字幕・PiP・fullscreenを操作し、media elementが報告する実状態を箱ごとに読む。
+ * 最初の一手: videoを再生し、native controlsの各menu/buttonを順番に使う。まずtimelineを0.5秒以上動かすとB01を開ける。
+ * 箱ごとの解法:
+ * - B01「シークの箱」: seek開始前の安定currentTimeと`seeked`後の時刻差が0.5秒以上なら開く。ただし終了位置から0.25秒以内への自動先頭復帰は除く。
+ * - B02「消音の箱」: `volumechange`時にvideoの`muted`がtrue、または`volume`が厳密に0なら開く。
+ * - B03「一時停止の箱」: 一度playしてから0.2秒以上進み、終了前かつstage離脱処理ではない`pause` eventを受けると開く。
+ * - B04「速度の箱」: `ratechange`時の`playbackRate`が標準の1以外なら開く。
+ * - B05「字幕の箱」: native字幕menuでlabel `Busycube`のtext trackだけを`showing`にし、他のtrackが一つもshowingでなければ開く。
+ * - B06「小窓の箱」: このvideoで実`enterpictureinpicture` eventを受けると開く。
+ * - B08「全画面の箱」: `fullscreenchange`時の`document.fullscreenElement`がこのvideo自身なら開く。
+ * 使用API: HTMLMediaElement events/state、TextTrackList、Picture-in-Picture API、Fullscreen API、browser native media controls。
+ * 権限・privacy: Git管理済みfixture動画と字幕だけをlocal再生し、camera/microphoneや利用者mediaを取得しない。再生状態・操作履歴を保存・送信しない。
+ * 対応環境: native video controlsを表示できるbrowser。PiP/fullscreen等の未実装機能に対応する箱は、そのAPIを提供する環境で操作する。
  */
 function S350Stage(props: Props) {
   const seek = props.boxes[manifest.box.B01];

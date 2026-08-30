@@ -130,7 +130,7 @@ for (const directory of stageDirectories) {
 
 const catalog = `# ステージ・ギミック一覧
 
-このファイルは各stageのmanifest、locale、日本語JSDocから生成される。手作業で編集せず、\`pnpm run busycube:stages:generate\`を実行する。個別ステージの厳密な解法、negative case、privacy、cleanup、人手確認は、IDからリンクした\`stage.tsx\`のJSDocを正本とする。
+このファイルは各stageのmanifest、locale、日本語JSDocから生成される。手作業で編集せず、\`pnpm run busycube:stages:generate\`を実行する。個別ステージの厳密な解法、privacy、対応環境は、IDからリンクした\`stage.tsx\`のJSDocを正本とする。negative case、cleanup、人手確認、UI・アクセシビリティ観点は\`docs/notes/stage-review.md\`で管理する。
 
 - ステージ数: ${stageDirectories.length}
 - 問題箱数: ${totalBoxCount}

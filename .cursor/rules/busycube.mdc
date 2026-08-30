@@ -16,5 +16,7 @@ alwaysApply: false
 - センサー、メディア、端末識別子などの生データは、ゲーム判定に必要な最小範囲を越えて保存・送信しないでください。
 - listener、stream、animation frame、Three.js/WebGL 資源などは、ステージ離脱時に停止・破棄してください。
 - 自動テストでは再現可能な fixture を使い、数値の内部実装だけでなくユーザーに見える意味を検証してください。
+- ステージJSDocは、目的、最初の一手、全Bxxそれぞれの実操作・観測値・厳密な成功条件、使用API、権限・privacy、対応環境だけをステージ固有に記述してください。共通のnegative case、cleanup、人手確認、UI観点を反復しないでください。
+- `locale.ts`には表示文言と翻訳上の非自明な制約だけを置き、ファイルの役割を説明する定型コメントを追加しないでください。
 - `docs/notes/stage-review.md` は実機・権限・ブラウザー差異の確認記録です。削除、縮退、自動的な合格処理をしないでください。
 - 本番はCloudflare Workers Static AssetsとHono Workerで配信する。headerが必要なrouteはWorkerで返し、Service Workerやclient codeでHTTP responseを代替しない。

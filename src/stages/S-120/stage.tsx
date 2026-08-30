@@ -20,15 +20,13 @@ type InteractionState = "idle" | "active" | "denied" | "unavailable";
 /**
  * S-120
  *
- * 目的: 「音のかたち」で、B01「音の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-120の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: microphone入力を録音せず音量の時間波形へ変換し、静か→大きい音→静かという三段階を検出する。
+ * 最初の一手: 「音を見る」を押してmicrophoneを許可し、静かな状態を作ってから一度大きな音を出し、再び静かにする。
+ * 箱ごとの解法:
+ * - B01「音の箱」: time-domain sampleのRMSが0.05未満、続いて0.2超、最後に0.06未満の順で同じcapture中に観測されると開く。
+ * 使用API: `getUserMedia({audio:true})`、Web Audio APIの`AudioContext` / `AnalyserNode.getByteTimeDomainData()`、`requestAnimationFrame()`。
+ * 権限・privacy: microphone権限だけを明示操作後に要求し、生sampleはRMS計算にだけ使う。音声を録音・保存・再生・送信しない。
+ * 対応環境: secure contextでMediaDevicesとWeb Audio APIを利用でき、microphone入力を提供できるbrowserと端末。
  */
 function S120Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

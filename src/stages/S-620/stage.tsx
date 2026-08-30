@@ -15,13 +15,31 @@ import { stageText } from "../locale";
 import { locale } from "./locale";
 
 /**
- * S-620 — Unicode数字を読んで、共通の十進入力へ戻す。
- * 目的: 見た目の違う数字が同じ位置表記を持つことを体験する。
- * 最初の一手: 各カードの数字を読み、カードごとに十進値を考える。
- * 箱ごとの成功条件: B01〜B17は対応するASCII十進文字列だけで開く。
- * 開かない操作: 数字の貼り付け、他カードの値、空欄、入力イベントの偽装では開かない。
- * API/権限: Unicode code point、固定fixture、FontFace。権限・外部送信・回答保存はない。
- * cleanup/環境: font失敗はUIへ隔離し、入力値は入場中だけ保持する。H-001/H-002/H-003/H-004/H-014/H-020/H-025を確認する。
+ * S-620
+ *
+ * 目的: 17種類のUnicode numeral systemで書かれた加算を読み、すべて同じASCII十進回答欄へ戻す。
+ * 最初の一手: fixture fontの読込を待ち、B01のASCII式`123 + 456`を計算して共通回答欄へ`579`と入力する。
+ * 箱ごとの解法:
+ * - B01「異体数字 1」: ASCII / European digitsで表示された123 + 456を計算し、回答欄が厳密に`579`になると開く。
+ * - B02「異体数字 2」: Arabic-Indic digitsで表示された234 + 567を計算し、回答欄が厳密に`801`になると開く。
+ * - B03「異体数字 3」: Eastern Arabic-Indic digitsで表示された345 + 678を計算し、回答欄が厳密に`1023`になると開く。
+ * - B04「異体数字 4」: Han numeralsで表示された456 + 321を計算し、回答欄が厳密に`777`になると開く。
+ * - B05「異体数字 5」: Osmanya digitsで表示された517 + 264を計算し、回答欄が厳密に`781`になると開く。
+ * - B06「異体数字 6」: Adlam digitsで表示された629 + 154を計算し、回答欄が厳密に`783`になると開く。
+ * - B07「異体数字 7」: N'Ko digitsで表示された731 + 168を計算し、回答欄が厳密に`899`になると開く。
+ * - B08「異体数字 8」: Garay digitsで表示された842 + 157を計算し、回答欄が厳密に`999`になると開く。
+ * - B09「異体数字 9」: Ol Chiki digitsで表示された913 + 286を計算し、回答欄が厳密に`1199`になると開く。
+ * - B10「異体数字 10」: Mro digitsで表示された184 + 725を計算し、回答欄が厳密に`909`になると開く。
+ * - B11「異体数字 11」: Wancho digitsで表示された295 + 613を計算し、回答欄が厳密に`908`になると開く。
+ * - B12「異体数字 12」: Nag Mundari digitsで表示された376 + 522を計算し、回答欄が厳密に`898`になると開く。
+ * - B13「異体数字 13」: Ol Onal digitsで表示された487 + 410を計算し、回答欄が厳密に`897`になると開く。
+ * - B14「異体数字 14」: Sora Sompeng digitsで表示された598 + 307を計算し、回答欄が厳密に`905`になると開く。
+ * - B15「異体数字 15」: Counting Rod Numeralsで表示された619 + 274を計算し、回答欄が厳密に`893`になると開く。
+ * - B16「異体数字 16」: base-20 Kaktovik numeralsで表示された十進1352 + 1781を計算し、回答欄が厳密に`3133`になると開く。
+ * - B17「異体数字 17」: 縦組みbase-20 Mayan numeralsで表示された十進2056 + 1023を計算し、回答欄が厳密に`3079`になると開く。
+ * 使用API: Unicode 17.0固定fixture、Unicode code point、Font Loading APIのFontFace/Document.fonts、HTML numeric input。
+ * 権限・privacy: 権限を要求せず、Git管理済みsubset fontと式だけを表示する。共通回答値は入場中のmemoryにだけ保持し、保存・送信しない。
+ * 対応環境: FontFaceとDocument Font Setを実装し、BMP/補助平面のfixture glyphをsubset fontから描画できるbrowser。
  */
 function S620Stage(props: Props) {
   const [answer, setAnswer] = useState("");

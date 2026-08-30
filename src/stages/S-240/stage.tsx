@@ -20,15 +20,14 @@ type InteractionState = "idle" | "active" | "cancelled" | "unavailable";
 /**
  * S-240
  *
- * 目的: 「渡した印」で、B01「共有の箱」、B02「共有先の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-240の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: BusycubeからOS共有sheetへ短い印を渡す向きと、installed BusycubeをOS共有先として起動する逆向きを確認する。
+ * 最初の一手: 「共有する」を押して表示中の6文字markを任意の共有先へ渡す。B02はBusycubeをinstallし、別app/browserの共有sheetからBusycubeを選ぶ。
+ * 箱ごとの解法:
+ * - B01「共有の箱」: titleとrandom 6文字markを含むtextで`navigator.share()`を呼び、OS共有flowがcancelされずpromise resolveすると開く。
+ * - B02「共有先の箱」: Web App Manifestのshare targetから`?stage=S-240&share-target=1`で起動され、入場URLの`share-target`が厳密に`1`なら開く。判定後parameterを除く。
+ * 使用API: Web Share API、Web App Manifestの`share_target`、URL API、History API、Web Crypto UUID。
+ * 権限・privacy: 外へ渡すのは固定titleと一時markだけで、共有先はOS UIで利用者が選ぶ。受信data本文は判定せず保存・再送信しない。
+ * 対応環境: B01はWeb Share APIとOS共有sheet、B02はshare target対応browser/OSへBusycubeをinstallできる環境。
  */
 function S240Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

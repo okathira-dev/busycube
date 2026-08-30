@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-080 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "別の入口", en: "Another entrance" },
   installHint: {

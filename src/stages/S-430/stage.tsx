@@ -24,17 +24,16 @@ type AudioSessionLike = EventTarget & {
 };
 
 /**
- * S-430 — ページ外の音声制御
+ * S-430
  *
- * 目的: ページ内の再生／停止ボタンではなく、OS・ブラウザが所有する音声制御と音声フォーカス復帰を使う。
- * 最初の一手: B01は「音を始める」を押してから、ブラウザのメディアUI、メディアキー、ヘッドセット等で停止する。B02は「復帰を待つ音を始める」を押し、端末側で別の音を鳴らしてから元の音へ戻す。
- * 箱ごとの解法: B01は登録済みMedia Sessionの実pause actionが届いた時だけ開く。B02はAudio Sessionが同一試行でinterruptedを経てactiveへ戻り、対象audioの実playingイベントで再生復帰を確認した時だけ開く。
- * 開かない操作: ページ内のaudio controls、通常のpauseイベント、scriptからの停止、visibility変化、Media SessionのB01停止、inactiveだけ、合成statechangeではB02を開かない。
- * 使用API: Media Session、Web Audio、HTMLAudioElement、対応環境のAudio Session API。
- * 権限・privacy: 権限は要求せず、生成音とGit管理済み音声を再生するだけで、音声入力・端末名・interruption sourceを保存／送信しない。
- * cleanup: 離脱時にoscillatorとmedia elementを停止し、Media Session handlerとAudio Session listenerを外し、Audio Session typeをautoへ戻す。
- * 対応環境: B01はMedia SessionとAudioContext、B02はAudio Sessionを実装したOS／browserでのみ観測できる。B02非対応はB01を妨げない。
- * 人手確認: H-003/H-004/H-019/H-020/H-022/H-023/H-025/H-039/H-052で、外部pause、実interruption、復帰、取消、離脱を確認する。
+ * 目的: OS/browser所有のmedia controlから届くpause actionと、別音声によるAudio Session interruption後の再生復帰を観測する。
+ * 最初の一手: 「音を始める」後にmedia key・headset・system media UIでpauseする。B02は「復帰を待つ音を始める」後、別appの音でinterruptしてからBusycube音声へ戻す。
+ * 箱ごとの解法:
+ * - B01「外側停止の箱」: 生成tone再生中にMedia Sessionへ登録した実`pause` action handlerが呼ばれると、toneを止めて開く。
+ * - B02「音声復帰の箱」: 同じattemptのAudio Session `statechange`で一度`interrupted`を観測し、その後stateが`active`な時に対象audioの`playing` eventを受けると開く。
+ * 使用API: Media Session API/MediaMetadata、Web Audio oscillator、HTMLAudioElement、Audio Session APIのtype/state/statechange。
+ * 権限・privacy: 権限や音声入力を使わず、生成toneとGit管理済みfixtureだけを再生する。media keyやinterruption元の情報は取得・保存・送信しない。
+ * 対応環境: B01はMedia SessionとWeb Audio、B02はAudio Session APIとOS audio focus復帰を実装するbrowser/OS。
  */
 function S430Stage(props: Props) {
   const pause = props.boxes[manifest.box.B01];

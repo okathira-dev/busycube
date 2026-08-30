@@ -22,13 +22,15 @@ const mazeRows = [
 const start = { row: 1, column: 1 };
 
 /**
- * S-670 — Consoleへ出すread-only迷路と、ページ側の入力を分離する。
- * 目的: Console APIを表示面として使い、プレイヤーはページの方向ボタンだけで迷路を解く。
- * 最初の一手: ConsoleのSからEまでを読み、上下左右を順に押す。
- * 箱ごとの成功条件: B01は壁を越えずにEへ到達した状態だけで開く。
- * 開かない操作: Console入力、DevTools編集、盤面文字列の書き換え、壁への移動では開かない。
- * API/権限: console.logと通常のbutton/keydown。権限・保存・送信はない。
- * cleanup/環境: Console表示は再描画時に更新し、listenerはAbortSignalで外す。H-001/H-002/H-003/H-004/H-020/H-025/H-036を確認する。
+ * S-670
+ *
+ * 目的: page上には座標だけを出し、DevTools Consoleへ描いたread-only mazeを読んで通常buttonから出口へ移動する。
+ * 最初の一手: Consoleで`Busycube S-670 maze`の5×7盤面を見つけ、SからEへの道順`↓↓→→↑↑→→↓↓`をpageの方向buttonで押す。
+ * 箱ごとの解法:
+ * - B01「出口の箱」: 現在座標から壁`#`を避けて上下左右へ1cellずつ移動し、固定mazeの`E` cell（row 3, column 5）へ到達すると開く。
+ * 使用API: Console APIの`console.info()`、HTML buttons、React stateによる固定maze座標更新。
+ * 権限・privacy: 権限・利用者dataを使用せず、固定mazeと現在座標だけをConsoleへ表示する。操作履歴を保存・送信しない。
+ * 対応環境: DevTools Consoleを参照でき、page上のHTML buttonを操作できるdesktop browser。
  */
 function S670Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

@@ -17,15 +17,14 @@ import { locale } from "./locale";
 /**
  * S-330
  *
- * 目的: 「消えない灯り」で、B01「灯りを保つ箱」、B02「灯りを戻す箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-330の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: screen wake lockを取得し、page非表示等によるbrowser側releaseの後、visible復帰時に新しいlockを再取得する。
+ * 最初の一手: pageがvisibleな状態で「灯りを保つ」を押し、取得後に別tab/appへ移ってlockをreleaseさせてから戻る。
+ * 箱ごとの解法:
+ * - B01「灯りを保つ箱」: buttonから`navigator.wakeLock.request("screen")`が成功し、sentinelを保持できると開く。
+ * - B02「灯りを戻す箱」: 取得済みsentinelの`release` eventを一度受けた後、pageがvisibleへ戻った時のscreen wake lock再要求が成功すると開く。
+ * 使用API: Screen Wake Lock APIのrequest/WakeLockSentinel release event、Page Visibility API。
+ * 権限・privacy: screen wake lock以外の権限・dataを使用せず、取得/release状態はmemory内でだけ保持して保存・送信しない。
+ * 対応環境: secure contextでScreen Wake Lock APIを実装し、visibility変化時にlockをrelease・復帰時に再取得できるbrowser/OS。
  */
 function S330Stage(props: Props) {
   const acquireProblem = props.boxes[manifest.box.B01];

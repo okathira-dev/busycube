@@ -14,16 +14,15 @@ import { stageText } from "../locale";
 import { locale } from "./locale";
 
 /**
- * S-890 — 任意HTML要素だけを実Fullscreenにし、その要素内でだけ箱を操作する。
- * 目的: F11やvideo fullscreenではなく、`requestFullscreen()`を呼んだ特定elementの`:fullscreen`状態を体験する。
- * 最初の一手: 額縁内のbuttonを押して、額縁そのものをfullscreenにする。
- * 箱ごとの解法: B01は`document.fullscreenElement === frame`の間に表示・操作可能になり、その箱へのtrusted clickで開く。
- * 開かない操作: F11、videoのfullscreen、別elementのfullscreen、CSSだけの拡大、script click、fullscreen外でのclickでは開かない。
- * 使用API: Fullscreen API、`fullscreenchange`、`:fullscreen`。game製の疑似fullscreen stateを成功条件に使わない。
- * 権限・privacy: browserのfullscreen許可以外の権限、保存、送信は行わない。
- * cleanup: stage離脱時にこのframeがfullscreenなら`exitFullscreen()`し、listenerを解除する。Escによる終了も`fullscreenchange`で反映する。
- * 対応環境: Fullscreen APIに対応するbrowser。user activationが失われた場合はboxを開かず、再度buttonを押す。
- * 人手確認: H-063で額縁fullscreen、F11、別要素、Esc、拒否、再入場cleanupを確認する。
+ * S-890 — 額縁だけのFullscreen
+ *
+ * 目的: browser全体ではなく、`requestFullscreen()`を呼んだ特定HTML要素だけが実fullscreen要素になる状態を作る。
+ * 最初の一手: 額縁の下にある「額縁を全画面にする」を押し、browserの許可に従って額縁をfullscreenにする。
+ * 箱ごとの解法:
+ * - B01: 額縁が画面全体を占め、箱を覆っていたveilが消えた状態で箱を直接クリックする。trusted click時にも`document.fullscreenElement`がその額縁要素なら開く。
+ * 使用API: Fullscreen APIの`Element.requestFullscreen()`、`document.fullscreenElement`、`fullscreenchange`、`document.exitFullscreen()`。
+ * 権限・privacy: fullscreenへの遷移以外の権限を要求せず、画面内容・操作履歴・端末情報を保存または送信しない。
+ * 対応環境: user activationからのFullscreen APIに対応し、任意のHTML要素をfullscreenにできるbrowser。
  */
 function S890Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

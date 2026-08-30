@@ -16,16 +16,15 @@ import { locale } from "./locale";
 const threshold = 0.98;
 
 /**
- * S-840 — 二次元scrollの実IntersectionObserver ratioを0.98以上へ合わせる。
- * 目的: 縦だけでも横だけでも足りない、observer root内の可視比を自分で整える体験を作る。
- * 最初の一手: 大きな平面を縦横にスクロールし、中央から離れた淡い窓を探す。
- * 箱ごとの解法: B01は640×420px rootの中にある616×396pxのtargetを縦横ともほぼ完全に表示し、実IntersectionObserver entryの`intersectionRatio >= 0.98`になると開く。
- * 開かない操作: scrollLeft / scrollTopの値を直接合わせる、横だけまたは縦だけを合わせる、CSSでtargetを隠す、scriptでobserver entryを作る操作では開かない。
- * 使用API: IntersectionObserver、scroll container、KeyboardEvent。observerのrootはこのstageの実scroll rootに固定する。
- * 権限・privacy: 権限、保存、送信は行わない。現在のratioは表示中のlayoutから得るだけで履歴化しない。
- * cleanup: stage離脱時にobserverをdisconnectし、signal abort後のentryを無視する。timerや外部接続は作らない。
- * 対応環境: IntersectionObserverと通常scrollに対応するbrowser。狭いviewportではrootとtargetを同じ24px差で縮める。
- * 人手確認: H-058で0.97台と0.98以上、横だけ／縦だけ、zoom、keyboard、再入場時disconnectを確認する。
+ * S-840
+ *
+ * 目的: 大きな二次元scroll plane内のtargetを縦横とも合わせ、実IntersectionObserver可視率を98%以上にする。
+ * 最初の一手: scroll areaを上下左右へ動かして淡い大窓を探し、四辺がroot内へほぼ完全に収まるよう微調整する。
+ * 箱ごとの解法:
+ * - B01「交差率の箱」: rootの実client sizeより縦横24 px小さいtargetについて、IntersectionObserver entryの`intersectionRatio >= 0.98`になると開く。
+ * 使用API: scroll container、ResizeObserverによるtarget size調整、root指定IntersectionObserverとintersectionRatio。
+ * 権限・privacy: 権限・外部dataを使わず、現在layoutのintersection ratioだけを表示・判定する。scroll位置や履歴を保存・送信しない。
+ * 対応環境: 二軸scroll、ResizeObserver、root付きIntersectionObserverを実装するbrowser。
  */
 function S840Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

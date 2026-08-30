@@ -6,11 +6,11 @@
 
 ## 判定
 
-| 判定 | 意味 |
-| --- | --- |
-| 必須 | リリースまたは該当ステージ公開前に合格が必要 |
-| 条件付き必須 | 対象環境向けステージを公開する場合に合格が必要 |
-| 探索 | 対応可否やUXを知るための調査。未合格でも全体を止めない |
+| 判定         | 意味                                                   |
+| ------------ | ------------------------------------------------------ |
+| 必須         | リリースまたは該当ステージ公開前に合格が必要           |
+| 条件付き必須 | 対象環境向けステージを公開する場合に合格が必要         |
+| 探索         | 対応可否やUXを知るための調査。未合格でも全体を止めない |
 
 ## 証跡
 
@@ -31,89 +31,89 @@
 
 ## 環境カバレッジ
 
-| 環境 | リリース判定 | 用途 |
-| --- | --- | --- |
-| Windows + Chrome Stable | 必須 | 主開発・Baseline寄り・Chromium固有機能 |
-| Windows + Firefox Stable | 必須 | Baseline差、履歴、保存、権限差 |
-| macOS + Safari Stable | 条件付き必須 | Safari固有差とデスクトップWebKit |
-| iPhone / iPad + Safari | 条件付き必須 | タッチ、センサー、PWA、モバイル権限 |
-| Android + Chrome Stable | 条件付き必須 | センサー、PWA、共有、外部機器系 |
-| インストール済みPWA | 必須 | 表示モード、更新、オフライン、PWA限定機能 |
-| 2台の異なる端末 | 必須 | Google Drive引き継ぎと競合統合 |
-| Experimental対応環境 | ステージごと | Experimentalステージの公開判断 |
-| ペン入力対応端末 | ステージごと | Pointer Eventsのmouse、touch、pen識別 |
+| 環境                     | リリース判定 | 用途                                      |
+| ------------------------ | ------------ | ----------------------------------------- |
+| Windows + Chrome Stable  | 必須         | 主開発・Baseline寄り・Chromium固有機能    |
+| Windows + Firefox Stable | 必須         | Baseline差、履歴、保存、権限差            |
+| macOS + Safari Stable    | 条件付き必須 | Safari固有差とデスクトップWebKit          |
+| iPhone / iPad + Safari   | 条件付き必須 | タッチ、センサー、PWA、モバイル権限       |
+| Android + Chrome Stable  | 条件付き必須 | センサー、PWA、共有、外部機器系           |
+| インストール済みPWA      | 必須         | 表示モード、更新、オフライン、PWA限定機能 |
+| 2台の異なる端末          | 必須         | Google Drive引き継ぎと競合統合            |
+| Experimental対応環境     | ステージごと | Experimentalステージの公開判断            |
+| ペン入力対応端末         | ステージごと | Pointer Eventsのmouse、touch、pen識別     |
 
 リリース時に用意できない環境は、該当ステージを未検証として明示し、推測だけで対応済みにしない。
 
 ## 実環境確認ケース
 
-| ID | 状態 | 対象 | 確認内容 | 対応ギミック候補 | 判定 |
-| --- | --- | --- | --- | --- | --- |
-| H-001 | [ ] | Windows Chrome | 初回起動、再読込、ローカル保存、基本ステージ、戻る進む | G-001, G-002, G-005, G-006, G-008, G-014, G-019, G-047, G-048, G-049 | 必須 |
-| H-002 | [ ] | Windows Firefox | Baseline寄りステージが同じ意味で成立し、非対応機能が安全に沈黙する | G-002, G-005, G-006, G-008, G-019, G-047, G-048, G-049 | 必須 |
-| H-003 | [ ] | macOS / iOS Safari | 選択、履歴、保存、画面サイズ、権限のSafari差を確認する | G-002, G-003, G-005, G-006, G-008, G-019, G-041, G-046, G-047, G-048, G-049 | 条件付き必須 |
-| H-004 | [ ] | Android Chrome | タッチ、共有、センサー、モバイルPWAの挙動を確認する | G-004, G-006, G-009, G-021, G-041, G-046, G-047, G-048 | 条件付き必須 |
-| H-005 | [ ] | PWA | インストール、ホーム画面起動、オフライン起動、更新、削除を確認する | G-015, G-016, G-027, G-029, G-039, G-040, G-042, G-043, G-044, G-049 | 必須 |
-| H-006 | [ ] | 権限分岐 | 許可、拒否、閉じる、再試行、設定で取消した後を確認する | G-006, G-010, G-011, G-012, G-023, G-025, G-026, G-029, G-039, G-040, G-042, G-043, G-048 | 必須 |
-| H-007 | [ ] | メディア解放 | カメラ、マイク、画面共有を離脱・再開し、インジケーターとストリームが残らない | G-010, G-011, G-012 | 必須 |
-| H-008 | [ ] | 端末姿勢 | iOSとAndroidで許可、回転ロック、縦横、静止判定を確認する | G-009 | 条件付き必須 |
-| H-009 | [ ] | Gamepad | 未接続、接続、切断、複数パッド、標準外マッピングを確認する | G-013 | 条件付き必須 |
-| H-010 | [ ] | Bluetooth | 対応OSとブラウザで選択、キャンセル、範囲外、切断、再接続を確認する | G-025 | 条件付き必須 |
-| H-011 | [ ] | HID / USB / MIDI | 対応機器で許可、データ受信、抜去、再接続、別機器選択を確認する | G-026 | 条件付き必須 |
-| H-012 | [ ] | Screen Capture / PiP | 共有対象選択、キャンセル、共有停止、PiP終了、複数画面、別tabのcatalogue外縁marker探索、capture frame decode、直接URL非clearを確認する。PiPはS-350のnative playerにbrowserがcontrolを提示する環境で入場し、実`enterpictureinpicture`／`leavepictureinpicture`として観測できるか確認する。page製PiP要求は製品経路にしない | G-012, G-020 | 条件付き必須 |
-| H-013 | [ ] | 複数タブ・窓 | 2タブ、3タブ、片方の終了、同時更新、ロック待機を確認する | G-017, G-018, G-022, G-049 | 必須 |
-| H-014 | [ ] | Clipboard / File / Share | 権限、キャンセル、空データ、大きなファイル、共有先なしを確認する | G-006, G-007, G-021, G-042, G-048, G-049 | 必須 |
-| H-015 | [ ] | Drive単一端末 | 接続、初回作成、再同期、失効、キャンセル、破損バックアップからの回復 | G-030 | 必須・本番origin基本動作確認済み、正式証跡待ち |
-| H-016 | [ ] | Drive複数端末 | 端末AとBで別ステージを進め、同期後に両方が残る | G-030 | 必須 |
-| H-017 | [ ] | Googleアカウント切替 | AからBへ切り替えると説明どおりgrow-only統合され、両方のクリアが残る。拒否・取消・失敗時はローカルを変更しない | G-030 | 必須 |
-| H-018 | [ ] | オフライン競合 | 2端末をオフラインで進め、時計をずらし、復帰後もクリアが消えない | G-014, G-030 | 必須 |
-| H-019 | [ ] | プライバシー | ネットワークと保存内容を調べ、生メディア・位置・機器識別子が送信されない | 全権限ステージ | 必須 |
-| H-020 | [ ] | 日英・アクセシビリティ | 言語切替、200%拡大、キーボード、読み上げラベル、音なしでの状態把握 | G-001, G-003, G-004, G-006, G-007, G-040, G-041, G-046, G-047, G-048, G-049 | 必須 |
-| H-021 | [ ] | Cloudflare Workers | root URL、直接stage URL、再読込、manifest、Service Worker scope、HTTPS、`_headers`のcache / security headerを確認する | G-015とアプリ全体 | 必須 |
-| H-022 | [ ] | ライフサイクル | 高速再読込、タブ休止、戻る進む、更新配信、古いキャッシュを確認する | G-015, G-018, G-022, G-031, G-039, G-040, G-041 | 必須 |
-| H-023 | [ ] | Experimental / Limited | 対象の公式対応環境で最小試作と本番配信の両方を確認する | G-016, G-020, G-023, G-025, G-026, G-027, G-028, G-031, G-039, G-040, G-041, G-042, G-043, G-044, G-046, G-049 | 条件付き必須 |
-| H-024 | [ ] | Pointer入力 | mouse、touch、penが別の`pointerType`として反応し、未所持入力を偽装して開けない | G-004 | 条件付き必須 |
-| H-025 | [ ] | 問題箱の再挑戦 | 全実装ステージへ入り直すと全問題箱が閉じ、初回だけリボン、過去クリアはリボンなし、条件の再達成後だけ開箱になる。問題箱は色と直下のヒント以外が同形・同寸法である | 全実装ステージ・問題箱 | 必須 |
-| H-026 | [ ] | Generic Sensor実機 | 対応端末でinterfaceとhardwareを分けて確認し、permission / policy、reading frequency、axes、visibility停止、sensor error、離脱stopを検証する | G-050, G-051, G-052, G-053, G-054, G-056 | 条件付き必須 |
-| H-027 | [ ] | Web Speech実機 | 対応browserでrecognition開始、final alternatives、`busy box`表記揺れ、permission拒否、no-speech、network / offlineを確認する。SpeechSynthesisはvoice準備、一文字ずつの発話、queue取消、start / end / error、`aspuxouw → busycube`、離脱cleanupを確認する | G-057 | 条件付き必須 |
-| H-028 | [ ] | Geolocation距離・復帰 | outdoor実機でanchor精度、5m・25m・100m、静止drift、screen sleep / wake、page freeze / discard / reload、sessionStorage復元、24時間expiry、reset / 完了削除、外部通信なしを確認する | G-058 | 条件付き必須 |
-| H-029 | [ ] | Geolocation高度帯 | smartphone実機でaltitude / altitudeAccuracyの数値取得、100m・500m境界、連続reading、静止drift、別高度帯の累積、null、permission、hidden / 離脱cleanup、非保存を確認する | G-059 | 条件付き必須 |
-| H-030 | [ ] | Native media速度・track・表示mode | S-350のnative controlsで、速度menuから1倍速以外を選んだ時だけ`playbackRate` / `ratechange`でB04、native字幕label `Busycube`でB05、PiP入場でB06、同じvideoのfullscreen入場でB08が開くことを確認する。別elementのfullscreen、CSS拡大ではB08を開かない。対応browserのnative音声label `Busycube`、track change、非対応時未観測、cleanupも確認する。pageは速度変更、PiP、fullscreenをscript要求しない。VFR 24fps区間はH-053で別に確認する | G-020, G-033 | 条件付き必須 |
-| H-032 | [ ] | Network Information接続方式 | Chrome Android / ChromeOS等の対応環境でWi-Fi、cellular、ethernet、Bluetoothの実`connection.type`、明示観測、再訪累積、change表示、対象外値、property欠損、listener cleanupを確認する。速度測定、UA sniff、IP情報、network requestがないことも確認する | G-062 | 条件付き必須 |
-| H-033 | [ ] | Encoding API文字化け | 8問の誤表示、元encodingと表示encodingの復号順、3文字以上または2語の回答、8問共通欄、全回答の非重複、誤答、keyboard入力、再入場、resetを確認する。対応browserの`TextDecoder(..., { fatal: true })`で固定fixtureの意味検証結果と一致することも確認する | G-063 | 必須 |
-| H-034 | [ ] | Permissions API四権限 | 位置情報、通知、カメラ、マイクについて、初期prompt / granted / denied、native prompt、site settings変更中の`change`、focus復帰時再照会、descriptor非対応、OS拒否、Permissions Policy、reset、離脱cleanupを確認する。位置非保存、通知非送信、camera / microphone track即時停止、遅延stream停止も確認する | G-064 | 条件付き必須 |
-| H-035 | [ ] | Compute Pressure三帯 | 対応Chromium環境で`PressureObserver.knownSources`、CPU初期record、state変化、再訪累積、停止、非表示復帰、Permissions Policy拒否、非対応OS / hardware、disconnect cleanupを確認する。箱はnominal、fair / seriousを合わせた中間、criticalの3帯であり、ゲームがworker、busy loop、benchmark等の負荷を生成せず、状態列・timestampを保存しないことも確認する | G-065 | 条件付き必須 |
-| H-036 | [ ] | Console端末迷路 | Chromium、Firefox、Safariのdesktop ConsoleでASCII盤面、現在位置、壁、出口、専用group、再表示、長いlog後の再出力、狭いDevTools幅、page側button / keyboard操作、reset、再入場を確認する。Console入力、page編集、色、文字幅、group展開を成功条件にしないことも確認する | G-066 | 条件付き必須 |
-| H-037 | [ ] | Console端末診断卓 | D-135でS-670 Console迷路との体験重複を理由に不採用としたため実施しない | G-067 | 対象外 |
-| H-038 | [ ] | Text Fragment巡回／組み立て（旧統合ケース） | 実装前の統合確認案。S-690はH-054、S-800はH-055へ分割して実装済みのため、このケースは実施しない | G-068, G-079 | 対象外（H-054 / H-055へ移管） |
-| H-039 | [ ] | Audio Session interruption | 対応Safari / WebKit環境を中心に、生成loop音声のactive、外部audio focusによるinterrupted、active復帰、media elementの再生再開、別tab / app、system interruption、silent mode、background、headset、停止、typeのauto復元を確認する。通常pause、inactive、Media Session actionをB02へ流用せず、ゲーム自身がinterruptionを生成しないことも確認する | G-041 | 条件付き必須 |
-| H-040 | [ ] | Remote Playback / QR実機 | AirPlay等の対応送信端末と外部再生先でpicker取消、機器なし、`connecting`、`connected`、切断、再接続を確認する。B01は選ばれた動画区間の文字鍵が外部画面だけで読め、手元入力と一致することを確認する。B02はcamera許可、`BarcodeDetector`の`qr_code`対応、current roundのQR読取、古いround・別QRの拒否、track停止を確認する。通常local再生、PiP、接続前の再生、固定QR、手入力、JS decoderを代替clearにせず、映像frame・decoded値・機器名を保存しないことも確認する | G-069 | 条件付き必須 |
-| H-041 | [ ] | Presentation receiver実機 | 対応browserとpresentation displayで明示buttonからpickerを開き、receiver pageが外部画面へ表示され、実connectionの`connected`後にround付きreadyが戻ってB03だけが開くことを確認する。取消、機器なし、許可拒否、receiver読込失敗、別round、close、terminate、再入場を確認し、通常window、画面ミラーリング、Remote Playback、PiP、local iframe、模擬messageで開かないこと、終了後にreceiverとlistenerが残らないことも確認する | G-069 | 条件付き必須 |
-| H-042 | [ ] | iframe動画変換 | same-origin iframeのClipPressでfileと10秒webcamを入力し、暗黒境界、各frameで検出したQRだけをそのframeの四辺形へ置換すること、decode不能fileの小文字固定error動画、低bitrate出力、実size比、download再生、SimpleTag再入力、全frame overlayを確認する。iframe内に縦scrollがなく内容高へ追従すること、QRはnative `BarcodeDetector`の有無にかかわらずbundled jsQR経路で一致すること、固定flagは変換前でも正答なら対応箱を開くこと、session不一致・別windowのmessageで親の高さが変わらないこと、録画拒否、reset、離脱、連続試行でtrack、frame、object URLが残らず、入力・出力が送信されないことも確認する | G-070 | 条件付き必須 |
-| H-043 | [ ] | 映像復元patch bay | 対応browserで左3動画、中央T1〜T3、右outputが固定表示され、out→任意inのBezier cableをmouse / touch / keyboardで接続できることを確認する。4正規routeで対応するGit管理済み360×360復元動画がoutputにloop再生されること、flag発見前でも固定QR flagの共通欄入力で該当箱だけが開くこと、B04のT1 cycle、誤route、重複cable、全解除、再接続、mobile横scroll、外部送信なしを確認する | G-071 | 必須 |
-| H-044 | [ ] | WebXR実機 | 対応AR端末またはVR headsetで、機器なし、AR / VR support probe、session picker取消、実immersive session開始、最初の非null viewer pose、controller / screen / gaze select、箱へのray hit / miss、sessionend、reset、離脱を確認する。inline session、page click、DOM overlay、PointerEvent、一般Gamepad、模擬poseでは開かず、歩行やroom scanなしで完了でき、pose・座標・機器情報が保存・送信されず、終了後にXR animation frame、listener、layer resourceが残らないことも確認する | G-072 | 条件付き必須 |
-| H-045 | [ ] | Periodic Background Sync長期実行 | Chromium系のinstalled PWAを独立appとして起動し、通常tab、未install、permission非granted、登録成功、active tag、水care、window client 0件の実scheduler eventによる発芽、再訪後の光care、別の実scheduler eventによる開花、開花後unregister、reset競合、site data削除、browser process終了、mobile OS停止を確認する。foreground event、通常timer、page load、日付変更、通知、通常Background Sync、synthetic event、DevTools debug発火では成長せず、debug発火を公開受入証跡へ使わないこと、care / phase / event時刻列がDrive・file export・外部送信へ混入しないことも確認する | G-073 | 条件付き必須・長期 |
-| H-046 | [ ] | browser所有OTP入力 | Android ChromeのWebOTPとiOS SafariのSecurity Code AutoFillで受信待機を開始し、別送信者からcurrent roundの`@host #code`文面を実SMSで送る。WebOTPはnative確認UI後の実credential、Safariは空のOTP専用欄への一括trusted input、current code一致、実`:autofill`状態で同じB01が開くことを確認する。manual type、paste、drop、composition、音声入力、通常文字候補、programmatic value、edit-after-fill、wrong / stale code、二重SMS、取消、timeout、reset、離脱、連絡先条件、desktop連携を確認する。Safariで`:autofill`を観測できなければevent列だけで合格させず、電話番号、code、本文、送信者、時刻、入力履歴が保存・同期・送信されないこと、料金とSMS privacy説明が開始前にあることも確認する | G-074 | 条件付き必須・実SMS |
-| H-047 | [ ] | Contact Picker架空名刺 | 対応Android Chromeで固定name / email / tel / address / iconを持つ架空contactをOSへ追加し、B01で実native pickerから1件を選んで全5property一致、各field mismatch、複数値、表示記号、住所field順、icon crop / resize / recompressを確認する。独立したB02では同じ5propertyを要求し、全propertyを非共有にしたまま1件を確定して全配列が空または欠損で開くことを確認する。API結果からcontact identityは証明できないため「同じcontact」を成功条件にしない。0件、複数件、部分共有、取消、late result、reset、離脱、非対応browserでは開かず、全非共有をnative UIで確定できなければgame製UIへfallbackしない。登録前にOS account同期の可能性、完了後に架空contact削除を案内し、返却値とicon Blobが表示・保存・Drive同期・file export・analytics・network送信されないことも確認する | G-075 | 条件付き必須・Android実機 |
-| H-048 | [ ] | Beaconオフライン郵便 | 最初にonlineでBusycube scopeがService Workerに制御されsender / receiver / receipt assetがcache済みであること、未制御時の一度だけのreload案内、offlineかつserver停止中のnative broken receipt表示、明示投函で実`sendBeacon()`が呼ばれることを確認する。`false`では遷移・開箱せず、`true`ではfull-document navigationし、workerが専用POSTとcurrent attemptを検証して`respondWith()`中にIndexedDB receiptをcommitした後、receiverがlistener設置→store照会の順でflagを開くことを確認する。same-document navigation、通常`fetch({keepalive:true})`、単純再訪、foreground直接write、tab close / visibilityだけ、wrong / stale attemptでは開かず、reload、message/query race、reset、site data削除、Chrome / Firefox / Safariの対応差を確認する。payloadに個人情報がなく、receiptがDrive同期・file export・analytics・外部requestへ出ないことも確認する | G-014 | 必須 |
-| H-049 | [ ] | FedCM provider実連携 | 実装着手時に候補serviceの公式資料を再調査し、公式FedCM endpoint / SDK、一般向けRP登録、利用規約、managed運用、独自backend不要、FedCM専用resultの有無をprovider台帳へ記録する。採用providerごとに公開originとclientを登録し、実account、browser所有chooser、手動Continue、期待providerの肯定的FedCM証拠で対応箱だけが開くことを確認する。GoogleはDriveと別project / client、非空credential、`select_by === "fedcm"`を必須にする。auto / legacy result、OAuth redirect、popup、broker経由の通常SNS login、credential空、cancel、未login、非対応browser、network failure、late callback、reset、離脱では開かない。全providerでtokenとaccount属性をdecode、表示、log、保存、Drive同期、file export、analytics、Busycube backendや別endpointへ送らず、接続解除方法を案内する。Google 1箱を下限とし、追加箱はこの実登録・実account証跡後に計画数へ加える | G-076 | 条件付き必須・Google本番origin基本動作確認済み、正式証跡待ち |
-| H-050 | [ ] | Payment Handler架空決済 | Cloudflare Workersの公開HTTPS originで架空method manifestが○/◇の2 Payment Appを列挙し、`/payment/method`が`Link: rel=payment-method-manifest`を返すこと、別scopeのService Worker登録、browser所有chooser、各handler windowを確認する。B01はどちらの財布でも承認responseと`complete("success")`、B02は意図的拒否responseと`complete("fail")`、B03は実`retry()`後の同一handler二度目の成功、B04はchooserで◇を選んでそのworkerへtrusted `PaymentRequestEvent`が届いた時だけ開くことを確認する。B04ではその後の✓／×／↻を限定せず、○選択、page click、偽message、stale request ID、game製picker、登録済み判定、`canMakePayment()`だけでは開かない。旧単一walletだけが残らないこと、cancel、例外、late / duplicate response、reset、離脱も確認する。payer / shipping情報、実payment method、credential、架空response detailsを保存・同期・外部送信しないことも確認する | G-077 | 必須・基本動作確認済み、正式証跡待ち |
-| H-051 | [ ] | Local Font Access実活字 | 公開対象desktop ChromiumとWindows / macOS等の対象OSで、Git管理済み専用TTFのdownload、OS標準preview、user-scope install、再走査、browser所有`local-fonts` prompt、permission persistence、対象PostScript名だけの実`queryLocalFonts()`、`FontData.blob()`のmetadata / SHA-256、専用glyph表示とB01開箱を確認する。未install、0 / multiple result、同名別font、permissionだけ、全font列挙、`@font-face local()`だけ、file upload、bundled webfont、mock、cancel、deny、late result、reset、離脱、browser再起動、uninstall後、permission revoke、非対応browserでは開かないことを確認する。返却font情報とraw bytesが表示・log・保存・Drive同期・file export・analytics・network送信されず、FontFace / object URLが解放され、OS別uninstallとsite permission解除案内が正しいことも確認する | G-078 | 条件付き必須・desktop Chromium / OS変更 |
-| H-052 | [ ] | Browser／OS media controls | Git管理するseek可能な短尺mediaを使い、browser native playerでseek、mute、実再生後pause、提示される場合のPiPを確認する。別のcontrolsなしmedia sessionではOS control surface、lock screen、media key、headset、browser media UIからのpause actionを確認し、通常のmedia element eventやpage内buttonではS-430-B01が開かないことを確認する。探索としてplay、seekbackward、seekforward、seekto、previoustrack、nexttrackの提示有無と受信action typeをOS／browser別に記録するが、sourceは推定せず、この探索だけで箱を追加しない | G-020, G-033, G-041 | 条件付き必須 |
-| H-053 | [ ] | native video aspect-ratio seek | S-810で入場時に自動表示される固定スウィープ動画について、初期停止frameの1:1が直ちに開くこと、native controlsで停止または停止中にシークして4:3、16:9、9:20（各相対5%以内）の実`videoWidth` / `videoHeight`を確認する。通常再生中の比率通過、CSS変更、固定寸法の動画では開かず、3840pxの最大辺、reload・離脱でcallbackとobject URLが残らないことも確認する | G-080 | 必須・`resize`対応browser |
-| H-054 | [ ] | Text Fragment巡回 | S-690で4実linkを順に辿り、各UA highlight、Back / Forward、reload、狭いviewportを確認する。通常hash、手scroll、回答不一致で開かず、4語から固定flagを入力した時だけ開くことを確認する | G-068 | 必須・Text Fragment対応browser |
-| H-055 | [ ] | Address-bar Highlighter | S-800でB01/B02 fragmentをaddress barから貼り、対象だけの`hidden=until-found` reveal、UA highlight、実`beforematch`、Back / reload、誤fragmentを確認する。Ctrl+Fでも`beforematch`が起こり得て起点は標準から判別できないことを既知制約として記録する | G-079 | 必須・Chrome系 |
-| H-056 | [ ] | Pointer Lock遠い箱 | S-820でmouse lock、3距離表示と3座標、中央reticle click、Esc、blur、lock外click、再入場を確認する。keyboard / wheel / synthetic eventだけで開かず、移動履歴を保存しないことも確認する | G-081 | 条件付き必須・desktop mouse |
-| H-057 | [ ] | Idle Detection | S-830でallow / deny、60秒idle-unlocked、OS screen lock、復帰、abort、timerやvisibilityだけの負例を確認する | G-082 | 条件付き必須・IdleDetector対応OS |
-| H-058 | [ ] | 二次元Intersection | S-840で横・縦双方のscroll、0.97台と0.98以上、zoom、狭いviewport、離脱時disconnectを確認する | G-083 | 必須 |
-| H-059 | [ ] | Document PiP | S-850でbrowser所有Document PiPにportalしたbox、trusted click、close / reopen、通常popup / iframeの負例、keyboard、style、離脱cleanupを確認する | G-084 | 条件付き必須・desktop Chromium |
-| H-060 | [ ] | EditContext校正 | S-860で日英、title typo / subtitle omission / tagline extra word、keyboard、IME、paste、selection、通常inputがないこと、reset / re-entry cleanupを確認する | G-085 | 条件付き必須・EditContext対応browser |
-| H-061 | [ ] | 外の書庫 | S-870でempty / non-empty folder、OS側の指定編集・削除・作成、BOM / 改行、各箱の順不同、visible中だけのpoll、cancel、manual cleanupを確認する | G-086 | 条件付き必須・File System Access |
-| H-062 | [ ] | 圧縮された荷物 | S-880でgzip / deflate / deflate-rawの3正解、各形式負例、再試行、network失敗、markerと65,536 byte照合、未対応表示を確認する。説明文だけで形式を当てるUXになっていないかも確認する | G-087 | 必須・DecompressionStream対応browser |
-| H-063 | [ ] | Element Fullscreen | S-890で指定elementのfullscreen、内部box click、Esc、F11、video / CSS fullscreen、外側click、離脱cleanupを確認する | G-088 | 必須 |
-| H-064 | [ ] | MediaSource継ぎ目 | S-900でFFmpeg生成したlead-inとA→B→C→Dの連続marker映像、誤順、4本未満、reset、native ended、network失敗、再組立、object URL / source buffer cleanupを確認する | G-089 | 条件付き必須・VP8 MSE |
-| H-065 | [ ] | runtime WebVTT | S-910で動画へ焼き込まれた各記号の出現中に正しいcaptionを追加し、native字幕表示、TextTrack cuechange / activeCues、停止中・誤記号の負例、reset、再生し直し、旧track disableを確認する。CSSで記号が補われていないことも確認する | G-090 | 必須 |
-| H-066 | [ ] | Popover迷路 | S-920で手数・曲がり方・終点方向が異なる3終点、各経由部屋の十字最大3択、各行き止まり、Esc、外側light dismiss、mouse / touch / keyboard、iframe額縁と斜線の表示不可外周、B01のinline反射、B02のblock反射を確認する。狭い幅・連続iframe resize・親page scroll中も、同じCSS Anchor Positioning規則でlayoutされるシルエット／実goal箱がずれずに追従することを確認する。戻るbuttonは出さず、行き止まりからはnative dismissで起点へ戻る。Popover / Anchor Positioning非対応では絶対配置の代替迷路が出ないことも確認する | G-091 | 条件付き必須・Popover / CSS Anchor Positioning対応browser |
+| ID    | 状態 | 対象                                        | 確認内容                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 対応ギミック候補                                                                                               | 判定                                                         |
+| ----- | ---- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| H-001 | [ ]  | Windows Chrome                              | 初回起動、再読込、ローカル保存、基本ステージ、戻る進む                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | G-001, G-002, G-005, G-006, G-008, G-014, G-019, G-047, G-048, G-049                                           | 必須                                                         |
+| H-002 | [ ]  | Windows Firefox                             | Baseline寄りステージが同じ意味で成立し、非対応機能が安全に沈黙する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | G-002, G-005, G-006, G-008, G-019, G-047, G-048, G-049                                                         | 必須                                                         |
+| H-003 | [ ]  | macOS / iOS Safari                          | 選択、履歴、保存、画面サイズ、権限のSafari差を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | G-002, G-003, G-005, G-006, G-008, G-019, G-041, G-046, G-047, G-048, G-049                                    | 条件付き必須                                                 |
+| H-004 | [ ]  | Android Chrome                              | タッチ、共有、センサー、モバイルPWAの挙動を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | G-004, G-006, G-009, G-021, G-041, G-046, G-047, G-048                                                         | 条件付き必須                                                 |
+| H-005 | [ ]  | PWA                                         | インストール、ホーム画面起動、オフライン起動、更新、削除を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | G-015, G-016, G-027, G-029, G-039, G-040, G-042, G-043, G-044, G-049                                           | 必須                                                         |
+| H-006 | [ ]  | 権限分岐                                    | 許可、拒否、閉じる、再試行、設定で取消した後を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | G-006, G-010, G-011, G-012, G-023, G-025, G-026, G-029, G-039, G-040, G-042, G-043, G-048                      | 必須                                                         |
+| H-007 | [ ]  | メディア解放                                | カメラ、マイク、画面共有を離脱・再開し、インジケーターとストリームが残らない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | G-010, G-011, G-012                                                                                            | 必須                                                         |
+| H-008 | [ ]  | 端末姿勢                                    | iOSとAndroidで許可、回転ロック、縦横、静止判定を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | G-009                                                                                                          | 条件付き必須                                                 |
+| H-009 | [ ]  | Gamepad                                     | 未接続、接続、切断、複数パッド、標準外マッピングを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | G-013                                                                                                          | 条件付き必須                                                 |
+| H-010 | [ ]  | Bluetooth                                   | 対応OSとブラウザで選択、キャンセル、範囲外、切断、再接続を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | G-025                                                                                                          | 条件付き必須                                                 |
+| H-011 | [ ]  | HID / USB / MIDI                            | 対応機器で許可、データ受信、抜去、再接続、別機器選択を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | G-026                                                                                                          | 条件付き必須                                                 |
+| H-012 | [ ]  | Screen Capture / PiP                        | 共有対象選択、キャンセル、共有停止、PiP終了、複数画面、別tabのcatalogue外縁marker探索、capture frame decode、直接URL非clearを確認する。PiPはS-350のnative playerにbrowserがcontrolを提示する環境で入場し、実`enterpictureinpicture`／`leavepictureinpicture`として観測できるか確認する。page製PiP要求は製品経路にしない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | G-012, G-020                                                                                                   | 条件付き必須                                                 |
+| H-013 | [ ]  | 複数タブ・窓                                | 2タブ、3タブ、片方の終了、同時更新、ロック待機を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | G-017, G-018, G-022, G-049                                                                                     | 必須                                                         |
+| H-014 | [ ]  | Clipboard / File / Share                    | 権限、キャンセル、空データ、大きなファイル、共有先なしを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | G-006, G-007, G-021, G-042, G-048, G-049                                                                       | 必須                                                         |
+| H-015 | [ ]  | Drive単一端末                               | 接続、初回作成、再同期、失効、キャンセル、破損バックアップからの回復                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | G-030                                                                                                          | 必須・本番origin基本動作確認済み、正式証跡待ち               |
+| H-016 | [ ]  | Drive複数端末                               | 端末AとBで別ステージを進め、同期後に両方が残る                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | G-030                                                                                                          | 必須                                                         |
+| H-017 | [ ]  | Googleアカウント切替                        | AからBへ切り替えると説明どおりgrow-only統合され、両方のクリアが残る。拒否・取消・失敗時はローカルを変更しない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | G-030                                                                                                          | 必須                                                         |
+| H-018 | [ ]  | オフライン競合                              | 2端末をオフラインで進め、時計をずらし、復帰後もクリアが消えない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | G-014, G-030                                                                                                   | 必須                                                         |
+| H-019 | [ ]  | プライバシー                                | ネットワークと保存内容を調べ、生メディア・位置・機器識別子が送信されない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 全権限ステージ                                                                                                 | 必須                                                         |
+| H-020 | [ ]  | 日英・アクセシビリティ                      | 言語切替、200%拡大、キーボード、読み上げラベル、音なしでの状態把握                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | G-001, G-003, G-004, G-006, G-007, G-040, G-041, G-046, G-047, G-048, G-049                                    | 必須                                                         |
+| H-021 | [ ]  | Cloudflare Workers                          | root URL、直接stage URL、再読込、manifest、Service Worker scope、HTTPS、`_headers`のcache / security headerを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | G-015とアプリ全体                                                                                              | 必須                                                         |
+| H-022 | [ ]  | ライフサイクル                              | 高速再読込、タブ休止、戻る進む、更新配信、古いキャッシュを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | G-015, G-018, G-022, G-031, G-039, G-040, G-041                                                                | 必須                                                         |
+| H-023 | [ ]  | Experimental / Limited                      | 対象の公式対応環境で最小試作と本番配信の両方を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | G-016, G-020, G-023, G-025, G-026, G-027, G-028, G-031, G-039, G-040, G-041, G-042, G-043, G-044, G-046, G-049 | 条件付き必須                                                 |
+| H-024 | [ ]  | Pointer入力                                 | mouse、touch、penが別の`pointerType`として反応し、未所持入力を偽装して開けない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | G-004                                                                                                          | 条件付き必須                                                 |
+| H-025 | [ ]  | 問題箱の再挑戦                              | 全実装ステージへ入り直すと全問題箱が閉じ、初回だけリボン、過去クリアはリボンなし、条件の再達成後だけ開箱になる。問題箱は色と直下のヒント以外が同形・同寸法である                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 全実装ステージ・問題箱                                                                                         | 必須                                                         |
+| H-026 | [ ]  | Generic Sensor実機                          | 対応端末でinterfaceとhardwareを分けて確認し、permission / policy、reading frequency、axes、visibility停止、sensor error、離脱stopを検証する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | G-050, G-051, G-052, G-053, G-054, G-056                                                                       | 条件付き必須                                                 |
+| H-027 | [ ]  | Web Speech実機                              | 対応browserでrecognition開始、final alternatives、`busy box`表記揺れ、permission拒否、no-speech、network / offlineを確認する。SpeechSynthesisはvoice準備、一文字ずつの発話、queue取消、start / end / error、`aspuxouw → busycube`、離脱cleanupを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | G-057                                                                                                          | 条件付き必須                                                 |
+| H-028 | [ ]  | Geolocation距離・復帰                       | outdoor実機でanchor精度、5m・25m・100m、静止drift、screen sleep / wake、page freeze / discard / reload、sessionStorage復元、24時間expiry、reset / 完了削除、外部通信なしを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | G-058                                                                                                          | 条件付き必須                                                 |
+| H-029 | [ ]  | Geolocation高度帯                           | smartphone実機でaltitude / altitudeAccuracyの数値取得、100m・500m境界、連続reading、静止drift、別高度帯の累積、null、permission、hidden / 離脱cleanup、非保存を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | G-059                                                                                                          | 条件付き必須                                                 |
+| H-030 | [ ]  | Native media速度・track・表示mode           | S-350のnative controlsで、速度menuから1倍速以外を選んだ時だけ`playbackRate` / `ratechange`でB04、native字幕label `Busycube`でB05、PiP入場でB06、同じvideoのfullscreen入場でB08が開くことを確認する。別elementのfullscreen、CSS拡大ではB08を開かない。対応browserのnative音声label `Busycube`、track change、非対応時未観測、cleanupも確認する。pageは速度変更、PiP、fullscreenをscript要求しない。VFR 24fps区間はH-053で別に確認する                                                                                                                                                                                                                                                                                                                                                                                                                             | G-020, G-033                                                                                                   | 条件付き必須                                                 |
+| H-032 | [ ]  | Network Information接続方式                 | Chrome Android / ChromeOS等の対応環境でWi-Fi、cellular、ethernet、Bluetoothの実`connection.type`、明示観測、再訪累積、change表示、対象外値、property欠損、listener cleanupを確認する。速度測定、UA sniff、IP情報、network requestがないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | G-062                                                                                                          | 条件付き必須                                                 |
+| H-033 | [ ]  | Encoding API文字化け                        | 8問の誤表示、元encodingと表示encodingの復号順、3文字以上または2語の回答、8問共通欄、全回答の非重複、誤答、keyboard入力、再入場、resetを確認する。対応browserの`TextDecoder(..., { fatal: true })`で固定fixtureの意味検証結果と一致することも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | G-063                                                                                                          | 必須                                                         |
+| H-034 | [ ]  | Permissions API四権限                       | 位置情報、通知、カメラ、マイクについて、初期prompt / granted / denied、native prompt、site settings変更中の`change`、focus復帰時再照会、descriptor非対応、OS拒否、Permissions Policy、reset、離脱cleanupを確認する。位置非保存、通知非送信、camera / microphone track即時停止、遅延stream停止も確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | G-064                                                                                                          | 条件付き必須                                                 |
+| H-035 | [ ]  | Compute Pressure三帯                        | 対応Chromium環境で`PressureObserver.knownSources`、CPU初期record、state変化、再訪累積、停止、非表示復帰、Permissions Policy拒否、非対応OS / hardware、disconnect cleanupを確認する。箱はnominal、fair / seriousを合わせた中間、criticalの3帯であり、ゲームがworker、busy loop、benchmark等の負荷を生成せず、状態列・timestampを保存しないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | G-065                                                                                                          | 条件付き必須                                                 |
+| H-036 | [ ]  | Console端末迷路                             | Chromium、Firefox、Safariのdesktop ConsoleでASCII盤面、現在位置、壁、出口、専用group、再表示、長いlog後の再出力、狭いDevTools幅、page側button / keyboard操作、reset、再入場を確認する。Console入力、page編集、色、文字幅、group展開を成功条件にしないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | G-066                                                                                                          | 条件付き必須                                                 |
+| H-037 | [ ]  | Console端末診断卓                           | D-135でS-670 Console迷路との体験重複を理由に不採用としたため実施しない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | G-067                                                                                                          | 対象外                                                       |
+| H-038 | [ ]  | Text Fragment巡回／組み立て（旧統合ケース） | 実装前の統合確認案。S-690はH-054、S-800はH-055へ分割して実装済みのため、このケースは実施しない                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | G-068, G-079                                                                                                   | 対象外（H-054 / H-055へ移管）                                |
+| H-039 | [ ]  | Audio Session interruption                  | 対応Safari / WebKit環境を中心に、生成loop音声のactive、外部audio focusによるinterrupted、active復帰、media elementの再生再開、別tab / app、system interruption、silent mode、background、headset、停止、typeのauto復元を確認する。通常pause、inactive、Media Session actionをB02へ流用せず、ゲーム自身がinterruptionを生成しないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | G-041                                                                                                          | 条件付き必須                                                 |
+| H-040 | [ ]  | Remote Playback / QR実機                    | AirPlay等の対応送信端末と外部再生先でpicker取消、機器なし、`connecting`、`connected`、切断、再接続を確認する。B01は選ばれた動画区間の文字鍵が外部画面だけで読め、手元入力と一致することを確認する。B02はcamera許可、`BarcodeDetector`の`qr_code`対応、current roundのQR読取、古いround・別QRの拒否、track停止を確認する。通常local再生、PiP、接続前の再生、固定QR、手入力、JS decoderを代替clearにせず、映像frame・decoded値・機器名を保存しないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                   | G-069                                                                                                          | 条件付き必須                                                 |
+| H-041 | [ ]  | Presentation receiver実機                   | 対応browserとpresentation displayで明示buttonからpickerを開き、receiver pageが外部画面へ表示され、実connectionの`connected`後にround付きreadyが戻ってB03だけが開くことを確認する。取消、機器なし、許可拒否、receiver読込失敗、別round、close、terminate、再入場を確認し、通常window、画面ミラーリング、Remote Playback、PiP、local iframe、模擬messageで開かないこと、終了後にreceiverとlistenerが残らないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                         | G-069                                                                                                          | 条件付き必須                                                 |
+| H-042 | [ ]  | iframe動画変換                              | same-origin iframeのClipPressでfileと10秒webcamを入力し、暗黒境界、各frameで検出したQRだけをそのframeの四辺形へ置換すること、decode不能fileの小文字固定error動画、低bitrate出力、実size比、download再生、SimpleTag再入力、全frame overlayを確認する。iframe内に縦scrollがなく内容高へ追従すること、QRはnative `BarcodeDetector`の有無にかかわらずbundled jsQR経路で一致すること、固定flagは変換前でも正答なら対応箱を開くこと、session不一致・別windowのmessageで親の高さが変わらないこと、録画拒否、reset、離脱、連続試行でtrack、frame、object URLが残らず、入力・出力が送信されないことも確認する                                                                                                                                                                                                                                                             | G-070                                                                                                          | 条件付き必須                                                 |
+| H-043 | [ ]  | 映像復元patch bay                           | 対応browserで左3動画、中央T1〜T3、右outputが固定表示され、out→任意inのBezier cableをmouse / touch / keyboardで接続できることを確認する。4正規routeで対応するGit管理済み360×360復元動画がoutputにloop再生されること、flag発見前でも固定QR flagの共通欄入力で該当箱だけが開くこと、B04のT1 cycle、誤route、重複cable、全解除、再接続、mobile横scroll、外部送信なしを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | G-071                                                                                                          | 必須                                                         |
+| H-044 | [ ]  | WebXR実機                                   | 対応AR端末またはVR headsetで、機器なし、AR / VR support probe、session picker取消、実immersive session開始、最初の非null viewer pose、controller / screen / gaze select、箱へのray hit / miss、sessionend、reset、離脱を確認する。inline session、page click、DOM overlay、PointerEvent、一般Gamepad、模擬poseでは開かず、歩行やroom scanなしで完了でき、pose・座標・機器情報が保存・送信されず、終了後にXR animation frame、listener、layer resourceが残らないことも確認する                                                                                                                                                                                                                                                                                                                                                                                    | G-072                                                                                                          | 条件付き必須                                                 |
+| H-045 | [ ]  | Periodic Background Sync長期実行            | Chromium系のinstalled PWAを独立appとして起動し、通常tab、未install、permission非granted、登録成功、active tag、水care、window client 0件の実scheduler eventによる発芽、再訪後の光care、別の実scheduler eventによる開花、開花後unregister、reset競合、site data削除、browser process終了、mobile OS停止を確認する。foreground event、通常timer、page load、日付変更、通知、通常Background Sync、synthetic event、DevTools debug発火では成長せず、debug発火を公開受入証跡へ使わないこと、care / phase / event時刻列がDrive・file export・外部送信へ混入しないことも確認する                                                                                                                                                                                                                                                                                        | G-073                                                                                                          | 条件付き必須・長期                                           |
+| H-046 | [ ]  | browser所有OTP入力                          | Android ChromeのWebOTPとiOS SafariのSecurity Code AutoFillで受信待機を開始し、別送信者からcurrent roundの`@host #code`文面を実SMSで送る。WebOTPはnative確認UI後の実credential、Safariは空のOTP専用欄への一括trusted input、current code一致、実`:autofill`状態で同じB01が開くことを確認する。manual type、paste、drop、composition、音声入力、通常文字候補、programmatic value、edit-after-fill、wrong / stale code、二重SMS、取消、timeout、reset、離脱、連絡先条件、desktop連携を確認する。Safariで`:autofill`を観測できなければevent列だけで合格させず、電話番号、code、本文、送信者、時刻、入力履歴が保存・同期・送信されないこと、料金とSMS privacy説明が開始前にあることも確認する                                                                                                                                                                         | G-074                                                                                                          | 条件付き必須・実SMS                                          |
+| H-047 | [ ]  | Contact Picker架空名刺                      | 対応Android Chromeで固定name / email / tel / address / iconを持つ架空contactをOSへ追加し、B01で実native pickerから1件を選んで全5property一致、各field mismatch、複数値、表示記号、住所field順、icon crop / resize / recompressを確認する。独立したB02では同じ5propertyを要求し、全propertyを非共有にしたまま1件を確定して全配列が空または欠損で開くことを確認する。API結果からcontact identityは証明できないため「同じcontact」を成功条件にしない。0件、複数件、部分共有、取消、late result、reset、離脱、非対応browserでは開かず、全非共有をnative UIで確定できなければgame製UIへfallbackしない。登録前にOS account同期の可能性、完了後に架空contact削除を案内し、返却値とicon Blobが表示・保存・Drive同期・file export・analytics・network送信されないことも確認する                                                                                           | G-075                                                                                                          | 条件付き必須・Android実機                                    |
+| H-048 | [ ]  | Beaconオフライン郵便                        | 最初にonlineでBusycube scopeがService Workerに制御されsender / receiver / receipt assetがcache済みであること、未制御時の一度だけのreload案内、offlineかつserver停止中のnative broken receipt表示、明示投函で実`sendBeacon()`が呼ばれることを確認する。`false`では遷移・開箱せず、`true`ではfull-document navigationし、workerが専用POSTとcurrent attemptを検証して`respondWith()`中にIndexedDB receiptをcommitした後、receiverがlistener設置→store照会の順でflagを開くことを確認する。same-document navigation、通常`fetch({keepalive:true})`、単純再訪、foreground直接write、tab close / visibilityだけ、wrong / stale attemptでは開かず、reload、message/query race、reset、site data削除、Chrome / Firefox / Safariの対応差を確認する。payloadに個人情報がなく、receiptがDrive同期・file export・analytics・外部requestへ出ないことも確認する                 | G-014                                                                                                          | 必須                                                         |
+| H-049 | [ ]  | FedCM provider実連携                        | 実装着手時に候補serviceの公式資料を再調査し、公式FedCM endpoint / SDK、一般向けRP登録、利用規約、managed運用、独自backend不要、FedCM専用resultの有無をprovider台帳へ記録する。採用providerごとに公開originとclientを登録し、実account、browser所有chooser、手動Continue、期待providerの肯定的FedCM証拠で対応箱だけが開くことを確認する。GoogleはDriveと別project / client、非空credential、`select_by === "fedcm"`を必須にする。auto / legacy result、OAuth redirect、popup、broker経由の通常SNS login、credential空、cancel、未login、非対応browser、network failure、late callback、reset、離脱では開かない。全providerでtokenとaccount属性をdecode、表示、log、保存、Drive同期、file export、analytics、Busycube backendや別endpointへ送らず、接続解除方法を案内する。Google 1箱を下限とし、追加箱はこの実登録・実account証跡後に計画数へ加える               | G-076                                                                                                          | 条件付き必須・Google本番origin基本動作確認済み、正式証跡待ち |
+| H-050 | [ ]  | Payment Handler架空決済                     | Cloudflare Workersの公開HTTPS originで架空method manifestが○/◇の2 Payment Appを列挙し、`/payment/method`が`Link: rel=payment-method-manifest`を返すこと、別scopeのService Worker登録、browser所有chooser、各handler windowを確認する。B01はどちらの財布でも承認responseと`complete("success")`、B02は意図的拒否responseと`complete("fail")`、B03は実`retry()`後の同一handler二度目の成功、B04はchooserで◇を選んでそのworkerへtrusted `PaymentRequestEvent`が届いた時だけ開くことを確認する。B04ではその後の✓／×／↻を限定せず、○選択、page click、偽message、stale request ID、game製picker、登録済み判定、`canMakePayment()`だけでは開かない。旧単一walletだけが残らないこと、cancel、例外、late / duplicate response、reset、離脱も確認する。payer / shipping情報、実payment method、credential、架空response detailsを保存・同期・外部送信しないことも確認する | G-077                                                                                                          | 必須・基本動作確認済み、正式証跡待ち                         |
+| H-051 | [ ]  | Local Font Access実活字                     | 公開対象desktop ChromiumとWindows / macOS等の対象OSで、Git管理済み専用TTFのdownload、OS標準preview、user-scope install、再走査、browser所有`local-fonts` prompt、permission persistence、対象PostScript名だけの実`queryLocalFonts()`、`FontData.blob()`のmetadata / SHA-256、専用glyph表示とB01開箱を確認する。未install、0 / multiple result、同名別font、permissionだけ、全font列挙、`@font-face local()`だけ、file upload、bundled webfont、mock、cancel、deny、late result、reset、離脱、browser再起動、uninstall後、permission revoke、非対応browserでは開かないことを確認する。返却font情報とraw bytesが表示・log・保存・Drive同期・file export・analytics・network送信されず、FontFace / object URLが解放され、OS別uninstallとsite permission解除案内が正しいことも確認する                                                                               | G-078                                                                                                          | 条件付き必須・desktop Chromium / OS変更                      |
+| H-052 | [ ]  | Browser／OS media controls                  | Git管理するseek可能な短尺mediaを使い、browser native playerでseek、mute、実再生後pause、提示される場合のPiPを確認する。別のcontrolsなしmedia sessionではOS control surface、lock screen、media key、headset、browser media UIからのpause actionを確認し、通常のmedia element eventやpage内buttonではS-430-B01が開かないことを確認する。探索としてplay、seekbackward、seekforward、seekto、previoustrack、nexttrackの提示有無と受信action typeをOS／browser別に記録するが、sourceは推定せず、この探索だけで箱を追加しない                                                                                                                                                                                                                                                                                                                                         | G-020, G-033, G-041                                                                                            | 条件付き必須                                                 |
+| H-053 | [ ]  | native video aspect-ratio seek              | S-810で入場時に自動表示される固定スウィープ動画について、初期停止frameの1:1が直ちに開くこと、native controlsで停止または停止中にシークして4:3、16:9、9:20（各相対5%以内）の実`videoWidth` / `videoHeight`を確認する。通常再生中の比率通過、CSS変更、固定寸法の動画では開かず、3840pxの最大辺、reload・離脱でcallbackとobject URLが残らないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | G-080                                                                                                          | 必須・`resize`対応browser                                    |
+| H-054 | [ ]  | Text Fragment巡回                           | S-690で4実linkを順に辿り、各UA highlight、Back / Forward、reload、狭いviewportを確認する。通常hash、手scroll、回答不一致で開かず、4語から固定flagを入力した時だけ開くことを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | G-068                                                                                                          | 必須・Text Fragment対応browser                               |
+| H-055 | [ ]  | Address-bar Highlighter                     | S-800でB01/B02 fragmentをaddress barから貼り、対象だけの`hidden=until-found` reveal、UA highlight、実`beforematch`、Back / reload、誤fragmentを確認する。Ctrl+Fでも`beforematch`が起こり得て起点は標準から判別できないことを既知制約として記録する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | G-079                                                                                                          | 必須・Chrome系                                               |
+| H-056 | [ ]  | Pointer Lock遠い箱                          | S-820でmouse lock、3距離表示と3座標、中央reticle click、Esc、blur、lock外click、再入場を確認する。keyboard / wheel / synthetic eventだけで開かず、移動履歴を保存しないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | G-081                                                                                                          | 条件付き必須・desktop mouse                                  |
+| H-057 | [ ]  | Idle Detection                              | S-830でallow / deny、60秒idle-unlocked、OS screen lock、復帰、abort、timerやvisibilityだけの負例を確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | G-082                                                                                                          | 条件付き必須・IdleDetector対応OS                             |
+| H-058 | [ ]  | 二次元Intersection                          | S-840で横・縦双方のscroll、0.97台と0.98以上、zoom、狭いviewport、離脱時disconnectを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | G-083                                                                                                          | 必須                                                         |
+| H-059 | [ ]  | Document PiP                                | S-850でbrowser所有Document PiPにportalしたbox、trusted click、close / reopen、通常popup / iframeの負例、keyboard、style、離脱cleanupを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | G-084                                                                                                          | 条件付き必須・desktop Chromium                               |
+| H-060 | [ ]  | EditContext校正                             | S-860で日英、title typo / subtitle omission / tagline extra word、keyboard、IME、paste、selection、通常inputがないこと、reset / re-entry cleanupを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | G-085                                                                                                          | 条件付き必須・EditContext対応browser                         |
+| H-061 | [ ]  | 外の書庫                                    | S-870でempty / non-empty folder、OS側の指定編集・削除・作成、BOM / 改行、各箱の順不同、visible中だけのpoll、cancel、manual cleanupを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | G-086                                                                                                          | 条件付き必須・File System Access                             |
+| H-062 | [ ]  | 圧縮された荷物                              | S-880でgzip / deflate / deflate-rawの3正解、各形式負例、再試行、network失敗、markerと65,536 byte照合、未対応表示を確認する。説明文だけで形式を当てるUXになっていないかも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | G-087                                                                                                          | 必須・DecompressionStream対応browser                         |
+| H-063 | [ ]  | Element Fullscreen                          | S-890で指定elementのfullscreen、内部box click、Esc、F11、video / CSS fullscreen、外側click、離脱cleanupを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | G-088                                                                                                          | 必須                                                         |
+| H-064 | [ ]  | MediaSource継ぎ目                           | S-900でFFmpeg生成したlead-inとA→B→C→Dの連続marker映像、誤順、4本未満、reset、native ended、network失敗、再組立、object URL / source buffer cleanupを確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | G-089                                                                                                          | 条件付き必須・VP8 MSE                                        |
+| H-065 | [ ]  | runtime WebVTT                              | S-910で動画へ焼き込まれた各記号の出現中に正しいcaptionを追加し、native字幕表示、TextTrack cuechange / activeCues、停止中・誤記号の負例、reset、再生し直し、旧track disableを確認する。CSSで記号が補われていないことも確認する                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | G-090                                                                                                          | 必須                                                         |
+| H-066 | [ ]  | Popover迷路                                 | S-920で手数・曲がり方・終点方向が異なる3終点、各経由部屋の十字最大3択、各行き止まり、Esc、外側light dismiss、mouse / touch / keyboard、iframe額縁と斜線の表示不可外周、B01のinline反射、B02のblock反射を確認する。狭い幅・連続iframe resize・親page scroll中も、同じCSS Anchor Positioning規則でlayoutされるシルエット／実goal箱がずれずに追従することを確認する。戻るbuttonは出さず、行き止まりからはnative dismissで起点へ戻る。Popover / Anchor Positioning非対応では絶対配置の代替迷路が出ないことも確認する                                                                                                                                                                                                                                                                                                                                                 | G-091                                                                                                          | 条件付き必須・Popover / CSS Anchor Positioning対応browser    |
 
 ## 公開判定の横断確認
 
@@ -142,26 +142,36 @@
 - `[x]`: このレビュー作業で確認済み。実環境確認ケースは、必要な証跡も記録した場合にだけ完了とする。
 - `[ ]`: 未確認、部分確認、または別環境での再確認が必要。
 - ステージ別チェックについて `TODO: ここまで人手レビュー済み` までは人手レビューしたことを示す。
+- ステージ別チェックでは、各`stage.tsx`の日本語JSDocを解法仕様の正本として参照し、JSDoc、実装、実環境の挙動が一致することを確認する。
+- 各Bxxについて、JSDocの「最初の一手」、操作、APIの値・event、厳密な成功条件を実際にたどり、記載どおり対象の箱だけが開くことを確認する。権限・privacy・対応環境の記載も実挙動と照合する。
+- JSDocと実装または実環境の挙動が食い違う場合はチェックせず、意図した仕様に合わせて実装またはJSDocを修正し、必要な再確認内容を「メモ」へ残す。
 - 実機、権限、installed PWA、公開origin、外部機器が必要な項目は、対応環境がない場合に推測でチェックしない。
 - 問題を見つけたら各ステージの「メモ」へ現象、再現手順、期待結果、環境を書く。
 
 ## 横断レビュー（全ステージ共通）
 
-- [ ] 日本語／英語、keyboard、200% zoom、狭いviewport、音なしでも箱・操作箇所・状態が理解できる。
+- [ ] 初見で最初の一手を推測でき、箱と操作箇所の関係が分かる。
+- [ ] browser／OS所有UI、外部機器、ゲーム内UIを見分けられる。
+- [ ] 現在状態、成功、失敗、取消、非対応が画面または標準UIから分かる。
+- [ ] 日本語／英語、keyboard、200% zoom、狭いviewport、音なしでも操作と結果を理解できる。
 - [ ] unsupported、permission denied、cancel、timeout、network failureが他の箱の成功として扱われない。
+- [ ] synthetic event、DevToolsでのDOM・保存値編集、見た目だけの変更、別箱の結果流用で開かない。
 - [ ] camera、microphone、位置、contact、credential、file内容などの生データを不要に表示・保存・同期・送信しない。
+- [ ] 離脱、取消、再試行、再入場後にlistener、timer、stream、worker、lock、接続、object URLが残らない。
 - [ ] 固定flag文字列を入力する問題は、正答flagをギミックの事前達成状態やsession内unlockで制限しない。
 - [ ] Consoleに未処理errorがなく、想定外のwarningが増えない。
 
 ## ステージ別チェック
 
+TODO: ここまで人手レビュー済み
+
 ### S-000 — 最初の箱
 
 中心API・操作: click / activation
 
-- [x] B01 クリックする箱: 想定操作でこの箱だけが開く。
-- [x] 成立境界: 初回・再入場の閉箱、累積1/1、再開封、進捗非重複
-- [x] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 クリックする箱
+- [ ] JSDoc
+- [x] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-020
 - メモ:
@@ -170,11 +180,11 @@
 
 中心API・操作: Pointer Events
 
-- [x] B01 マウスの箱: 想定操作でこの箱だけが開く。
-- [x] B02 タッチの箱: 想定操作でこの箱だけが開く。
-- [x] B03 ペンの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 3箱の同形性、マウス分離、再入場時の累積1/3
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 マウスの箱
+- [x] B02 タッチの箱
+- [x] B03 ペンの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-020, H-024
 - メモ:
@@ -183,22 +193,20 @@
 
 中心API・操作: viewport resize / HTMLMeterElement
 
-- [x] B01 画面幅の箱: 想定操作でこの箱だけが開く。
-- [x] 成立境界: 実viewport resizeが成功条件。meterは現在幅と目標帯の表示だけで、scriptによるmeter値変更は判定外
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 画面幅の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-020
 - メモ: ゲージが2つあるのが謎。ゲージのmaxをブラウザ表示中のモニターサイズ、minを0pxとして、optimumを目標サイズ値にして、low, highは許容範囲に一致させて。アイコンはAspectRatioIconが良さそう。「864 → 878」というような数値表示はなくて良い。
-
-TODO: ここまで人手レビュー済み
 
 ### S-030 — 選ばれた範囲
 
 中心API・操作: Selection
 
-- [ ] B01 選択範囲の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 一つの文章から指定範囲をnative Selectionで選択する。CSS Custom Highlightによる旧B02は削除し、入力欄やscript製ハイライトでは開かない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 選択範囲の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-020, H-025
 - メモ:
@@ -207,10 +215,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Page Visibility / High Resolution Time
 
-- [ ] B01 見ない時間の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 長い不在の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: monotonicな2秒判定と、同一documentが25分以上連続hidden後に復帰するB02。reload / discardは試行終了
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 見ない時間の箱
+- [ ] B02 長い不在の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-013, H-022, H-025
 - メモ:
@@ -219,9 +227,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Broadcast Channel
 
-- [ ] B01 二つの窓の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: URL直接起動、cleanup境界
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 二つの窓の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-013
 - メモ:
@@ -230,10 +238,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: IndexedDB再訪 / Beacon offline郵便
 
-- [ ] B01 再訪の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 オフライン郵便の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01の観測保存、移行、マージ。B02は実`sendBeacon()`、offline full-document navigation、Service Worker POST検証、IndexedDB receipt commitを使い、same-document遷移、通常fetch、直接writeでは開かない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 再訪の箱
+- [ ] B02 オフライン郵便の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-018, H-021, H-048
 - メモ:
@@ -242,9 +250,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Service Worker / offline
 
-- [ ] B01 オフラインの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: scope付きbuild、offlineイベント
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 オフラインの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-021, H-022
 - メモ:
@@ -253,9 +261,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: PWA display-mode
 
-- [ ] B01 別の入口の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: capability失敗の隔離
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 別の入口の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-023
 - メモ:
@@ -264,9 +272,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Notifications
 
-- [ ] B01 通知の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 明示操作、復帰URL
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 通知の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-006, H-023
 - メモ:
@@ -275,9 +283,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Device Orientation
 
-- [ ] B01 端末姿勢の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 明示権限、cleanup境界
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 端末姿勢の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-008
 - メモ:
@@ -286,9 +294,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: camera / luminance
 
-- [ ] B01 光の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 生映像非保存、track cleanup
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 光の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-007, H-019
 - メモ:
@@ -297,9 +305,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: microphone / RMS
 
-- [ ] B01 音の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 生音声非保存、AudioContext cleanup
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 音の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-007, H-019
 - メモ:
@@ -308,10 +316,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: File API / Web Crypto
 
-- [ ] B01 鍵を外へ出す箱: 想定操作でこの箱だけが開く。
-- [ ] B02 鍵を戻す箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 4KB上限、ハッシュ照合、2箱進捗
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 鍵を外へ出す箱
+- [ ] B02 鍵を戻す箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-014, H-020
 - メモ:
@@ -320,10 +328,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Google Drive `appDataFolder`
 
-- [ ] B01 バックアップの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 別端末の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: installationごとのreplica統合、ETag再試行、破損／未来versionの復旧選択
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 バックアップの箱
+- [ ] B02 別端末の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-015〜H-018
 - メモ:
@@ -332,11 +340,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: DOM / UI Events / native select / details
 
-- [x] B01 フォーカスの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 検索選択の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 排他開示の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01は`pointer-events:none`のbuttonへTabでfocus。B02はdecoyの中からnative selectのtypeaheadで`open busycube`を選択。B03は同じ`name`の`<details>`を複数開閉し、UAの排他状態を観測
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 フォーカスの箱
+- [ ] B02 検索選択の箱
+- [ ] B03 排他開示の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-020
 - メモ:
@@ -345,9 +353,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Canvas / Pointer Events
 
-- [ ] B01 入力軌跡の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 距離・時間・速度差の判定、pointer cleanup
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 入力軌跡の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-020, H-024
 - メモ:
@@ -356,9 +364,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Web Animations
 
-- [ ] B01 時間の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: animation時刻判定、cancel cleanup
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 時間の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-020
 - メモ:
@@ -367,9 +375,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Clipboard API
 
-- [ ] B01 コピーの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: copy操作で`ebucysub`を書き、page外で`busycube`へ修正・再copyした後、箱click時の`clipboard.readText()`完全一致でB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 コピーの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-006, H-014, H-020, H-025
 - メモ:
@@ -378,12 +386,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Screen Capture / MediaRecorder / WebRTC / Canvas marker decode
 
-- [ ] B01 再帰画面の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 録画の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 中継の箱: 想定操作でこの箱だけが開く。
-- [ ] B04 外縁の印の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01 frame継続、B02 local recording、B03 observer relay、B04はround handshake済みcatalogue外縁markerを実frameからdecode。notification image marker B05は再現保証不能
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 再帰画面の箱
+- [ ] B02 録画の箱
+- [ ] B03 中継の箱
+- [ ] B04 外縁の印の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-007, H-012, H-013, H-019, H-023
 - メモ:
@@ -392,9 +400,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Gamepad
 
-- [ ] B01 同時入力の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 2 button + axis同時判定、機器ID非保存
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 同時入力の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-009, H-019
 - メモ:
@@ -403,9 +411,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Badging
 
-- [ ] B01 外側の数字の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 1→2→3成功、離脱時clear
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 外側の数字の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-023
 - メモ:
@@ -414,12 +422,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: History / Navigation Timing / Navigation API
 
-- [ ] B01 履歴の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 戻る・進むの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 再読込の箱: 想定操作でこの箱だけが開く。
-- [ ] B04 分岐破棄の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01は同一ステージ3履歴とBack再入場、B02はfull-document back-forward復帰、B03はreload。B04はA→B→Cからbrowser BackでAへ戻ってDへ分岐し、旧B / C両entryの`dispose`と`canGoForward === false`を観測する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 履歴の箱
+- [ ] B02 戻る・進むの箱
+- [ ] B03 再読込の箱
+- [ ] B04 分岐破棄の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-022
 - メモ:
@@ -428,10 +436,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Web Share / Web Share Target
 
-- [ ] B01 共有の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 共有先の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01はOS共有完了、B02はinstalled Busycubeのmanifest share target受信
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 共有の箱
+- [ ] B02 共有先の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-005, H-014, H-023
 - メモ:
@@ -440,10 +448,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: BroadcastChannel / Page Lifecycle
 
-- [ ] B01 白になる箱: 想定操作でこの箱だけが開く。
-- [ ] B02 閉じる順番の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: RGBの3tab同時生存で白、`B → G → R`のpagehide列で2箱目
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 白になる箱
+- [ ] B02 閉じる順番の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-013, H-022
 - メモ:
@@ -452,9 +460,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: EyeDropper
 
-- [ ] B01 色を採る箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 実画面選択、指定sRGB色との一致
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 色を採る箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-023
 - メモ:
@@ -463,9 +471,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Web Bluetooth
 
-- [ ] B01 近くの電池の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: Battery Service実read、GATT切断
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 近くの電池の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-010, H-019
 - メモ:
@@ -474,9 +482,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: WebHID
 
-- [ ] B01 入力レポートの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 選択後の実inputreport、device close
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 入力レポートの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-011, H-019
 - メモ:
@@ -485,9 +493,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: WebUSB
 
-- [ ] B01 USB転送の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: claim後の実IN transfer、device close
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 USB転送の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-011, H-019
 - メモ:
@@ -496,11 +504,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Launch Handler / manifest shortcuts / note taking
 
-- [ ] B01 再起動の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 ショートカットの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 新しいメモの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01 stage-scoped URL、B02 icon shortcut、B03 `note_taking.new_note_url`をLaunchQueueまたは起動URLで受信
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 再起動の箱
+- [ ] B02 ショートカットの箱
+- [ ] B03 新しいメモの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-021, H-023, H-025
 - メモ:
@@ -509,9 +517,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Device Posture / Viewport Segments
 
-- [ ] B01 折れ目の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: folded changeまたは2 segment
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 折れ目の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-023
 - メモ:
@@ -520,10 +528,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Screen Wake Lock
 
-- [ ] B01 灯りを保つ箱: 想定操作でこの箱だけが開く。
-- [ ] B02 灯りを戻す箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 取得・visibility解放・再取得の2箱
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 灯りを保つ箱
+- [ ] B02 灯りを戻す箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-022, H-023
 - メモ:
@@ -532,9 +540,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: View Transition
 
-- [ ] B01 画面遷移の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 3回のtransition完了、非対応隔離
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 画面遷移の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-020
 - メモ:
@@ -543,15 +551,15 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: HTMLMediaElement controls / playbackRate / media tracks / Picture-in-Picture / Fullscreen
 
-- [ ] B01 シークの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 ミュートの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 再生と停止の箱: 想定操作でこの箱だけが開く。
-- [ ] B04 再生速度の箱: 想定操作でこの箱だけが開く。
-- [ ] B05 字幕trackの箱: 想定操作でこの箱だけが開く。
-- [ ] B06 小窓の箱: 想定操作でこの箱だけが開く。
-- [ ] B08 全画面の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 一つのnative playerでB01 seek、B02 mute / volume 0、B03再生後の終了前pause、B04 native再生速度変更、B05 `Busycube`字幕、B06 native PiP入場、B08同じvideoのfullscreen入場を観測。終了後の先頭復帰と`ended`は除外
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 シークの箱
+- [ ] B02 ミュートの箱
+- [ ] B03 再生と停止の箱
+- [ ] B04 再生速度の箱
+- [ ] B05 字幕trackの箱
+- [ ] B06 小窓の箱
+- [ ] B08 全画面の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-012, H-019, H-020, H-023, H-025, H-030, H-052
 - メモ:
@@ -560,10 +568,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: WebRTC / Web Audio
 
-- [ ] B01 接続の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 切断の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 2タブ間の生成音声接続でB01、明示的data channel終了でB02。外部server、STUN / TURN、microphoneなし
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 接続の箱
+- [ ] B02 切断の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-013, H-019, H-020, H-023
 - メモ:
@@ -572,12 +580,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Battery Status
 
-- [ ] B01 接続の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 取り外しの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 75%以上の箱: 想定操作でこの箱だけが開く。
-- [ ] B04 75%未満の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01/B02は実chargingchange、B03/B04は75%境界のbrowser報告値
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 接続の箱
+- [ ] B02 取り外しの箱
+- [ ] B03 75%以上の箱
+- [ ] B04 75%未満の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-019, H-023
 - メモ:
@@ -586,11 +594,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Web Authentication Conditional UI / Passkeys
 
-- [ ] B01 保存の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 利用成功の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 利用失敗の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01作成＋credential ID保存、B02 Conditional利用成功、B03利用不成立。専用host名とpasskey残留警告が前提
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 保存の箱
+- [ ] B02 利用成功の箱
+- [ ] B03 利用失敗の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-020, H-023
 - メモ:
@@ -599,10 +607,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Web Authentication request lifecycle / AbortSignal
 
-- [ ] B01 一致なしの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 中断の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01 no-match拒否、B02 pending conditional requestのplayer起因abort。S-380とは別stageに確定
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 一致なしの箱
+- [ ] B02 中断の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-019, H-020, H-023
 - メモ:
@@ -611,10 +619,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Date / High Resolution Time / Page Visibility
 
-- [ ] B01 巻き戻しの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 現在へ戻す箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: monotonic基準からwall clockを-60分±5分へ合わせるB01、その後baseline±5分へ戻すB02
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 巻き戻しの箱
+- [ ] B02 現在へ戻す箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-019, H-022, H-023
 - メモ:
@@ -623,9 +631,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Notification actions / Service Worker
 
-- [ ] B01 通知操作の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: pageを開かず左右action列をnotification差替えで反復。誤入力reset、完了時だけ専用URLへ復帰
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 通知操作の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-006, H-019, H-022, H-023, H-025
 - メモ:
@@ -634,9 +642,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Notification actions / notification body click
 
-- [ ] B01 金庫の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 左右actionを固定長まで通知dataへ蓄積し、本文clickで金庫pageへ提出。一括照合一致でB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 金庫の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-006, H-019, H-020, H-022, H-023, H-025
 - メモ:
@@ -645,10 +653,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Media Session / Audio Session / generated audio
 
-- [ ] B01 外部停止の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 音声復帰の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01はexternal pause handler、B02は実Audio Sessionのactive → interrupted → activeとmedia再生復帰を観測する。通常pause、B01、inactiveはB02へ流用しない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 外部停止の箱
+- [ ] B02 音声復帰の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-020, H-022, H-023, H-025, H-039, H-052
 - メモ:
@@ -657,9 +665,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: File Handling / LaunchQueue
 
-- [ ] B01 ファイル起動の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: downloaded `.busycube`をOSから開き、実handleのroundがarmed roundと一致した場合にB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 ファイル起動の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-006, H-019, H-021, H-023, H-025
 - メモ:
@@ -668,9 +676,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Protocol Handlers / LaunchQueue
 
-- [ ] B01 プロトコルの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: `web+busycube:`のround nonceをinstalled PWAのhandler URL / LaunchQueueで受けてB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 プロトコルの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-006, H-019, H-021, H-023, H-025
 - メモ:
@@ -679,9 +687,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Window Controls Overlay
 
-- [ ] B01 オーバーレイの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: overlay visibleかつgetTitlebarAreaRect内のno-drag箱を実clickしてB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 オーバーレイの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-003, H-005, H-019, H-020, H-023, H-025
 - メモ:
@@ -690,17 +698,17 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Preferred text scale / CSS Fonts / User Preferences API
 
-- [ ] B01 小の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 標準の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 大の箱: 想定操作でこの箱だけが開く。
-- [ ] B04 特大の箱: 想定操作でこの箱だけが開く。
-- [ ] B05 暗色の箱: 想定操作でこの箱だけが開く。
-- [ ] B06 強調の箱: 想定操作でこの箱だけが開く。
-- [ ] B07 静止の箱: 想定操作でこの箱だけが開く。
-- [ ] B08 不透明の箱: 想定操作でこの箱だけが開く。
-- [ ] B09 節約の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01〜B04は1rem実測の4帯。B05〜B09は5種類の`PreferenceObject.requestOverride()`成功、報告値、対応`matchMedia()`実効値を同時に確認して独立解錠し、開箱後・reset・離脱時にclearする
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 小の箱
+- [ ] B02 標準の箱
+- [ ] B03 大の箱
+- [ ] B04 特大の箱
+- [ ] B05 暗色の箱
+- [ ] B06 強調の箱
+- [ ] B07 静止の箱
+- [ ] B08 不透明の箱
+- [ ] B09 節約の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-020, H-023, H-025
 - メモ:
@@ -709,9 +717,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: HTML input / InputEvent
 
-- [x] B01 busycubeの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: placeholderが`busycube`のinputで現在値が完全一致した時にB01。値は保存しない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 busycubeの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-020, H-025
 - メモ:
@@ -720,9 +728,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Clipboard Events / Selection
 
-- [ ] B01 選び出す箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: Caesar暗号文のcopy override、trusted paste、target DOM内の`busycube`完全選択の連続条件でB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 選び出す箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-006, H-014, H-020, H-025
 - メモ:
@@ -731,11 +739,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: HTML Drag and Drop / DataTransfer File / `text/uri-list` / `window.open`
 
-- [ ] B01 ページ内画像の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 OSファイルの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 別window画像の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01はページ内PNGのURI、B02はdraggable=false画像を保存したOS File、B03はiframe画像を拒否し別windowのPNG URIだけを受ける。各fixtureのSHA-256とtrusted dropを照合し、欄の許可／拒否cursorとdragover状態を表示する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 ページ内画像の箱
+- [ ] B02 OSファイルの箱
+- [ ] B03 別window画像の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-005, H-013, H-014, H-019, H-020, H-023, H-025
 - メモ:
@@ -744,9 +752,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: ProximitySensor
 
-- [ ] B01 近接の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 実far reading後、同じsensor instanceで`near === true`を観測してB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 近接の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
 - メモ:
@@ -755,11 +763,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: LinearAccelerationSensor
 
-- [ ] B01 X軸の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 Y軸の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 Z軸の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: X/Y/Z各軸の正負peakを観測するB01〜B03。危険な操作を要求しない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 X軸の箱
+- [ ] B02 Y軸の箱
+- [ ] B03 Z軸の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
 - メモ:
@@ -768,10 +776,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: AmbientLightSensor
 
-- [ ] B01 暗闇の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 眩光の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 実illuminanceの暗所帯B01と非常に明るい帯B02
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 暗闇の箱
+- [ ] B02 眩光の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
 - メモ:
@@ -780,9 +788,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Accelerometer
 
-- [ ] B01 低加速度の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: raw合成加速度が2.0m/s²以下へ3 reading以上かつ80ms以上入るB01。投げ上げを指示しない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 低加速度の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
 - メモ:
@@ -791,11 +799,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Gyroscope
 
-- [ ] B01 X回転の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 Y回転の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 Z回転の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 角速度を積分し、X/Y/Z各軸で約2πへ到達するB01〜B03
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 X回転の箱
+- [ ] B02 Y回転の箱
+- [ ] B03 Z回転の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
 - メモ:
@@ -804,9 +812,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: RelativeOrientationSensor
 
-- [ ] B01 巡回の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 開始quaternionから3つの姿勢gateを通り、開始姿勢へ戻るB01
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 巡回の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
 - メモ:
@@ -815,10 +823,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: SpeechRecognition / SpeechSynthesis
 
-- [ ] B01 発話の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 ずれた声の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01は明示buttonから認識し、正規化後に`busycube`なら開く。B02は位置shift結果を表示せず発話し、`aspuxouw → busycube`のutteranceが正常終了した時に開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 発話の箱
+- [ ] B02 ずれた声の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-007, H-019, H-020, H-023, H-025, H-027
 - メモ:
@@ -827,11 +835,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Geolocation / Page Visibility / sessionStorage
 
-- [ ] B01 5mの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 25mの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 100mの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 保守的距離が5m、25m、100mへ達するB01〜B03。開始anchorだけを同一tabへ最大24時間保存
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 5mの箱
+- [ ] B02 25mの箱
+- [ ] B03 100mの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-006, H-019, H-022, H-025, H-028
 - メモ:
@@ -840,11 +848,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Geolocation altitude / altitudeAccuracy
 
-- [ ] B01 100m未満の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 100〜500mの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 500m以上の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 不確実性区間全体が3高度帯の一つへ入り、3 reading以上かつ5秒安定すると対応B01〜B03
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 100m未満の箱
+- [ ] B02 100〜500mの箱
+- [ ] B03 500m以上の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-006, H-019, H-023, H-025, H-029
 - メモ:
@@ -853,11 +861,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: HTMLDialogElement / `closedby`
 
-- [ ] B01 ボタン閉じの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 外側閉じの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 Escape閉じの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: ×button、外側native light dismiss、platform cancelを直前のtrusted操作、`cancel`、`close`から分離。外側clickのscript模倣clearなし
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 ボタン閉じの箱
+- [ ] B02 外側閉じの箱
+- [ ] B03 Escape閉じの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-019, H-020, H-025
 - メモ:
@@ -866,25 +874,25 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Unicode数字 / positional notation
 
-- [x] B01 異体数字 1: 想定操作でこの箱だけが開く。
-- [x] B02 異体数字 2: 想定操作でこの箱だけが開く。
-- [x] B03 異体数字 3: 想定操作でこの箱だけが開く。
-- [x] B04 異体数字 4: 想定操作でこの箱だけが開く。
-- [x] B05 異体数字 5: 想定操作でこの箱だけが開く。
-- [x] B06 異体数字 6: 想定操作でこの箱だけが開く。
-- [x] B07 異体数字 7: 想定操作でこの箱だけが開く。
-- [x] B08 異体数字 8: 想定操作でこの箱だけが開く。
-- [x] B09 異体数字 9: 想定操作でこの箱だけが開く。
-- [x] B10 異体数字 10: 想定操作でこの箱だけが開く。
-- [x] B11 異体数字 11: 想定操作でこの箱だけが開く。
-- [x] B12 異体数字 12: 想定操作でこの箱だけが開く。
-- [x] B13 異体数字 13: 想定操作でこの箱だけが開く。
-- [x] B14 異体数字 14: 想定操作でこの箱だけが開く。
-- [x] B15 異体数字 15: 想定操作でこの箱だけが開く。
-- [x] B16 異体数字 16: 想定操作でこの箱だけが開く。
-- [x] B17 異体数字 17: 想定操作でこの箱だけが開く。
-- [x] 成立境界: ASCII、Arabic-Indic、Eastern Arabic-Indic、漢数字、Osmanya、Adlam、N'Ko、Garay、Ol Chiki、Mro、Wancho、Nag Mundari、Ol Onal、Sora Sompeng、算木、Kaktovik、Mayanの全回答を別値にし、共通入力のASCII十進完全一致で対応箱だけを開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 異体数字 1
+- [x] B02 異体数字 2
+- [x] B03 異体数字 3
+- [x] B04 異体数字 4
+- [x] B05 異体数字 5
+- [x] B06 異体数字 6
+- [x] B07 異体数字 7
+- [x] B08 異体数字 8
+- [x] B09 異体数字 9
+- [x] B10 異体数字 10
+- [x] B11 異体数字 11
+- [x] B12 異体数字 12
+- [x] B13 異体数字 13
+- [x] B14 異体数字 14
+- [x] B15 異体数字 15
+- [x] B16 異体数字 16
+- [x] B17 異体数字 17
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-014, H-020, H-025
 - メモ:
@@ -893,12 +901,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Network Information `type`
 
-- [ ] B01 Wi-Fiの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 携帯回線の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 有線の箱: 想定操作でこの箱だけが開く。
-- [ ] B04 Bluetoothの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: playerの明示観測時に得たWi-Fi、cellular、ethernet、Bluetoothの厳密な`type`だけを別箱へ累積。速度、RTT、Save Data、offline、unknown系、UA sniff、通信試験を判定に使わない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 Wi-Fiの箱
+- [ ] B02 携帯回線の箱
+- [ ] B03 有線の箱
+- [ ] B04 Bluetoothの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-019, H-023, H-025, H-032
 - メモ:
@@ -907,16 +915,16 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Encoding API / legacy encodings
 
-- [x] B01 文字コードの箱 1: 想定操作でこの箱だけが開く。
-- [x] B02 文字コードの箱 2: 想定操作でこの箱だけが開く。
-- [x] B03 文字コードの箱 3: 想定操作でこの箱だけが開く。
-- [x] B04 文字コードの箱 4: 想定操作でこの箱だけが開く。
-- [x] B05 文字コードの箱 5: 想定操作でこの箱だけが開く。
-- [x] B06 文字コードの箱 6: 想定操作でこの箱だけが開く。
-- [x] B07 文字コードの箱 7: 想定操作でこの箱だけが開く。
-- [x] B08 文字コードの箱 8: 想定操作でこの箱だけが開く。
-- [x] 成立境界: 8つの文字化けcardを表示し、一つの共通入力欄へ元の符号化で復号した文字列を入れる。誤表示用と元データ用の2つのencodingをfixtureで検証し、全回答非重複とexact code point一致を固定する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 文字コードの箱 1
+- [x] B02 文字コードの箱 2
+- [x] B03 文字コードの箱 3
+- [x] B04 文字コードの箱 4
+- [x] B05 文字コードの箱 5
+- [x] B06 文字コードの箱 6
+- [x] B07 文字コードの箱 7
+- [x] B08 文字コードの箱 8
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-014, H-020, H-025, H-033
 - メモ:
@@ -925,12 +933,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Permissions API / PermissionStatus
 
-- [ ] B01 位置情報の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 通知の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 カメラの箱: 想定操作でこの箱だけが開く。
-- [ ] B04 マイクの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 位置情報、通知、カメラ、マイクの初期granted、change、focus再照会、明示request、denied / prompt、descriptor非対応、media cleanupを検証する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 位置情報の箱
+- [ ] B02 通知の箱
+- [ ] B03 カメラの箱
+- [ ] B04 マイクの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-006, H-007, H-019, H-023, H-025, H-034
 - メモ:
@@ -939,11 +947,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Compute Pressure API / PressureObserver
 
-- [ ] B01 nominalの箱: 想定操作でこの箱だけが開く。
-- [ ] B02 中間状態の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 criticalの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 入場時にCPUを自動観測し、nominal、中間（fair / serious）、criticalを箱へ累積。ゲーム負荷なし。hidden時disconnect、再表示時の再購読、非対応、Permissions Policy、非保存を検証する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 nominalの箱
+- [ ] B02 中間状態の箱
+- [ ] B03 criticalの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-019, H-023, H-025, H-035
 - メモ:
@@ -952,9 +960,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Console API / ASCII TUI
 
-- [ ] B01 診断盤面の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: Consoleへread-only迷路を出し、page方向buttonで移動。plain text、再表示、Console入力なし、page編集なし、resetを検証する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 診断盤面の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-020, H-025, H-036
 - メモ:
@@ -964,8 +972,8 @@ TODO: ここまで人手レビュー済み
 中心API・操作: URL Fragment Text Directives
 
 - [x] B01 断片の道標: 正答flagの入力でこの箱が開くことを確認した（Text Fragmentを巡る想定操作そのものは未確認）。
-- [ ] 成立境界: 4つの同一page Text Fragment linkを巡り、`text` / `fragments` / `leave` / `trails`から固定回答`busycube{text_fragments_leave_trails}`を作る。jumpはscriptで数えず、回答一致だけで開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-054
 - メモ:
@@ -974,11 +982,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Remote Playback / native Barcode Detection / Presentation API
 
-- [ ] B01 外部文字の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 外部QRの箱: 想定操作でこの箱だけが開く。
-- [ ] B03 外部画面の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 固定4slotの前半を外部再生し文字鍵を戻すB01、後半QRを外部再生して手元cameraのnative `BarcodeDetector`で読むB02、実Presentation receiverの同一round readyで開くB03。local再生、PiP、JS QR decoder、通常window、合成messageは代替にしない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 外部文字の箱
+- [ ] B02 外部QRの箱
+- [ ] B03 外部画面の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-020, H-023, H-025, H-040, H-041
 - メモ:
@@ -987,12 +995,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: MediaBunny / MediaRecorder / WebM metadata / jsQR / iframe
 
-- [x] B01 暗闇frameの箱: 想定操作でこの箱だけが開く。
-- [x] B02 decode失敗の箱: 想定操作でこの箱だけが開く。
-- [x] B03 QR frameの箱: 想定操作でこの箱だけが開く。
-- [x] B04 metadataの箱: 想定操作でこの箱だけが開く。
-- [x] 成立境界: 独立したClipPress風HTMLをsame-origin iframeへ埋め込み、10秒・640×360・15fps・160kbps変換、暗黒frame白文字化、入力decode失敗時の小文字固定error動画、各downscale frameでjsQRを検出した場合だけ当該frameの四辺形へQR射影置換、SimpleTag再入力overlay、downloadとsize比を実装。iframeはsession付き`postMessage`で内容高を親へ通知して内部scrollなしで表示し、固定flagの正答は変換達成状態を問わず共通欄で照合する
-- [x] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 暗闇frameの箱
+- [x] B02 decode失敗の箱
+- [x] B03 QR frameの箱
+- [x] B04 metadataの箱
+- [ ] JSDoc
+- [x] UI・アクセシビリティ
 - [x] 出力中のdecode失敗flagは小文字の`busycube{broken_input}`で表示される。
 - [x] QRは最初の検出frameだけでも全frame固定でもなく、動画全体でQRを検出した各frameだけを置換する。
 - [x] ClipPress iframeは内容高に追従し、iframe内スクロールを作らない。
@@ -1004,12 +1012,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: HTMLMediaElement / SVG patch cable / MediaBunny / Canvas
 
-- [x] B01 T1の箱: 想定操作でこの箱だけが開く。
-- [x] B02 T2の箱: 想定操作でこの箱だけが開く。
-- [x] B03 T3の箱: 想定操作でこの箱だけが開く。
-- [x] B04 QR復元の箱: 想定操作でこの箱だけが開く。
-- [x] 成立境界: 左の動画3node、中央にT1〜T3を二列、右の出力nodeをBezier cableで配線する。source→output直結または変換の連結を実行し、4つの正規routeでQR flagを発見できる。分岐とcycleは拒否するが、固定flagの正答は現在のrouteや変換達成状態を問わず共通欄で照合する
-- [x] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 T1の箱
+- [x] B02 T2の箱
+- [x] B03 T3の箱
+- [x] B04 QR復元の箱
+- [ ] JSDoc
+- [x] UI・アクセシビリティ
 - [x] 固定flagは、想定routeを先に達成していなくても直接入力で対応箱が開く。
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-014, H-019, H-020, H-023, H-025, H-043
@@ -1019,10 +1027,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: WebXR Device API / XRSession / XRFrame / XRInputSource
 
-- [ ] B01 空間の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 選択光線の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01はAR / VRの実immersive sessionと最初の非null viewer pose、B02は実input sourceのselect rayと固定XR箱の交差を検証する。inline、page click、DOM overlay、模擬pose、歩行、room scanは成功経路にしない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 空間の箱
+- [ ] B02 選択光線の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-001, H-002, H-003, H-004, H-014, H-019, H-023, H-044
 - メモ:
@@ -1031,9 +1039,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Periodic Background Sync / Service Worker / IndexedDB / Cache Storage
 
-- [ ] B01 開花の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: installed PWAで水と光を別訪問に預け、window client 0件の異なる二回の実`periodicsync`が発芽・開花assetをcacheしてphaseを進める。日次保証、通知、timer、foreground / synthetic event、debug発火は成功経路にしない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 開花の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-005, H-014, H-018, H-019, H-021, H-023, H-025, H-045
 - メモ:
@@ -1042,9 +1050,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: WebOTP API / Security Code AutoFill / origin-bound SMS
 
-- [ ] B01 自動受取の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 実`OTPCredential`一致、または最初から空のOTP専用欄へのtrusted一括入力、current code一致、実`:autofill`状態の組合せで一箱を開く。手入力、paste、drop、composition、event列だけの推定は成功経路にしない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 自動受取の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-020, H-023, H-025, H-046
 - メモ:
@@ -1053,10 +1061,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Contact Picker API / ContactsManager / ContactInfo
 
-- [ ] B01 五項目の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 伏せた名刺の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01はOSへ追加した架空contact 1件のname / email / tel / address / icon一致、B02は一件を選びながら要求した5propertyが全空または欠損であることを検証する。contact identity、共有拒否理由、game製UIは成功条件にしない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 五項目の箱
+- [ ] B02 伏せた名刺の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-023, H-025, H-047
 - メモ:
@@ -1065,9 +1073,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: FedCM / Google Identity Services
 
-- [ ] B01 Google FedCMの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 明示開始、browser所有chooser、非空credential、厳密なmanual `select_by === "fedcm"`、token非保存を検証する。追加providerは公式提供、public client登録、独自backend不要、実account証跡後にだけ加算する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 Google FedCMの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-023, H-025, H-049
 - メモ:
@@ -1076,12 +1084,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Payment Handler / Payment Request / Service Worker
 
-- [ ] B01 承認の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 拒否の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 再試行の箱: 想定操作でこの箱だけが開く。
-- [ ] B04 ◇財布の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 架空BCU methodの`Link` header、2つのPayment App、browser-owned chooser / handler windowを使う。B01〜B03は財布を限定せず✓、×、↻→✓で開き、B04は◇wallet workerへのtrusted `PaymentRequestEvent`で開く。game製picker、実provider、payer情報、credential、結果flagを使わない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 承認の箱
+- [ ] B02 拒否の箱
+- [ ] B03 再試行の箱
+- [ ] B04 ◇財布の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-023, H-025, H-050
 - メモ:
@@ -1090,9 +1098,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Local Font Access / FontData / FontFace / Web Crypto
 
-- [ ] B01 OS活字の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 独自生成してGit管理する専用TTFをOSへinstallし、対象PostScript名だけの実照会、raw bytesのSHA-256照合、Blob由来FontFaceの専用glyph表示で直接開く。全font列挙、既存font、upload、`local()`だけ、固定flagを使わない
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 OS活字の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-006, H-014, H-019, H-023, H-025, H-051
 - メモ:
@@ -1101,10 +1109,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: URL Fragment Text Directives / `hidden=until-found` / `beforematch`
 
-- [ ] B01 読めない断片: 想定操作でこの箱だけが開く。
-- [ ] B02 一語の断片: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: B01はpercent-encoded `cobalt` fragment、B02はcanvasだけに見せた`ember`からfragmentを作る。各専用containerの実`beforematch`で開く。UA highlight起点とfind-in-pageの区別不能はH-055で明示的に扱う
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 読めない断片
+- [ ] B02 一語の断片
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-055
 - メモ:
@@ -1113,12 +1121,12 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: MediaSource / SourceBuffer / `videoWidth` / `videoHeight` / `seeked` / `requestVideoFrameCallback`
 
-- [x] B01 1:1の箱: 想定操作でこの箱だけが開く。
-- [x] B02 4:3の箱: 想定操作でこの箱だけが開く。
-- [x] B03 16:9の箱: 想定操作でこの箱だけが開く。
-- [x] B04 9:20の箱: 想定操作でこの箱だけが開く。
-- [x] 成立境界: Git管理した120個のVP8 WebM segmentをpackとmanifestからMSEへtimestamp offset付きで連結し、入場時に自動表示する。小正方形から横幅だけを3840pxまで伸ばし、縦横同時の縦長化を経て、縦幅3840pxのまま横幅だけを伸ばして大正方形へ至る。停止中の提示frameが1:1、4:3、16:9、9:20（各相対5%以内）なら対応箱を開き、初期1:1は直ちに開く。通常再生中の通過、CSS寸法、固定画像は成功条件に使わない
-- [x] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 1:1の箱
+- [x] B02 4:3の箱
+- [x] B03 16:9の箱
+- [x] B04 9:20の箱
+- [ ] JSDoc
+- [x] UI・アクセシビリティ
 - [x] 動画は入場直後に表示され、説明文ではなく各箱の下の`1:1`、`4:3`、`16:9`、`9:20`で目標比率を伝える。
 - [x] 通常再生中は開かず、停止・pauseしたframeは判定する。初期1:1は直ちに開く。
 
@@ -1129,11 +1137,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Pointer Lock / `movementX` / `movementY`
 
-- [ ] B01 1000px先の箱: 想定操作でこの箱だけが開く。
-- [ ] B02 5000px先の箱: 想定操作でこの箱だけが開く。
-- [ ] B03 10000px先の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 2D平面をlock中の相対mouse移動だけで進み、3座標の箱を中央reticleのtrusted clickで開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 1000px先の箱
+- [ ] B02 5000px先の箱
+- [ ] B03 10000px先の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-056
 - メモ:
@@ -1142,10 +1150,10 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Idle Detection
 
-- [ ] B01 離席した箱: 想定操作でこの箱だけが開く。
-- [ ] B02 画面を閉じた箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 60秒thresholdの実idle-unlockedと実screen lockedを別boxへ観測する。timer / visibility代替なし
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 離席した箱
+- [ ] B02 画面を閉じた箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-057
 - メモ:
@@ -1154,9 +1162,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: IntersectionObserver
 
-- [x] B01 重なった箱: 想定操作でこの箱だけが開く。
-- [x] 成立境界: 二次元scroll rootとtargetを実layoutに合わせ、intersection ratio 0.98以上で開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 重なった箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-058
 - メモ:
@@ -1165,9 +1173,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Document Picture-in-Picture
 
-- [ ] B01 浮かぶ箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: React portalした実ProblemGiftBoxをDocument PiP内でtrusted clickする
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 浮かぶ箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-059
 - メモ:
@@ -1176,11 +1184,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: EditContext
 
-- [ ] B01 題名の誤字: 想定操作でこの箱だけが開く。
-- [ ] B02 説明の脱字: 想定操作でこの箱だけが開く。
-- [ ] B03 コピーの余分な語: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 通常見出しと文章へEditContextをattachし、共通copyの単語誤字・脱字・余分語を直す
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 題名の誤字
+- [ ] B02 説明の脱字
+- [ ] B03 コピーの余分な語
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-060
 - メモ:
@@ -1189,11 +1197,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: File System Access
 
-- [ ] B01 書き換える箱: 想定操作でこの箱だけが開く。
-- [ ] B02 消す箱: 想定操作でこの箱だけが開く。
-- [ ] B03 作る箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 空の使い捨てfolderへseedしたfileをOS側で編集・削除・作成し、visible中の再走査で別々に開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 書き換える箱
+- [ ] B02 消す箱
+- [ ] B03 作る箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-061
 - メモ:
@@ -1202,11 +1210,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Compression Streams
 
-- [x] B01 青い荷物: 想定操作でこの箱だけが開く。
-- [x] B02 紫の荷物: 想定操作でこの箱だけが開く。
-- [x] B03 赤い荷物: 想定操作でこの箱だけが開く。
-- [x] 成立境界: 固定gzip / deflate / deflate-raw荷物を選択形式の実DecompressionStreamで展開し、markerとbyte長を照合する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [x] B01 青い荷物
+- [x] B02 紫の荷物
+- [x] B03 赤い荷物
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-062
 - メモ:
@@ -1215,9 +1223,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Element Fullscreen
 
-- [ ] B01 画面いっぱいの箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 指定HTML elementだけをfullscreenにし、その内部の実boxをtrusted clickする
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 画面いっぱいの箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-063
 - メモ: fullscreen入場後に別stageへ移動する実ブラウザ確認だけが残る。非アクティブdocumentでの重複`exitFullscreen()`はコードで抑止済み。
@@ -1226,9 +1234,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: MediaSource / SourceBuffer
 
-- [ ] B01 つながった箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 固定lead-inとA→B→C→D WebM segmentを実appendし、完成videoのtrusted endedで開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 つながった箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-064
 - メモ:
@@ -1237,9 +1245,9 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: runtime WebVTT / TextTrack
 
-- [ ] B01 重なった字幕の箱: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 再生中に追加したVTTCueが対応する表示時間へ重なることをactiveCues / cuechangeで観測する
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 重なった字幕の箱
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-065
 - メモ:
@@ -1248,11 +1256,11 @@ TODO: ここまで人手レビュー済み
 
 中心API・操作: Popover API / CSS Anchor Positioning
 
-- [ ] B01 琥珀の終点: 想定操作でこの箱だけが開く。
-- [ ] B02 青緑の終点: 想定操作でこの箱だけが開く。
-- [ ] B03 紫の終点: 想定操作でこの箱だけが開く。
-- [ ] 成立境界: 同一origin iframeの額縁内で宣言的invokerと入れ子`popover="auto"`をたどる固定tree。斜線外周は実際の表示不可領域で、B01はinline、B02はblock反射を必ず踏む。3つの影は実経路と同じ部屋寸法・十字button位置・`position-area`・fallback列を持つ非操作CSS anchor chainの終点で、JavaScriptの座標測定なしに実goalと一致する。goal内の実箱trusted clickでのみ開く
-- [ ] UI: 初見で最初の一手を推測でき、標準UIとゲーム内UIの区別、現在状態、成功／失敗が分かる。日英、keyboard、zoom、狭い幅も確認する。
+- [ ] B01 琥珀の終点
+- [ ] B02 青緑の終点
+- [ ] B03 紫の終点
+- [ ] JSDoc
+- [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-066
 - メモ:

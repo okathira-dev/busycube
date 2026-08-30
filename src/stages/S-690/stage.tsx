@@ -40,16 +40,15 @@ function textFragmentHref(sentence: string) {
 }
 
 /**
- * S-690 — 同一pageのText Fragment linkを辿り、散らばった語から固定flagを組み立てる。
- * 目的: URL Fragment Text Directivesが通常のanchorではなく、ブラウザ自身が文章を示す移動手段であることを体験する。
- * 最初の一手: 「最初の一節へ」を押し、ブラウザが示した英文のそばにある小さな語を読む。
- * 箱ごとの解法: B01は4つの実Text Fragment linkを順に辿り、`text`、`fragments`、`leave`、`trails`を`_`で結んだ`busycube{text_fragments_leave_trails}`を回答欄へ入れると開く。各jumpの成否はscriptで数えない。
- * 開かない操作: 通常hashだけを変える、記事を手でscrollする、URLを読むだけ、合成event、DevToolsで文面や回答値を改変するだけでは開かない。最終回答の完全一致が必要である。
- * 使用API: URL Fragment Text Directives、HTML form。target sentenceは独自英文としてstage内に固定し、外部文書やnetwork requestへ依存しない。
- * 権限・privacy: 権限、保存、送信は行わない。回答は既存進捗runtimeへ成功事実だけを渡し、入力途中の文字列はstage内stateにだけ保持する。
- * cleanup: listener、timer、object URL、外部接続を作らない。stage離脱でReact stateが破棄される。
- * 対応環境: Text Fragment対応browserでUA highlightを見られる。未対応でも記事と回答欄は読めるが、ブラウザ固有の移動体験は得られない。
- * 人手確認: H-054で4linkのUA highlight、Back / Forward、reload、狭いviewport、通常hashでは回答が漏れないことを確認する。
+ * S-690
+ *
+ * 目的: 同一pageのText Fragment linkでbrowserに四つの英文を順番にhighlightさせ、各文の横にあるtokenからflagを組み立てる。
+ * 最初の一手: 「最初の一節へ」を押し、UA highlightされた`Copper moths...`の横にある`text`を読み、隣の「次の一節」を辿る。
+ * 箱ごとの解法:
+ * - B01「文章の道の箱」: 四つのlinkを辿って`text`、`fragments`、`leave`、`trails`を得て、formへ`busycube{text_fragments_leave_trails}`を入力する。trim・小文字化後の完全一致で開く。
+ * 使用API: URL Fragment Text Directivesの`#:~:text=`、URL API、native browser text highlight/navigation、HTML form。
+ * 権限・privacy: 権限・network通信を使用せず、固定英文と入力中の回答だけをpage内で扱う。回答途中の文字列を保存・送信しない。
+ * 対応環境: Text Fragmentに対応するbrowserでは四つのUA highlightを順に追える。未対応browserでも固定記事と回答formは表示される。
  */
 function S690Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

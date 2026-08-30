@@ -25,15 +25,15 @@ interface LaunchQueueLike {
 /**
  * S-310
  *
- * 目的: 「もう一度の起動」で、B01「再起動の箱」、B02「ショートカットの箱」、B03「新しいメモの箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-310の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: install済みWeb Appが通常URL、manifest shortcut、OSのnew-note actionという三種類の外部launch入口を受け取る。
+ * 最初の一手: 表示されたlaunch URLでappをもう一度起動する。続いてapp iconのcontext menuからshortcut、OSのnote作成入口からBusycubeを起動する。
+ * 箱ごとの解法:
+ * - B01「再起動の箱」: 初期URLまたはLaunchQueueの`targetURL`で`stage=S-310`かつ`launch=busycube`が完全一致すると開く。
+ * - B02「ショートカットの箱」: manifest shortcut専用URLが初期URLまたはLaunchQueueへ入り、`source=shortcut`なら開く。
+ * - B03「新しいメモの箱」: manifest `note_taking.new_note_url`が初期URLまたはLaunchQueueへ入り、`source=note`なら開く。
+ * 使用API: Web App Manifestの`launch_handler` / `shortcuts` / `note_taking`、Launch Handler APIの`window.launchQueue.setConsumer()`、URL API。
+ * 権限・privacy: 権限を要求せず、launch URLの固定parameterだけを判定する。外部app情報やnote内容を取得・保存・送信しない。
+ * 対応環境: Busycubeをinstallでき、Launch Handler APIと各manifest起動surfaceを実装するbrowser/OS。
  */
 function S310Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-420 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "通知の金庫", en: "Notification vault" },
   vaultBody: {

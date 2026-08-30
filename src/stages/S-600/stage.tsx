@@ -15,15 +15,15 @@ import { useEffect, useRef, useState } from "react";
 /**
  * S-600
  *
- * 目的: 「高さの三層」で、B01「100m未満の箱」、B02「100〜500mの箱」、B03「500m以上の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-600の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: geolocationのaltitude±altitudeAccuracyが境界をまたがない時だけ、高度を100 m未満・100〜500 m・500 m以上へ分類する。
+ * 最初の一手: 位置情報を許可し、高度とaltitude accuracyを返す端末で同じ高度帯に5秒以上留まる。別の帯は実際に標高を変えて再訪する。
+ * 箱ごとの解法:
+ * - B01「100m未満の箱」: `altitude + altitudeAccuracy < 100`の同一band readingを3回以上、最初から5,000 ms以上維持すると開く。
+ * - B02「100〜500mの箱」: `altitude - accuracy >= 100`かつ`altitude + accuracy < 500`を同じ安定条件で満たすと開く。
+ * - B03「500m以上の箱」: `altitude - altitudeAccuracy >= 500`を同じ安定条件で満たすと開く。境界を跨ぐaccuracy範囲ではcountをresetする。
+ * 使用API: Geolocation APIのhigh-accuracy `watchPosition()`、coordinates altitude/altitudeAccuracy、`performance.now()`。
+ * 権限・privacy: 位置権限を使用するが、緯度・経度は読まず、現在高度・accuracyと安定countだけをmemory上で判定する。位置・高度を保存・送信しない。
+ * 対応環境: secure contextでGeolocationが非nullのaltitudeとaltitudeAccuracyを継続提供するGNSS対応browser/端末。
  */
 function S600Stage(props: Props) {
   const problems = [

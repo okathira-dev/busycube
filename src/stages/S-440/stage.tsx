@@ -18,15 +18,13 @@ const key = "busycube:S-440:round";
 /**
  * S-440
  *
- * 目的: 「.busycubeの入口」で、B01「ファイル起動の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-440の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: このattemptで作った`.busycube` fileをOSへ保存し、installed appのfile handlerとして開き直して同じroundを照合する。
+ * 最初の一手: Busycubeをinstallした環境で「.busycubeを保存」を押し、downloadされたfileをfile manager等からBusycubeで開く。
+ * 箱ごとの解法:
+ * - B01「ファイル起動の箱」: LaunchQueueの先頭FileSystemFileHandleを読み、JSON payloadの`round`がdownload時にlocalStorageへ保存したroundと完全一致すると開く。
+ * 使用API: Web App Manifest `file_handlers`、Launch Handler APIのLaunchQueue files、File System Access handle、File/Blob/Blob URL、download anchor、Web Crypto UUID、localStorage。
+ * 権限・privacy: fileにはkindと一時random roundだけを含め、handlerは利用者が開いた先頭fileだけを読む。file本文やfile名を永続保存・外部送信しない。
+ * 対応環境: Busycubeをinstallでき、`.busycube` MIME/extensionのPWA file handlingとLaunchQueue filesを提供するbrowser/OS。
  */
 function S440Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

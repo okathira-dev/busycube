@@ -14,13 +14,15 @@ import { stageText } from "../locale";
 import { locale } from "./locale";
 
 /**
- * S-030 — DOM Selectionそのものを回答として使う。
- * 目的: 入力欄へ入力するのではなく、文章中の指定語をnative Selectionで選ぶ。
- * 最初の一手: 角括弧内の一語をマウスまたはキーボードで選択する。
- * 箱ごとの成功条件: B01はlocalizedな対象語だけが選択範囲になった時に開く。
- * 開かない操作: 入力欄への入力、script製ハイライト、句読点を含む選択、DevTools編集では開かない。
- * API/権限: Selection APIとselectionchange。権限・保存・送信はない。
- * cleanup/環境: selectionchange listenerを離脱時に外し、選択文字列を保存しない。H-001/H-003/H-020/H-025を確認する。
+ * S-030
+ *
+ * 目的: 入力欄へ回答する代わりに、文章内の指定語そのものをnative text selectionとして観測する。
+ * 最初の一手: 角括弧内の太字の一語だけを、mouse dragまたはkeyboardの選択操作で反転選択する。
+ * 箱ごとの解法:
+ * - B01「選択の箱」: 選択範囲を文字列化し、前後空白を除いて小文字化した結果が、現在localeの回答語（日本語「あいだ」／英語`between`）と完全一致すると開く。
+ * 使用API: Selection APIの`document.getSelection()`とDocumentの`selectionchange` event。
+ * 権限・privacy: 権限を要求せず、現在の選択文字列は一致判定にだけ使用し、保存・同期・送信しない。
+ * 対応環境: page本文をnative selectionでき、Selection APIと`selectionchange`を実装するbrowser。
  */
 function S030Stage(props: Props) {
   const answer = stageText(props.locale, locale.answer);

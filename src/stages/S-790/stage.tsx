@@ -40,15 +40,13 @@ function hex(bytes: ArrayBuffer): string {
 /**
  * S-790
  *
- * 目的: Git管理した専用fontがOS install UIを通ってsystem fontになり、Local Font Accessで実raw dataとしてWebへ戻る往復を一箱にする。
- * 最初の一手: 専用TTFをdownloadし、OS標準font preview / install UIでuser installしてから「OSの活字を探す」を押す。
- * 箱ごとの解法: `queryLocalFonts({ postscriptNames: ["BusycubeKey-Regular"] })`が期待faceを一件だけ返し、`FontData.blob()`のSHA-256が生成manifestと一致し、Blob由来FontFaceがU+E000専用glyphを実loadするとB01が開く。
- * 開かない操作: downloadだけ、permission grantedだけ、全font列挙、既存font、file upload、drag-and-drop、`@font-face local()`、同名別bytes、bundled webfont、mock FontDataでは開かない。
- * 使用API: Local Font Access、FontData.blob、FontFace、CSS Font Loading、Web Crypto SHA-256、object URL。
- * 権限・privacy: 対象PostScript名一件だけを要求し、installed font一覧、他font名、件数、raw dataを保存・同期・送信しない。digestもcurrent attempt照合だけに使う。
- * cleanup: clear、stage離脱、abortでFontFaceをdocument.fontsから削除し、object URLとFontData参照を破棄する。OS fontは自動uninstallしない。
- * 対応環境: `queryLocalFonts`対応desktop ChromiumとOS user font installが必要。非対応時にuploadへfallbackしない。
- * 人手確認: H-003/H-004/H-006/H-014/H-019/H-023/H-025/H-051でinstall、permission、glyph、deny、cancel、uninstall、revoke、非保存を確認する。
+ * 目的: Git管理TTFをOS標準UIでsystem fontとしてinstallし、Local Font Accessから同じraw bytesと専用glyphを読み戻す。
+ * 最初の一手: 「専用フォントを保存」でTTFをdownloadし、OS font preview/install UIでuser installしてから「OSの活字を探す」を押す。
+ * 箱ごとの解法:
+ * - B01「インストール書体の箱」: PostScript名`BusycubeKey-Regular`を限定queryしてfaceを厳密に一件得て、blob SHA-256がfixture manifestと一致し、そのblobのFontFaceでU+E000をload/checkできると開く。
+ * 使用API: Local Font Access `queryLocalFonts()`/FontData.blob、Web Crypto SHA-256、Blob URL、CSS Font Loading APIのFontFace/Document.fonts。
+ * 権限・privacy: 対象PostScript名一件だけを要求し、他のinstalled font一覧を列挙しない。font bytes/digest/nameを保存・送信せず、OS fontのuninstallは利用者に委ねる。
+ * 対応環境: Local Font Accessを実装するdesktop Chromium系browserと、user fontをinstallできるOS。
  */
 function S790Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

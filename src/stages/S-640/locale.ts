@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-640 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "読めない文字列", en: "Unreadable strings" },
   mojibake: { ja: "文字化け", en: "Mojibake" },

@@ -41,13 +41,18 @@ function permissionLabel(key: PermissionKey, currentLocale: Props["locale"]) {
 }
 
 /**
- * S-650 — PermissionStatusの状態を、許可要求そのものと分けて観測する。
- * 目的: 位置情報・通知・カメラ・マイクの4権限についてbrowserの実状態変化を読む。
- * 最初の一手: 各権限の要求を明示的に行い、設定変更後に再照会する。
- * 箱ごとの成功条件: B01〜B04は対応PermissionStatusがgrantedになった時だけ開く。
- * 開かない操作: request成功だけ、promptのまま、game側の仮表示、初期値の書き換えでは開かない。
- * API/権限: Permissions API、getUserMedia、Geolocation、Notification。streamは即停止し、位置・音声・映像・履歴は保存しない。
- * cleanup/環境: change/focus listenerとmedia trackを離脱時に破棄する。H-004/H-006/H-007/H-019/H-023/H-025/H-034を確認する。
+ * S-650
+ *
+ * 目的: 位置情報・通知・camera・microphoneの許可要求結果ではなく、Permissions APIが報告する最終`granted`状態を4箱へ対応づける。
+ * 最初の一手: 各buttonを押してbrowser標準permission UIで許可し、button横の状態が`granted`へ変わるのを待つ。
+ * 箱ごとの解法:
+ * - B01「位置情報許可の箱」: `permissions.query({name:"geolocation"})`の初期stateまたはchange後stateが`granted`なら開く。
+ * - B02「通知許可の箱」: `permissions.query({name:"notifications"})`のPermissionStatusが`granted`なら開く。
+ * - B03「カメラ許可の箱」: `permissions.query({name:"camera"})`のPermissionStatusが`granted`なら開く。
+ * - B04「マイク許可の箱」: `permissions.query({name:"microphone"})`のPermissionStatusが`granted`なら開く。
+ * 使用API: Permissions API/PermissionStatus change、Geolocation `getCurrentPosition()`、Notifications permission、MediaDevices `getUserMedia()`。
+ * 権限・privacy: 各権限は対応buttonからだけ要求する。位置結果は捨て、camera/microphone streamは取得直後に全trackをstopし、位置・音声・映像・状態履歴を保存・送信しない。
+ * 対応環境: secure contextでPermissions APIが四つのpermission nameをqueryでき、各標準permission promptを提供するbrowser。
  */
 function S650Stage(props: Props) {
   const problems = [

@@ -23,15 +23,13 @@ function quaternionDistance(a: readonly number[], b: readonly number[]) {
 /**
  * S-570
  *
- * 目的: 「姿勢の巡回」で、B01「巡回の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-570の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: 開始姿勢から三つのquaternion vector成分をそれぞれ大きく変化させた後、開始姿勢へ一巡して戻る。
+ * 最初の一手: 「センサーを開始」を押して開始姿勢を記録し、端末を三軸方向へ十分大きく向け替えてから元の向きへ戻す。
+ * 箱ごとの解法:
+ * - B01「巡回の箱」: relative orientation quaternionの|x|・|y|・|z|が各一度0.65超になり、三gate成立後に現在quaternionと開始quaternionの符号同値を考慮した距離が0.25未満になると開く。
+ * 使用API: Generic Sensor APIの`RelativeOrientationSensor({frequency:30})`とquaternion readings、Euclidean distance計算。
+ * 権限・privacy: orientation sensor accessは明示buttonから開始し、開始quaternionと三gateだけをmemoryに持つ。姿勢系列を保存・送信しない。
+ * 対応環境: RelativeOrientationSensorと安定したquaternion readingsを提供するbrowser/端末。
  */
 function S570Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

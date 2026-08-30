@@ -23,15 +23,13 @@ function makeCode(): string {
 /**
  * S-750
  *
- * 目的: 実SMSからbrowser所有のWebOTPまたはOS Security Code AutoFillが空のOTP専用欄へ自動入力する挙動を、一つのOR条件の箱として扱う。
- * 最初の一手: 画面のcurrent codeとorigin-bound最終行を含むSMS本文を、別の携帯電話または協力者からこの端末へ送ってもらい「SMSを待つ」を押す。
- * 箱ごとの解法: current attemptの実`OTPCredential.code`がcurrent codeと一致するか、最初から空だった`autocomplete=one-time-code`欄へtrusted一括入力され、実`:autofill`状態とcurrent code一致を同時に確認するとB01が開く。
- * 開かない操作: 手入力、paste、drop、composition、script代入、事前入力、別attempt code、空credential、input event列だけの推定では開かない。
- * 使用API: WebOTP、Credentials Management、OTPCredential、`autocomplete="one-time-code"`、`:autofill`。
- * 権限・privacy: 電話番号、送信者、SMS本文、code、到着時刻、入力履歴を保存・同期・送信しない。codeはattempt memoryだけに置く。
- * cleanup: 新しい封書、取消、stage離脱、abortでpending credentials requestをabortし、入力値、code参照、listenerを破棄する。
- * 対応環境: WebOTP対応browser、または実`:autofill`を公開するSafari / WebKit等。手入力fallbackを成功経路にしない。
- * 人手確認: H-003/H-004/H-019/H-020/H-023/H-025/H-046で実SMS、native確認UI、iOS AutoFill、取消、replay、連絡先条件、料金説明を確認する。
+ * 目的: origin-bound実SMSからWebOTP credentialまたはOS Security Code AutoFillがcurrent 6桁codeを渡した事実を観測する。
+ * 最初の一手: 表示SMS全文を別端末・協力者からこの端末へ実送信してもらい、受信前に「SMSを待つ」を押してbrowser/OSの確認UIを完了する。
+ * 箱ごとの解法:
+ * - B01「SMSコードの箱」: `OTPCredential.code`がcurrent codeと一致するか、最初は空でpaste/drop/composition汚染のないone-time-code欄へtrusted inputされ、`:autofill`かつvalue一致なら開く。
+ * 使用API: WebOTP/Credentials Management API、OTPCredential SMS transport、`autocomplete="one-time-code"`、CSS `:autofill`、trusted input events、Web Crypto random。
+ * 権限・privacy: 6桁codeはattempt memoryだけに置き、電話番号・送信者・SMS本文・到着時刻・入力履歴を保存・送信しない。SMS送信自体の料金・連絡先共有は利用者側で確認する。
+ * 対応環境: secure contextのWebOTP対応mobile browser、または実`:autofill`状態を公開するSecurity Code AutoFill対応browser/OS。
  */
 function S750Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

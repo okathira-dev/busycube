@@ -31,15 +31,13 @@ function pointOnCanvas(canvas: HTMLCanvasElement, event: PointerEvent) {
 /**
  * S-160
  *
- * 目的: 「速さの軌跡」で、B01「入力軌跡の箱」に対応する実際のブラウザ状態・標準UI・端末入力を観測する。
- * 最初の一手: 画面の箱と説明を確認し、表示されている標準UIまたは外部機器を使って観測を開始する。
- * 箱ごとの解法: 問題定義にある各Bxxについて、対応する実操作を行い、実APIから得た値・イベント・結果が厳密な成功条件を満たした箱だけが開く。
- * 開かない操作: 文字列の直接編集、合成イベント、DevToolsでのDOM改変、見た目だけの変更、別箱の結果の流用では開かない。
- * 使用API: S-160の判定に必要な実装内のWeb API。共通runtimeは進捗表示だけを担う。
- * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
- * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
- * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 目的: 一続きのpointer軌跡から距離・所要時間・区間速度を計算し、遅い部分と速い部分を両方含むgestureを作る。
+ * 最初の一手: canvas内を押したまま、途中でゆっくり動かす区間と素早く動かす区間を作り、十分長く線を引いて離す。
+ * 箱ごとの解法:
+ * - B01「入力軌跡の箱」: pointerup/cancel時に総距離240 canvas px以上、総時間450 ms以上、0.25 px/ms未満の区間と0.75 px/ms超の区間が同じstroke内にあれば開く。
+ * 使用API: Pointer Events、pointer capture、event座標と`timeStamp`、Canvas 2D描画、距離計算。
+ * 権限・privacy: 権限を要求せず、座標と時刻は現在strokeの描画・計算にだけ使い、軌跡や入力特性を保存・送信しない。
+ * 対応環境: Pointer Eventsとpointer capture、Canvas 2Dを実装し、drag入力を行えるbrowserとpointer device。
  */
 function S160Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];

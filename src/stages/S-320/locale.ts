@@ -1,6 +1,5 @@
 import { defineStageLocale } from "../locale";
 
-/** S-320 のステージ固有コピー。表示文言はここから追加する。 */
 export const locale = defineStageLocale({
   stageName: { ja: "折れ目をまたぐ", en: "Across the fold" },
   segment: { ja: "面", en: "segment(s)" },

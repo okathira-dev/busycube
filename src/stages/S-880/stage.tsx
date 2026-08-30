@@ -72,16 +72,17 @@ async function readDecompressed(url: string, format: CompressionFormat) {
 }
 
 /**
- * S-880 — Git管理したgzip / deflate / deflate-raw荷物を、選ばれた実DecompressionStreamへ通す。
- * 目的: 拡張子当てではなく、browserが受け取ったcompressed byte streamとformatの組み合わせが実際に展開できる感覚を作る。
- * 最初の一手: 各荷物の封印形式を選び「荷物を開く」を押す。失敗した荷物は別の形式で安全に再挑戦できる。
- * 箱ごとの解法: B01はgzipの青い荷物、B02はdeflateの紫の荷物、B03はdeflate-rawの赤い荷物を選ぶ。fetch bodyを`pipeThrough(new DecompressionStream(format))`で全量読み、固定markerと65,536 byte長が一致した時だけ開く。
- * 開かない操作: 拡張子表示、format選択だけ、responseをtext化、CompressionStreamで再圧縮、Node / library fallback、部分stream、script生成の成功表示では開かない。
- * 使用API: Fetch ReadableStream、DecompressionStream、ReadableStream reader、TextDecoder。荷物はbuild時に生成済みの固定binary assetである。
- * 権限・privacy: 権限・保存・送信は使わない。fetch対象は同梱された3つの公開fixtureだけである。
- * cleanup: readerは完走またはerrorで閉じ、stateはカードごとに表示だけ残す。timer・worker・URL objectは作らない。
- * 対応環境: `DecompressionStream`がgzip / deflate / deflate-rawを提供するbrowser。未対応時にlibrary fallbackは作らない。
- * 人手確認: H-062で3正解、各format負例、再試行、network失敗、marker / byte長照合、未対応表示を確認する。
+ * S-880 — 3形式の圧縮荷物
+ *
+ * 目的: 同梱された圧縮byte streamを、選択した実`DecompressionStream`形式で展開し、形式ごとの違いを突き止める。
+ * 最初の一手: 青い荷物の形式で`gzip`を選び、「荷物を開く」を押す。失敗表示になった荷物は形式を変えて再挑戦できる。
+ * 箱ごとの解法:
+ * - B01: 青い荷物で`gzip`を選ぶ。展開結果が65,536 byteで、復号textに`pocket compass`を含むと開く。
+ * - B02: 紫の荷物で`deflate`を選ぶ。展開結果が65,536 byteで、復号textに`violet ledger`を含むと開く。
+ * - B03: 赤い荷物で`deflate-raw`を選ぶ。展開結果が65,536 byteで、復号textに`ember receipt`を含むと開く。
+ * 使用API: Fetch APIの`Response.body`、`DecompressionStream`、`ReadableStream.pipeThrough()`とreader、`TextDecoder`。
+ * 権限・privacy: 権限・端末入力・保存・外部送信は使わず、同梱された3つの固定binary assetだけをfetchする。
+ * 対応環境: `DecompressionStream`が`gzip`、`deflate`、`deflate-raw`を実装するbrowser。
  */
 function S880Stage(props: Props) {
   const [formats, setFormats] = useState<Record<string, CompressionFormat>>({
