@@ -33,7 +33,6 @@
 完了すれば削除できる作業台帳だけを置く。仕様の正本として参照しない。
 
 - [残作業](./notes/remaining-work.md)
-- [人手確認台帳](./notes/human-test-matrix.md)
-- [ステージレビュー](./notes/stage-review.md)
+- [全ステージ・人手確認台帳](./notes/stage-review.md)
 
 過去の実装計画、移行手順、PoC、調査原文はGit履歴で確認する。完了した資料を現行ドキュメントとして維持しない。

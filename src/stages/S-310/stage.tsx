@@ -33,7 +33,7 @@ interface LaunchQueueLike {
  * 権限・privacy: 実装が必要とする権限・保存・送信は、箱の操作に必要な最小範囲へ限定する。生の入力を回答以外の目的で扱わない。
  * cleanup: stage離脱・取消・再試行時に、このstageが取得したlistener、timer、stream、worker、接続、blob URLを実装に応じて解除する。
  * 対応環境: StageHostのcapability probeがavailableまたはpermission-requiredとしたブラウザ。非対応時は操作を要求せずunsupported表示とする。
- * 人手確認: 対応するH-xxxをhuman-test-matrix.mdで確認し、権限拒否・取消・再入場も確認する。
+ * 人手確認: 対応するH-xxxをstage-review.mdで確認し、権限拒否・取消・再入場も確認する。
  */
 function S310Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];
