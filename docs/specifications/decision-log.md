@@ -161,15 +161,15 @@
 | D-151 | S-920の迷路座標系を同一origin iframeの固定viewportへ閉じ込める | iframe外周をPopoverが越えられない実際の表示不可領域にする。外周は斜線の額縁で見せ、B01はinline、B02はblock方向の`position-try-fallbacks`を必ず踏む。実経路と影経路は同じiframe viewport内でbrowserのCSS layoutへ同時に追従し、親page scroll、iframe resizeともJavaScript再測定を行わない（第22段階で決定） |
 | D-152 | D-004のGitHub Pages配信を廃止し、Cloudflare Workers Static Assetsと最小のHono Workerへ移行する | root scopeのPWAと複数HTML assetをCloudflare Viteプラグインでbuildし、Payment Handler manifestとnetwork probeだけをHono routeで返す。HTTP response headerをService Workerで補わず、PR Preview、検証済みVersion IDの本番昇格、冪等なCI再実行をWorkersのVersion APIで管理する。これによりD-147のmanaged host要件も満たす（第26段階で決定） |
 | D-153 | D-054とD-068のmind map／6 cluster配置を廃止し、ステージをplay条件別の3つのflatな独立groupへ並べる | 現行の89stageでは関連線とmap metadataの保守がJSDoc・manifestと重複し、攻略順やcross-stage clueを暗黙に固定するため。カード全面button、累積`x/n`、semantic list、keyboard順、S-190のcatalogue外縁markerは維持し、map topologyとclue edgeだけを持たない（第25段階で決定） |
+| D-154 | Google Auth PlatformのBranding検証と公開操作は完了した | Google Cloud Consoleの確認ステータスが「ブランディングは検証済みで、ユーザーに表示されています。」となったため、O-005を解決する（2026-08-30確認） |
+| D-155 | 最終名称を`Busycube`とし、公開問い合わせ先とGoogle Cloud Console上の連絡先を現行設定で運用する | 名称利用、利用者向け窓口、Googleからの連絡を受ける窓口に問題がないことを確認したため、O-008を解決する。連絡先の実値はリポジトリへ記録しない（2026-08-30確認） |
 
 ## 未決事項
 
 | ID | 論点 | 決定に必要な材料 | 決定期限 |
 | --- | --- | --- | --- |
-| O-005 | Google Auth Platformの`Verify branding`と公開操作 | Google Cloud Consoleの検証結果 | 一般公開前 |
 | O-006 | Honoの動的routeをゲーム本編へ広げるか | 最小Worker境界、外部依存、security、監視・保守コスト | API拡張時 |
 | O-007 | アクセシビリティ用ヒントの粒度 | 非言語性との両立、テスト参加者の所見 | 次回の公開判定前 |
-| O-008 | `Busycube` の最終名称利用可否 | 商標・検索・既存OSSとの混同調査 | 公開告知前 |
 
 ## 更新ルール
 

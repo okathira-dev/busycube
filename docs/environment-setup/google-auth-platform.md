@@ -12,6 +12,7 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 | 利用規約 | `https://<production-host>/terms/` |
 | 承認済みドメイン | `<production-host>` |
 | アプリロゴ | `public/brand/google-auth-logo-120.png`、120 x 120 px、PNG、1 MB以下 |
+| Branding | 検証済み・公開済み |
 
 サポートメールとデベロッパー連絡先は、Google Cloud Consoleで管理する。個人メールアドレスをリポジトリ、公開ページ、テキスト資料へ記録してはならない。登録するアドレスは、利用者やGoogleからの連絡を継続して確認できるものにする。
 
@@ -42,12 +43,6 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 
 ロゴ、アプリ名、ホームページ、ポリシーURL、承認済みドメインを変更した場合は、Brandingの再検証と公開が必要になる。
 
-## 現時点の残作業
-
-Google Auth Platformの`Verify branding`は未完了である。Google DriveとFedCMの本番originにおける基本動作確認とは分けて、一般公開前に完了させる人手作業として扱う。
-
-Google Cloud Consoleで`Verify branding`が完了し、必要な公開操作まで終えた後、この記述と[残作業](../notes/remaining-work.md)を更新する。未完了の間は、ブランディング検証済みとは表記しない。
-
 ## OAuth Clientとの対応
 
 | 機能 | Client ID | 設定文書 |
@@ -56,15 +51,3 @@ Google Cloud Consoleで`Verify branding`が完了し、必要な公開操作ま�
 | S-770のGoogle FedCM | `VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID` | [Google FedCM設定](./google-fedcm.md) |
 
 いずれもWeb applicationのClient IDを使う。Client IDは公開識別子であり、Client Secret、access token、refresh tokenはリポジトリ、GitHub Actions、Vite環境変数、配信物へ置かない。
-
-## 公開前の確認
-
-- [ ] Google Auth Platformの`Verify branding`が完了している。
-- [ ] ホームページ、プライバシーポリシー、利用規約を匿名ブラウザで開ける。
-- [ ] 3ページのURLとConsoleの入力値が一致する。
-- [ ] ホームページからプライバシーポリシーと利用規約へ移動できる。
-- [ ] ロゴが120 x 120 pxのPNGで、1 MB以下である。
-- [ ] Search Consoleで`<production-host>`の所有確認が完了している。
-- [ ] Google Cloud Consoleのサポートメールと連絡先が監視されている。
-- [ ] DriveとFedCMのClient IDが別で、本番originが`https://<production-host>`として正確に登録されている。
-- [ ] 人手確認台帳のGoogle関連項目を実施し、結果を記録した。

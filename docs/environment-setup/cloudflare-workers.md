@@ -14,7 +14,7 @@ Busycubeは、Cloudflare Viteプラグインでブラウザ用assetとWorkerを�
 
 PWA用の`service-worker.js`はオフライン、通知、Background Syncなどブラウザ側の機能にだけ使う。HTTP response headerはStatic Assetsの`public/_headers`とHono Workerが付与する。
 
-## ローカル確認
+## ローカルbuildとpreview
 
 ```sh
 pnpm run check
@@ -25,7 +25,7 @@ pnpm run preview
 
 `pnpm run build`は`dist/client/`へブラウザ用assetを、`dist/busycube/`へWorker bundleとデプロイ用`wrangler.json`を生成する。入力側の`wrangler.jsonc`へ`assets.directory`を固定せず、Viteプラグインが生成物間の正しい相対pathを出力する。Viteのapplication rootが`src/`でリポジトリrootと異なるため、deploy scriptとworkflowは生成後の`dist/busycube/wrangler.json`を明示してWranglerへ渡す。
 
-`pnpm run preview`はCloudflare Viteプラグインのpreview環境でStatic AssetsとHono Workerを同時に動かす。表示されたlocalhost URLで、少なくとも`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`を確認する。Payment Handlerのrouteは次のいずれかへ`GET`と`HEAD`を送り、204と`Link: <…>; rel=payment-method-manifest`を確認する。
+`pnpm run preview`はCloudflare Viteプラグインのpreview環境でStatic AssetsとHono Workerを同時に動かす。`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`を配信する。Payment Handlerの次のrouteは`GET`と`HEAD`に204と`Link: <…>; rel=payment-method-manifest`を返す。
 
 - `/payment/method`
 - `/poc/payment/method`
@@ -111,18 +111,12 @@ PR PreviewとRelease Candidateは共通スモークテストで、`/`、`/?stage
 
 ## 通常のリリースフロー
 
-1. 同じリポジトリ内のブランチからPull Requestを作成または更新する。
-2. 通常のbuild checkとPreview deployの成功を待つ。
-3. PRの`Cloudflare Worker preview`コメントまたは`View deployment`からPreviewを確認する。
-4. 問題があれば同じPRへ修正をpushし、同じPreview Aliasで再確認する。
-5. 必須checkと人手確認が完了したらmainへマージする。
-6. Release WorkflowがRelease Candidateを検証し、同じVersion IDを本番へ100%配信する。
-7. Actionsのcandidateとdeployが成功し、本番URLのスモークテストが完了したことを確認する。
+同じリポジトリ内のブランチからPull Requestを作成または更新すると、通常のbuild checkとPreview deployが動く。mainへのマージをリリース承認とし、Release WorkflowがRelease Candidateへ自動スモークテストを実行した後、同じVersion IDを本番へ100%配信する。本番昇格後にも同じ自動スモークテストを実行する。
 
-Google OAuthをPreviewで確認する必要がある場合だけ、そのPRの正確なPreview originを一時登録し、確認後に削除する。本番originはOAuth Clientへ継続して登録する。
+Google OAuthを使うPR Previewだけ、そのPRの正確なPreview originをOAuth Clientへ一時登録し、PR終了後に削除する。本番originはOAuth Clientへ継続して登録する。
 
 ## 失敗時
 
 Workflowが失敗した場合は、まず同じrunの`Re-run failed jobs`を使う。Version tagの重複、message不一致、古いPR head、または保持上限外を示すエラーは安全のため自動回復しないため、原因を確認して新しいrunを作る。
 
-新しいdeploymentでアプリケーション上の問題があれば、Cloudflare dashboardで直前の正常deploymentへrollbackする。rollback後もGoogle Consoleのorigin、PWAのscope、Payment Handlerのheaderを再確認し、結果を人手確認台帳へ記録する。
+新しいdeploymentでアプリケーション上の問題があれば、Cloudflare dashboardで直前の正常deploymentへrollbackする。

@@ -20,7 +20,7 @@
 
 ## 開発環境・デプロイ環境構築手順
 
-ローカル開発、CI、Cloudflare、Google Cloudへ必要な設定手順を置く。アカウント固有値や認証情報は記録しない。
+ローカル開発、CI、Cloudflare、Google Cloudの現行設定と運用上の確定事項を置く。未完了の確認作業や実施結果は`notes/`で管理し、アカウント固有値や認証情報は記録しない。
 
 - [ローカル開発環境](./environment-setup/local-development.md)
 - [Cloudflare Workers](./environment-setup/cloudflare-workers.md)

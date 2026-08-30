@@ -1,6 +1,6 @@
 # Google FedCM 設定
 
-Google Auth Platformの共通ブランディング、公開URL、ロゴ、連絡先、所有確認、検証手順は[Google Auth Platform](./google-auth-platform.md)を正本とする。
+Google Auth Platformの共通ブランディング、公開URL、ロゴ、連絡先、所有確認、公開設定は[Google Auth Platform](./google-auth-platform.md)を正本とする。
 
 S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブラウザが仲介した手動FedCM結果だけを受け入れる。通常のOAuth popup / redirectやGoogle Drive認可は代替にならない。
 
@@ -28,8 +28,6 @@ GitHubでは`BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`をRepository VariableまたはSecr
 
 CloudflareのPreviewとRelease Candidate workflowは同名のVariableを先に参照し、未登録または空の場合にSecretを参照して、build時に`VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID`へ渡す。最終bundleでは読める公開識別子であり、VariableとSecretの両方へ重複登録する必要はない。client secretはどちらにも置かない。未設定時、S-770は設定不足を表示し、通常OAuthへfallbackしない。
 
-## 成功境界と人手確認
+## 成功境界
 
 製品stageはGIS callbackのcredentialが非空で、`select_by`が厳密に`fedcm`のときだけ開く。`fedcm_auto`を含む自動選択やlegacy結果は拒否する。credentialはdecode・表示・log・保存・同期・送信しない。
-
-公開originでのaccount chooser、手動Continue、取消、未login、network failure、late callback、provider側の接続解除は[H-049](../notes/human-test-matrix.md)に従って人手確認する。

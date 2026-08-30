@@ -6,8 +6,6 @@
 
 ## 公開前に必須の作業
 
-- [ ] Google Auth Platformの`Verify branding`と必要な公開操作を完了する。詳細は[Google Auth Platform](../environment-setup/google-auth-platform.md)を参照する。
-- [ ] `Busycube`の名称、公開問い合わせ先、Google Cloud Console上の連絡先を確認する。個人メールアドレスは文書へ記録しない。
 - [ ] [人手確認台帳](./human-test-matrix.md)の必須ケースへ、実施環境、期待結果、実結果を記録する。対象はH-001、H-002、H-005〜H-007、H-013〜H-022、H-025、H-033、H-043、H-048、H-050、H-053〜H-055、H-058、H-062、H-063、H-065である。
 - [ ] [ステージレビュー](./stage-review.md)の未確認項目を実機で確認する。特にS-890の実fullscreenから別ステージへ離脱する経路を再確認する。
 - [ ] 対象ブラウザでPWAアイコンの互換性を確認し、SVGだけで不足する場合は192px、512px、Apple Touch Iconを追加する。
@@ -21,6 +19,5 @@
 ## 完了条件
 
 - 必須人手確認に証跡がある。
-- `Verify branding`を含む公開前設定が完了している。
 - ステージレビューに未確認の必須項目がない。
 - 条件付きステージの対応環境と未検証範囲が利用者向け画面に反映されている。

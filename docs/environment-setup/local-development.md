@@ -14,7 +14,7 @@ pnpm install --frozen-lockfile
 pnpm run dev
 ```
 
-開発serverが表示したURLの`/index.html`を開く。Cloudflare WorkersとStatic Assetsを本番相当で確認する場合は、次を使う。
+開発serverが表示したURLの`/index.html`を開く。Cloudflare WorkersとStatic Assetsを本番相当で実行する場合は、次を使う。
 
 ```sh
 pnpm run preview
