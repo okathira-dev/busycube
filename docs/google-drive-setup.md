@@ -30,7 +30,7 @@
 5. ClientsでApplication typeが「Web application」のOAuth Clientを作成する。
 6. Authorized JavaScript originsへ、実際に配信するoriginを完全一致で登録する。
    - ローカル例: `http://localhost:5173`。ポートが変わる場合はそのoriginも登録する。
-   - 本番例: Cloudflare Workersへ設定した`https://<production-host>`。
+   - 本番: `https://<production-host>`。
    - pathやアプリ内のHTMLパスはoriginへ含めない。
    - 実在しない`workers.dev` URLを推測で登録しない。本番hostnameは[デプロイ手順](./cloudflare-workers-deployment.md)に従って確定する。
 7. 本実装はGIS token modelのポップアップcallbackを使うため、Authorized redirect URIは使用しない。

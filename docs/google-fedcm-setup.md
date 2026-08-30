@@ -9,7 +9,7 @@ S-770はGoogle Identity Services（GIS）の公式JavaScript APIを使い、ブ�
 ## 公開クライアントの準備
 
 1. Google Cloud ConsoleでWebアプリケーション用OAuth clientを作る。
-2. Busycubeを配信する正確なoriginを「承認済みのJavaScript生成元」へ登録する。originにはpathを含めない。
+2. 本番originの`https://<production-host>`を「承認済みのJavaScript生成元」へ登録する。originにはpathを含めない。
 3. client secretは作業ディレクトリ、GitHub、Vite環境変数へ置かない。Web client IDは公開識別子として扱う。
 4. Google Drive同期用とは別のclient IDを使い、S-770の設定と権限範囲を分離する。
 

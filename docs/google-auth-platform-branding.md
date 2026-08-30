@@ -33,16 +33,20 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 ## Console設定手順
 
 1. Google Cloud Consoleで本番用プロジェクトを選び、Google Auth PlatformのBrandingを開く。
-2. [Cloudflare Workersへのデプロイ](./cloudflare-workers-deployment.md)で確定した専用の本番hostnameを、先に承認済みドメインへ登録する。
+2. `<production-host>`を承認済みドメインへ登録する。
 3. アプリ名、監視できるサポートメール、デベロッパー連絡先、ホームページ、プライバシーポリシー、利用規約を設定する。
 4. `public/brand/google-auth-logo-120.png`をロゴとしてアップロードする。
-5. Search Consoleでドメイン所有を確認する。確認に使うGoogleアカウントはCloudプロジェクトのOwnerまたはEditorにする。
+5. Search Consoleで`<production-host>`の所有を確認する。確認に使うGoogleアカウントはCloudプロジェクトのOwnerまたはEditorにする。
 6. 開発中はAudienceをTestingにし、必要なテストユーザーだけを追加する。一般公開前にExternal / In productionへ移す。
 7. Brandingの検証を開始し、承認後にPublish brandingを実行する。
 
 ロゴ、アプリ名、ホームページ、ポリシーURL、承認済みドメインを変更した場合は、Brandingの再検証と公開が必要になる。
 
-`<production-host>`はCloudflare accountごとに異なるため、実在しない`workers.dev` URLを推測で入力しない。初回deploy後に表示されたhostname、または設定済みcustom domainのどちらか一つへ置き換える。GitHub Pagesの旧URLは切替確認が終わるまでの暫定値であり、Consoleの本番値には残さない。
+## 現時点の残作業
+
+Google Auth Platformの`Verify branding`は未完了である。Google DriveとFedCMの本番originにおける基本動作確認とは分けて、一般公開前に完了させる人手作業として扱う。
+
+Google Cloud Consoleで`Verify branding`が完了し、必要な公開操作まで終えた後、この記述と[リリース準備状況](./release-readiness.md)を更新する。未完了の間は、ブランディング検証済みとは表記しない。
 
 ## OAuth Clientとの対応
 
@@ -55,11 +59,12 @@ Google DriveバックアップとGoogle FedCMで使うGoogle Auth Platformの、
 
 ## 公開前の確認
 
+- [ ] Google Auth Platformの`Verify branding`が完了している。
 - [ ] ホームページ、プライバシーポリシー、利用規約を匿名ブラウザで開ける。
 - [ ] 3ページのURLとConsoleの入力値が一致する。
 - [ ] ホームページからプライバシーポリシーと利用規約へ移動できる。
 - [ ] ロゴが120 x 120 pxのPNGで、1 MB以下である。
-- [ ] Search Consoleの所有確認が完了している。
+- [ ] Search Consoleで`<production-host>`の所有確認が完了している。
 - [ ] Google Cloud Consoleのサポートメールと連絡先が監視されている。
-- [ ] DriveとFedCMのClient IDが別で、各originが正確に登録されている。
+- [ ] DriveとFedCMのClient IDが別で、本番originが`https://<production-host>`として正確に登録されている。
 - [ ] 人手確認台帳のGoogle関連項目を実施し、結果を記録した。

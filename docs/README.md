@@ -54,7 +54,6 @@ pnpm run dev
 調査、PoC、実装前計画は現在の仕様を決める資料ではありません。現行の箱ID、解法、API採否、進捗はコードと上記の現行資料を優先してください。
 
 - [履歴資料の扱い](./history/README.md)
-- [移行・検証引継ぎメモ](../MIGRATION_HANDOFF.md)
 - `current-environment-implementation-plan.md`
 - `stage-rollout-plan.md`
 - `gimmick-backlog.md`
