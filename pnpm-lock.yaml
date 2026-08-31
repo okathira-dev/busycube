@@ -27,8 +27,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       mediabunny:
-        specifier: 1.55.2
-        version: 1.55.2
+        specifier: 1.55.3
+        version: 1.55.3
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -2591,8 +2591,8 @@ packages:
   mdurl@2.1.0:
     resolution: {integrity: sha512-1+HBaOx0zi/dQWht8rNv9MYf9qqpqL/kxI0hXImU6Y547zM6Sni8BQibt7ifgMcYtQg41ao3Ivd6cnSM86inpg==}
 
-  mediabunny@1.55.2:
-    resolution: {integrity: sha512-EEx4O6qYddAdCyWPMZNDwI7uc5hewNHrPAf9jLcVhIbXoPsiqNQ+D9i1pfadmGkjN2V318jSrZljkpoziYm6Lg==}
+  mediabunny@1.55.3:
+    resolution: {integrity: sha512-kpBhMiJHGmerizzObAT1XLZDyImO4ZEKXaxjjfxGVkycQ0U5of/xlLepm1Izp3P+3jlaedFSRI5fJnv3Q5xV6A==}
 
   meow@12.1.1:
     resolution: {integrity: sha512-BhXM0Au22RwUneMPwSCnyhTOizdWoIEPU9sp0Aqa1PnDMR5Wv2FGXYDjuzJEIX+Eo2Rb8xuYe5jrnm5QowQFkw==}
@@ -6162,7 +6162,7 @@ snapshots:
 
   mdurl@2.1.0: {}
 
-  mediabunny@1.55.2:
+  mediabunny@1.55.3:
     dependencies:
       '@types/dom-mediacapture-transform': 0.1.12
       '@types/dom-webcodecs': 0.1.13
