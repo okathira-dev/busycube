@@ -46,7 +46,7 @@
     "@mui/material": "^6.5.0",
     "hono": "^4.13.5",
     "jsqr": "^1.4.0",
-    "mediabunny": "1.55.2",
+    "mediabunny": "1.55.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "three": "^0.185.1"
