@@ -50,6 +50,8 @@ export const messages = {
     aboutBody:
       "画面の中だけでなく、タブ、端末、権限、ファイルなども手掛かりになるパズルです。",
     unavailable: "この箱は、現在の環境ではまだ開けられません。",
+    previousStage: "前のステージ",
+    nextStage: "次のステージ",
     fatalTitle: "箱の部屋を開けませんでした",
     fatalBody:
       "再読み込みしても戻らない場合は、サイトデータを確認してください。",
@@ -74,18 +76,19 @@ export const messages = {
     pwaUnsupported: "このブラウザはService Workerに対応していません。",
     pwaError:
       "オフライン起動を準備できませんでした。HTTPSまたは接続状態を確認してください。",
-    pwaUpdate: "新しい版があります。更新する",
+    pwaUpdate: "新しい版があります。",
+    pwaApplyUpdate: "新しい版に更新",
     drive: "Google Driveバックアップ（任意）",
     driveUnconfigured:
       "公開環境にGoogle OAuth Client IDが設定されていません。ローカル進捗には影響しません。",
-    driveIdle: "アプリ専用の非表示領域だけを使います。接続と同期",
+    driveIdle: "アプリ専用の非表示領域だけを使います。",
+    driveSync: "Google Driveに接続して同期",
     driveMergeNotice:
       "同期時に選んだGoogleアカウントと現在のローカル進捗を統合します。別アカウントを選ぶと、そのクリア情報も混ざります。",
     driveAuthorizing: "Googleの許可画面を待っています…",
     driveSyncing: "ローカルとDriveの進捗を統合しています…",
     driveSuccess: "同期しました。両方で開いた箱を残しています。",
-    driveError:
-      "同期できませんでした。ローカル進捗は変更していません。もう一度試す",
+    driveError: "同期できませんでした。ローカル進捗は変更していません。",
     driveFailureCorrupt:
       "Drive上の一部バックアップを読み取れません。自動で上書き・削除していません。",
     driveFailureFuture:
@@ -135,6 +138,8 @@ export const messages = {
     aboutBody:
       "The clues extend beyond the page into tabs, devices, permissions, files, and the browser itself.",
     unavailable: "This box cannot be opened in the current environment yet.",
+    previousStage: "Previous stage",
+    nextStage: "Next stage",
     fatalTitle: "The box room could not be opened",
     fatalBody: "If reloading does not help, check this site's stored data.",
     reload: "Reload",
@@ -158,17 +163,19 @@ export const messages = {
     pwaUnsupported: "This browser does not support Service Workers.",
     pwaError:
       "Offline launch could not be prepared. Check HTTPS and your connection.",
-    pwaUpdate: "A new version is ready. Update",
+    pwaUpdate: "A new version is ready.",
+    pwaApplyUpdate: "Update to the new version",
     drive: "Google Drive backup (optional)",
     driveUnconfigured:
       "No Google OAuth client ID is configured for this deployment. Local progress is unaffected.",
-    driveIdle: "Only the app's hidden data folder is used. Connect and sync",
+    driveIdle: "Only the app's hidden data folder is used.",
+    driveSync: "Connect Google Drive and sync",
     driveMergeNotice:
       "Sync merges local progress with the Google account you select. Choosing another account mixes its cleared boxes into the same grow-only progress.",
     driveAuthorizing: "Waiting for Google authorization…",
     driveSyncing: "Merging local and Drive progress…",
     driveSuccess: "Synced. Boxes opened on both sides were kept.",
-    driveError: "Sync failed. Local progress was not changed. Try again",
+    driveError: "Sync failed. Local progress was not changed.",
     driveFailureCorrupt:
       "Part of the Drive backup cannot be read. It was not overwritten or deleted automatically.",
     driveFailureFuture:

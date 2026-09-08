@@ -40,6 +40,55 @@ input:focus-visible {
   margin: 0 auto;
   padding: 2rem clamp(1rem, 4vw, 3rem) 5rem;
 }
+.app-shell--stage {
+  padding-top: clamp(0.5rem, 2vw, 1.5rem);
+}
+.shell-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+.language-picker.MuiInputBase-root {
+  border-radius: 999px;
+  color: #e8ddf7;
+  background: #211a35cc;
+  font: inherit;
+}
+.language-picker .MuiOutlinedInput-notchedOutline {
+  border-color: #665979;
+}
+.language-picker:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #a997c2;
+}
+.language-picker.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #ffd166;
+}
+.language-picker .MuiSelect-select {
+  padding-block: 0.5rem;
+  padding-left: 0.75rem;
+}
+.language-picker__value {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.language-picker__value svg {
+  font-size: 1.2em;
+}
+.language-picker__value strong {
+  color: #f7f3ff;
+  font-weight: 600;
+}
+.language-picker-menu.MuiPaper-root {
+  border: 1px solid #665979;
+  color: #f7f3ff;
+  background: #211a35;
+}
+.language-picker-menu .MuiMenuItem-root:hover {
+  background: #35294f;
+}
+.language-picker-menu .MuiMenuItem-root.Mui-selected {
+  background: #493762;
+}
 .hero {
   text-align: center;
   padding: 2rem 0 1.5rem;
@@ -625,6 +674,9 @@ input:focus-visible {
   margin: 1rem 0;
 }
 .settings-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   border: 1px solid #665979;
   border-radius: 0.7rem;
   padding: 0.7rem 0.9rem;
@@ -632,30 +684,36 @@ input:focus-visible {
   background: #2a2240;
   cursor: pointer;
 }
+.settings-actions button svg,
+.pwa-action svg,
+.drive-action svg {
+  flex: 0 0 auto;
+  font-size: 1.25em;
+}
 .settings-actions .danger-button {
   border-color: #9f5365;
   color: #ffd9e1;
 }
-.pwa-status {
-  width: 100%;
+.settings-status {
+  margin: 0.5rem 0 0.75rem;
+  color: #cfc7db;
+}
+.pwa-action,
+.drive-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  max-width: 100%;
   border: 1px solid #665979;
   border-radius: 0.7rem;
   padding: 0.85rem 1rem;
   color: #f7f3ff;
   background: #2a2240;
+  cursor: pointer;
 }
-.pwa-status:not(:disabled) {
+.pwa-action {
   border-color: #ffd166;
-  cursor: pointer;
-}
-.drive-action {
-  width: 100%;
-  border: 1px solid #665979;
-  border-radius: 0.7rem;
-  padding: 0.85rem 1rem;
-  color: #f7f3ff;
-  background: #26203b;
-  cursor: pointer;
 }
 .drive-action:disabled {
   color: #a49bad;
@@ -707,6 +765,13 @@ input:focus-visible {
   width: 100%;
   margin: 0 auto;
 }
+.stage-view__play-area {
+  position: relative;
+}
+.stage-view__puzzle[inert] {
+  opacity: 0.42;
+  filter: saturate(0.55);
+}
 .back-button {
   border: 0;
   padding: 0.6rem 0;
@@ -744,7 +809,6 @@ input:focus-visible {
   border-color: #34d399;
   color: #8ff0c9;
 }
-.capability-message,
 .stage-error,
 .stage-loading {
   margin-top: 1rem;
@@ -752,6 +816,85 @@ input:focus-visible {
   border: 1px solid #7e6840;
   border-radius: 0.8rem;
   background: #fbbf2412;
+}
+.capability-overlay {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: start center;
+  padding: clamp(2rem, 12vh, 7rem) 1rem 1rem;
+  background: linear-gradient(#100d1d2e, #100d1d66);
+}
+.capability-message {
+  max-width: 34rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid #b58b45;
+  border-radius: 999px;
+  color: #fff4cf;
+  background: #211a35e6;
+  box-shadow: 0 0.75rem 2rem #09061199;
+  text-align: center;
+}
+.stage-view__navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #433858;
+}
+.stage-view__navigation-button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 0.8rem;
+  max-width: min(100%, 28rem);
+  border: 1px solid #665979;
+  border-radius: 0.8rem;
+  padding: 0.75rem 0.9rem;
+  color: #f7f3ff;
+  background: #2a2240;
+  cursor: pointer;
+  text-align: left;
+}
+.stage-view__navigation-button--previous {
+  grid-template-columns: auto 1fr;
+}
+.stage-view__navigation-button--next {
+  margin-left: auto;
+}
+.stage-view__navigation-label {
+  color: #bfb7cf;
+  font-size: 0.78rem;
+}
+.stage-view__navigation-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stage-view__navigation-button--previous .stage-view__navigation-label,
+.stage-view__navigation-button--previous .stage-view__navigation-name {
+  grid-column: 2;
+}
+.stage-view__navigation-arrow {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+  color: #ffd166;
+  font-size: 1.35rem;
+}
+.stage-view__navigation-button--previous .stage-view__navigation-arrow {
+  grid-column: 1;
+}
+
+@media (max-width: 560px) {
+  .stage-view__navigation {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .stage-view__navigation-button {
+    width: 100%;
+  }
 }
 .puzzle {
   min-height: 26rem;

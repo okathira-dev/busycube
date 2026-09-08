@@ -52,11 +52,7 @@ a {
 }
 
 .policy-section {
-  margin: 1.5rem 0;
-  padding: 1.25rem;
-  border: 1px solid #443a59;
-  border-radius: 1rem;
-  background: #1c172de6;
+  margin: 2rem 0;
 }
 
 .policy-section h2,
@@ -66,6 +62,12 @@ a {
 
 .policy-section ul {
   padding-left: 1.25rem;
+}
+
+.policy-section:not([lang]) + .policy-section[lang="en"] {
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid #443a59;
 }
 
 .page-footer {

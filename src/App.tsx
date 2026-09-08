@@ -1,3 +1,10 @@
+import CloudSyncOutlined from "@mui/icons-material/CloudSyncOutlined";
+import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
+import InstallDesktopOutlined from "@mui/icons-material/InstallDesktopOutlined";
+import LanguageOutlined from "@mui/icons-material/LanguageOutlined";
+import RestartAltOutlined from "@mui/icons-material/RestartAltOutlined";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
 import { useEffect, useState } from "react";
 import { countSolvedBoxes } from "./domain/stageRuntime";
 import { useDriveBackup } from "./hooks/useDriveBackup";
@@ -38,6 +45,8 @@ export function App() {
   const locale = progress.document.settings.locale;
   const [view, setView] = useState<View>("stages");
   const [selectedStageId, setSelectedStageId] = useState(stageIdFromUrl);
+  // 同じステージへ履歴移動した場合も実行中の資源と一時状態を作り直すため、
+  // URL上のIDとは別に訪問単位のキーを持つ。
   const [stageAttemptId, setStageAttemptId] = useState(0);
   const copy = messages[locale];
   const solvedCount = stageIndex.reduce((total, stage) => {
@@ -61,6 +70,15 @@ export function App() {
     "update-ready": copy.pwaUpdate,
     error: copy.pwaError,
   }[serviceWorker.state];
+  const driveStatusMessage = {
+    unconfigured: copy.driveUnconfigured,
+    idle: copy.driveIdle,
+    authorizing: copy.driveAuthorizing,
+    syncing: copy.driveSyncing,
+    success: copy.driveSuccess,
+    deleted: copy.driveDeleted,
+    error: copy.driveError,
+  }[drive.state];
 
   const exportProgress = () => {
     const blob = new Blob([JSON.stringify(progress.document, null, 2)], {
@@ -91,6 +109,7 @@ export function App() {
   }, [locale]);
 
   useEffect(() => {
+    // 戻る・進むではReact側の操作関数を通らないため、URLを正として画面を同期する。
     const syncRoute = () => {
       setSelectedStageId(stageIdFromUrl());
       setStageAttemptId((current) => current + 1);
@@ -100,6 +119,7 @@ export function App() {
     return () => window.removeEventListener("popstate", syncRoute);
   }, []);
 
+  // pushState自身はpopstateを発火しないため、共有可能なURLとReactの状態を同時に更新する。
   const openStage = (stageId: StageId) => {
     const url = new URL(window.location.href);
     url.searchParams.set("stage", stageId);
@@ -118,41 +138,77 @@ export function App() {
   const selectedManifest = selectedStageId
     ? stageIndex.find((stage) => stage.id === selectedStageId)
     : undefined;
+  // ステージを没入型の画面として扱う。生成済み索引の並びを前後関係の正本にし、
+  // プレイ領域では通常のヒーローとタブを表示しない。
+  const selectedStageIndex = selectedManifest
+    ? stageIndex.indexOf(selectedManifest)
+    : -1;
+  const previousManifest = stageIndex[selectedStageIndex - 1];
+  const nextManifest = stageIndex[selectedStageIndex + 1];
+  const isStageView = view === "stages" && Boolean(selectedManifest);
 
   return (
-    <div className="app-shell">
-      <header className="hero">
-        <a className="eyebrow" href="/">
-          {productCopy.descriptor}
-        </a>
-        <h1>{productCopy.brandName}</h1>
-        <p className="hero__tagline">{copy.tagline}</p>
-        <p className="hero__subtitle">{copy.subtitle}</p>
-      </header>
+    <div className={`app-shell ${isStageView ? "app-shell--stage" : ""}`}>
+      {!isStageView && (
+        <>
+          {/* 言語が増えても同じ導線を保てるよう、3つのメイン画面に共通の選択欄を置く。 */}
+          <div className="shell-toolbar">
+            <Select
+              className="language-picker"
+              value={locale}
+              onChange={(event: SelectChangeEvent) =>
+                progress.setLocale(event.target.value as "ja" | "en")
+              }
+              inputProps={{ "aria-label": copy.language }}
+              MenuProps={{ classes: { paper: "language-picker-menu" } }}
+              renderValue={(value) => (
+                <span className="language-picker__value">
+                  <LanguageOutlined aria-hidden="true" />
+                  <span>{copy.language}</span>
+                  <strong>
+                    {value === "ja" ? copy.japanese : copy.english}
+                  </strong>
+                </span>
+              )}
+            >
+              <MenuItem value="ja">日本語</MenuItem>
+              <MenuItem value="en">English</MenuItem>
+            </Select>
+          </div>
+          <header className="hero">
+            <a className="eyebrow" href="/">
+              {productCopy.descriptor}
+            </a>
+            <h1>{productCopy.brandName}</h1>
+            <p className="hero__tagline">{copy.tagline}</p>
+            <p className="hero__subtitle">{copy.subtitle}</p>
+          </header>
 
-      <nav className="nav" aria-label={uiText(locale, "primaryNav")}>
-        <button
-          type="button"
-          aria-current={view === "stages" ? "page" : undefined}
-          onClick={() => setView("stages")}
-        >
-          {copy.stages}
-        </button>
-        <button
-          type="button"
-          aria-current={view === "settings" ? "page" : undefined}
-          onClick={() => setView("settings")}
-        >
-          {copy.settings}
-        </button>
-        <button
-          type="button"
-          aria-current={view === "about" ? "page" : undefined}
-          onClick={() => setView("about")}
-        >
-          {copy.about}
-        </button>
-      </nav>
+          <nav className="nav" aria-label={uiText(locale, "primaryNav")}>
+            <button
+              type="button"
+              aria-current={view === "stages" ? "page" : undefined}
+              onClick={() => setView("stages")}
+            >
+              {copy.stages}
+            </button>
+            <button
+              type="button"
+              aria-current={view === "settings" ? "page" : undefined}
+              onClick={() => setView("settings")}
+            >
+              {copy.settings}
+            </button>
+            <button
+              type="button"
+              aria-current={view === "about" ? "page" : undefined}
+              onClick={() => setView("about")}
+            >
+              {copy.about}
+            </button>
+          </nav>
+        </>
+      )}
 
       <main className="content">
         {view === "stages" &&
@@ -167,6 +223,14 @@ export function App() {
               drive: { configured: drive.configured, sync: drive.sync },
             }}
             onBack={showStageList}
+            previousStage={previousManifest}
+            onPrevious={
+              previousManifest
+                ? () => openStage(previousManifest.id)
+                : undefined
+            }
+            nextStage={nextManifest}
+            onNext={nextManifest ? () => openStage(nextManifest.id) : undefined}
           />
         ) : view === "stages" ? (
           <StageCatalogue
@@ -214,6 +278,7 @@ export function App() {
             </div>
             <div className="settings-actions">
               <button type="button" onClick={exportProgress}>
+                <FileDownloadOutlined aria-hidden="true" />
                 {copy.exportProgress}
               </button>
               <button
@@ -221,41 +286,42 @@ export function App() {
                 className="danger-button"
                 onClick={resetProgress}
               >
+                <RestartAltOutlined aria-hidden="true" />
                 {copy.resetProgress}
               </button>
             </div>
+            {/* 状態の説明をdisabledボタンで代用せず、実行できる操作だけをボタンにする。 */}
             <h3>{copy.pwa}</h3>
-            <button
-              type="button"
-              className="pwa-status"
-              disabled={serviceWorker.state !== "update-ready"}
-              onClick={serviceWorker.applyUpdate}
-            >
+            <p className="settings-status" role="status" aria-live="polite">
               {serviceWorkerMessage}
-            </button>
+            </p>
+            {serviceWorker.state === "update-ready" && (
+              <button
+                type="button"
+                className="pwa-action"
+                onClick={serviceWorker.applyUpdate}
+              >
+                <InstallDesktopOutlined aria-hidden="true" />
+                {copy.pwaApplyUpdate}
+              </button>
+            )}
             <h3>{copy.drive}</h3>
-            <button
-              type="button"
-              className="drive-action"
-              disabled={
-                drive.state === "unconfigured" ||
-                drive.state === "authorizing" ||
-                drive.state === "syncing"
-              }
-              onClick={() => void drive.sync()}
-            >
-              {
-                {
-                  unconfigured: copy.driveUnconfigured,
-                  idle: copy.driveIdle,
-                  authorizing: copy.driveAuthorizing,
-                  syncing: copy.driveSyncing,
-                  success: copy.driveSuccess,
-                  deleted: copy.driveDeleted,
-                  error: copy.driveError,
-                }[drive.state]
-              }
-            </button>
+            <p className="settings-status" role="status" aria-live="polite">
+              {driveStatusMessage}
+            </p>
+            {drive.configured && (
+              <button
+                type="button"
+                className="drive-action"
+                disabled={
+                  drive.state === "authorizing" || drive.state === "syncing"
+                }
+                onClick={() => void drive.sync()}
+              >
+                <CloudSyncOutlined aria-hidden="true" />
+                {copy.driveSync}
+              </button>
+            )}
             <p className="privacy-note">{copy.driveMergeNotice}</p>
             {drive.failure && (
               <div className="drive-recovery" role="alert">
