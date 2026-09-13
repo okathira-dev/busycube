@@ -1,6 +1,12 @@
 import AdminPanelSettingsOutlined from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PlayCircleOutlineOutlined from "@mui/icons-material/PlayCircleOutlineOutlined";
 import ScienceOutlined from "@mui/icons-material/ScienceOutlined";
+import Card from "@mui/material/Card";
+import CardActionArea from "@mui/material/CardActionArea";
+import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import type { ProgressDocument } from "../domain/progress";
 import { deriveStageProgress } from "../domain/stageRuntime";
@@ -11,6 +17,7 @@ import {
 } from "../runtime/stageContract";
 import { GiftBox, type GiftBoxState } from "./GiftBox";
 import { stageCardLabel, uiText } from "./locale";
+import "./StageCatalogue.css";
 
 type Group = ReturnType<typeof deriveStageAccessKind>;
 
@@ -142,29 +149,14 @@ function StageCard({ stage, locale, stages, onOpen }: StageCardProps) {
   const solvedBoxes = boxIds.filter((boxId) => solvedBoxIds.has(boxId)).length;
 
   return (
-    <article
+    <Card
+      component="article"
       className={`stage-card stage-card--${accessKind}`}
       data-progress={state}
+      variant="outlined"
     >
-      <GiftBox
-        state={giftState}
-        color="var(--stage-access-color, #60a5fa)"
-        label={`${stage.name[locale]}: ${status}`}
-        size="compact"
-        decorative
-      />
-      <div className="stage-card__text">
-        <div className="stage-card__meta">
-          <p className="stage-card__id">{stage.id}</p>
-          <p className="stage-card__progress">
-            {solvedBoxes}/{boxIds.length}
-          </p>
-        </div>
-        <h4 className="stage-card__heading">{stage.name[locale]}</h4>
-      </div>
-      <button
-        type="button"
-        className="stage-card__hit-area"
+      <CardActionArea
+        className="stage-card__action"
         onClick={() => onOpen(stage.id)}
         aria-label={stageCardLabel(
           locale,
@@ -174,8 +166,35 @@ function StageCard({ stage, locale, stages, onOpen }: StageCardProps) {
           status,
         )}
       >
-        <span className="sr-only">{copy.start}</span>
-      </button>
-    </article>
+        <GiftBox
+          state={giftState}
+          color="var(--stage-access-color, #60a5fa)"
+          label={`${stage.name[locale]}: ${status}`}
+          size="compact"
+          decorative
+        />
+        <CardContent className="stage-card__text">
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            gap={1}
+          >
+            <Typography className="stage-card__id" component="p">
+              {stage.id}
+            </Typography>
+            <Chip
+              className="stage-card__progress"
+              size="small"
+              label={`${solvedBoxes}/${boxIds.length}`}
+            />
+          </Stack>
+          <Typography className="stage-card__heading" component="h4">
+            {stage.name[locale]}
+          </Typography>
+          <span className="sr-only">{copy.start}</span>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 }

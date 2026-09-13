@@ -1,3 +1,4 @@
+import "./styles.css";
 import LightModeOutlined from "@mui/icons-material/LightModeOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

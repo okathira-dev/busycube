@@ -1,3 +1,4 @@
+import "./styles.css";
 import KeyboardReturnOutlined from "@mui/icons-material/KeyboardReturnOutlined";
 import SignalWifiOffOutlined from "@mui/icons-material/SignalWifiOffOutlined";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";

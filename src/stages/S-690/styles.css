@@ -1,0 +1,89 @@
+.s690-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+}
+.s690-stage__intro {
+  max-width: 52rem;
+  margin: 0;
+  text-align: center;
+  color: #d8cfdf;
+}
+.s690-stage__start {
+  text-decoration: none;
+}
+.s690-article {
+  display: grid;
+  width: min(100%, 52rem);
+  gap: 1.15rem;
+  line-height: 1.8;
+  text-align: left;
+}
+.s690-article p {
+  margin: 0;
+}
+.s690-passage {
+  padding: 1rem 1.15rem;
+  border: 1px solid #5f5474;
+  border-radius: 0.85rem;
+  background: #2a224066;
+}
+.s690-passage aside {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+.s690-passage code {
+  border-radius: 0.45rem;
+  padding: 0.32rem 0.5rem;
+  color: #bae6fd;
+  background: #0c4a6e55;
+}
+.s690-passage a {
+  color: #d8c5ff;
+}
+.s690-answer {
+  position: sticky;
+  bottom: 0.75rem;
+  display: grid;
+  width: min(100%, 46rem);
+  gap: 0.5rem;
+  padding: 0.9rem;
+  border: 1px solid #665979;
+  border-radius: 0.9rem;
+  background: #1c172df2;
+  box-shadow: 0 0.8rem 1.8rem #09061166;
+}
+.s690-answer > div {
+  display: flex;
+  gap: 0.5rem;
+}
+.s690-answer input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #665979;
+  border-radius: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  color: #f7f3ff;
+  background: #211b32;
+  font-family: ui-monospace, monospace;
+}
+.s690-answer button {
+  border: 1px solid #796799;
+  border-radius: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  color: #f7f3ff;
+  background: #35284f;
+  cursor: pointer;
+}
+.s690-answer small,
+.s690-answer output {
+  color: #c8bdd6;
+}
+@media (max-width: 620px) {
+  .s690-answer > div {
+    flex-direction: column;
+  }
+}

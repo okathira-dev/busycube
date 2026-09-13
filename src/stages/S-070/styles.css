@@ -1,0 +1,8 @@
+.signal-clue {
+  font-size: clamp(7rem, 28vw, 12rem);
+  line-height: 1;
+}
+.signal-clue--offline {
+  color: #fb7185;
+  text-decoration: line-through;
+}

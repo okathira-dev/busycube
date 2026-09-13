@@ -1,3 +1,4 @@
+import "./styles.css";
 import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
 import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";
 import WindowOutlined from "@mui/icons-material/WindowOutlined";

@@ -42,7 +42,7 @@ export const messages = {
     problemSolvedThisVisit: "今回開いた",
     start: "箱を見る",
     back: "一覧へ戻る",
-    language: "言語",
+    language: "Language", // 言語設定UIは英語表記のままにする
     japanese: "日本語",
     english: "English",
     privacy:
@@ -56,6 +56,7 @@ export const messages = {
     fatalBody:
       "再読み込みしても戻らない場合は、サイトデータを確認してください。",
     reload: "再読み込み",
+    cancel: "キャンセル",
     storageReady: "このブラウザに進捗を保存しています。",
     storageLoading: "進捗を読み込んでいます…",
     storageUnavailable:
@@ -143,6 +144,7 @@ export const messages = {
     fatalTitle: "The box room could not be opened",
     fatalBody: "If reloading does not help, check this site's stored data.",
     reload: "Reload",
+    cancel: "Cancel",
     storageReady: "Progress is stored in this browser.",
     storageLoading: "Loading progress…",
     storageUnavailable:

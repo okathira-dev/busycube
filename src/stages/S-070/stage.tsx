@@ -1,3 +1,4 @@
+import "./styles.css";
 import SignalWifiOffOutlined from "@mui/icons-material/SignalWifiOffOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

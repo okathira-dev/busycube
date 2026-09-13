@@ -1,3 +1,11 @@
+import ArrowBackOutlined from "@mui/icons-material/ArrowBackOutlined";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardActionArea from "@mui/material/CardActionArea";
+import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import {
   Component,
   type ErrorInfo,
@@ -20,6 +28,7 @@ import type {
   StageModule,
   StageServices,
 } from "./stageContract";
+import "./ManifestStageHost.css";
 
 interface Props {
   manifest: StageManifest;
@@ -61,9 +70,9 @@ class StageErrorBoundary extends Component<BoundaryProps, { failed: boolean }> {
 
   render() {
     return this.state.failed ? (
-      <div className="stage-error" role="alert">
+      <Alert className="stage-error" severity="error">
         {uiText(this.props.locale, "stageCrashed")}
-      </div>
+      </Alert>
     ) : (
       this.props.children
     );
@@ -219,31 +228,45 @@ export function ManifestStageHost({
 
   return (
     <section className="stage-view" aria-labelledby={activeStageHeadingId}>
-      <button type="button" className="back-button" onClick={onBack}>
-        ← {copy.back}
-      </button>
+      <Button
+        className="back-button"
+        startIcon={<ArrowBackOutlined />}
+        onClick={onBack}
+      >
+        {copy.back}
+      </Button>
       <header className="stage-view__header">
         <p>{manifest.id}</p>
         <h2 id={activeStageHeadingId}>{manifest.name[locale]}</h2>
-        <div
-          className={`stage-state ${persistentlyComplete ? "stage-state--solved" : ""}`}
-        >
-          {solvedCount}/{manifest.boxIds.length}
-        </div>
+        <Chip
+          className="stage-state"
+          color={persistentlyComplete ? "success" : "default"}
+          variant="outlined"
+          label={`${solvedCount}/${manifest.boxIds.length}`}
+        />
       </header>
 
       {loadError ? (
-        <div className="stage-error" role="alert">
+        <Alert
+          className="stage-error"
+          severity="error"
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setAttempt((value) => value + 1)}
+            >
+              {uiText(locale, "stageRetry")}
+            </Button>
+          }
+        >
           {uiText(locale, "stageCrashed")}
-          <button
-            type="button"
-            onClick={() => setAttempt((value) => value + 1)}
-          >
-            {uiText(locale, "stageRetry")}
-          </button>
-        </div>
+        </Alert>
       ) : !module || !signal ? (
-        <div className="stage-loading">{uiText(locale, "stageLoading")}</div>
+        <div className="stage-loading" role="status">
+          <CircularProgress size={22} />
+          <span>{uiText(locale, "stageLoading")}</span>
+        </div>
       ) : (
         <div className="stage-view__play-area">
           {/* 未対応環境でも謎の内容は見せ、実行不能な操作だけをinertで防ぐ。 */}
@@ -263,7 +286,9 @@ export function ManifestStageHost({
           </div>
           {isUnavailable && (
             <div className="capability-overlay" role="status">
-              <div className="capability-message">{copy.unavailable}</div>
+              <Alert className="capability-message" severity="warning">
+                {copy.unavailable}
+              </Alert>
             </div>
           )}
         </div>
@@ -275,38 +300,42 @@ export function ManifestStageHost({
           aria-label={`${copy.previousStage} / ${copy.nextStage}`}
         >
           {previousStage && onPrevious && (
-            <button
-              type="button"
+            <Card
               className="stage-view__navigation-button stage-view__navigation-button--previous"
-              onClick={onPrevious}
+              variant="outlined"
             >
-              <span className="stage-view__navigation-label">
-                {copy.previousStage}
-              </span>
-              <strong className="stage-view__navigation-name">
-                {previousStage.name[locale]}
-              </strong>
-              <span className="stage-view__navigation-arrow" aria-hidden="true">
-                ←
-              </span>
-            </button>
+              <CardActionArea onClick={onPrevious}>
+                <span className="stage-view__navigation-label">
+                  {copy.previousStage}
+                </span>
+                <strong className="stage-view__navigation-name">
+                  {previousStage.name[locale]}
+                </strong>
+                <ArrowBackOutlined
+                  className="stage-view__navigation-arrow"
+                  aria-hidden="true"
+                />
+              </CardActionArea>
+            </Card>
           )}
           {nextStage && onNext && (
-            <button
-              type="button"
+            <Card
               className="stage-view__navigation-button stage-view__navigation-button--next"
-              onClick={onNext}
+              variant="outlined"
             >
-              <span className="stage-view__navigation-label">
-                {copy.nextStage}
-              </span>
-              <strong className="stage-view__navigation-name">
-                {nextStage.name[locale]}
-              </strong>
-              <span className="stage-view__navigation-arrow" aria-hidden="true">
-                →
-              </span>
-            </button>
+              <CardActionArea onClick={onNext}>
+                <span className="stage-view__navigation-label">
+                  {copy.nextStage}
+                </span>
+                <strong className="stage-view__navigation-name">
+                  {nextStage.name[locale]}
+                </strong>
+                <ArrowForwardOutlined
+                  className="stage-view__navigation-arrow"
+                  aria-hidden="true"
+                />
+              </CardActionArea>
+            </Card>
           )}
         </nav>
       )}

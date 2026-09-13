@@ -1,0 +1,158 @@
+.gift-box {
+  --gift-width: 4.5rem;
+  --gift-height: 3.5rem;
+  --gift-lid-height: 0.8rem;
+  position: relative;
+  width: var(--gift-width);
+  height: calc(var(--gift-height) + 1.2rem);
+  color: var(--gift-color);
+}
+
+.gift-box--stage {
+  --gift-width: 3.2rem;
+  --gift-height: 2.7rem;
+  --gift-lid-height: 0.65rem;
+  margin-top: 0.45rem;
+}
+
+.gift-box--compact {
+  --gift-width: 2.1rem;
+  --gift-height: 1.65rem;
+  --gift-lid-height: 0.42rem;
+  margin-top: -0.15rem;
+}
+
+.gift-box__visual {
+  position: absolute;
+  inset: 1.2rem 0 0;
+  transition: filter 180ms ease;
+}
+
+.gift-box__body,
+.gift-box__lid,
+.gift-box__ribbon-band,
+.gift-box__ribbon-bow {
+  position: absolute;
+  display: block;
+}
+
+.gift-box__body {
+  inset: var(--gift-lid-height) 0 0;
+  border-radius: 0.2rem;
+  background: var(--gift-color);
+  box-shadow:
+    inset 0 -1.15rem #0002,
+    0 0.65rem 1rem #09061155;
+}
+
+.gift-box__lid {
+  z-index: 2;
+  top: 0;
+  left: -0.2rem;
+  width: calc(100% + 0.4rem);
+  height: var(--gift-lid-height);
+  border-radius: 0.2rem;
+  background: var(--gift-color);
+  box-shadow: inset 0 -0.2rem #0002;
+  transform-origin: left bottom;
+  transition: transform 220ms ease;
+}
+
+.gift-box__ribbon-band {
+  z-index: 3;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 0.3rem);
+  width: 0.6rem;
+  background: #f7d68a;
+  transition: opacity 120ms ease;
+}
+
+.gift-box__ribbon-bow {
+  z-index: 4;
+  top: -0.72rem;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.gift-box__ribbon-bow::before,
+.gift-box__ribbon-bow::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: calc(var(--gift-width) * 0.36);
+  height: calc(var(--gift-width) * 0.2);
+  border: calc(var(--gift-width) * 0.075) solid #f7d68a;
+  transition: opacity 120ms ease;
+}
+
+.gift-box__ribbon-bow::before {
+  right: -0.05rem;
+  border-radius: 1rem 0 0 0;
+  transform: rotate(12deg);
+}
+
+.gift-box__ribbon-bow::after {
+  left: -0.05rem;
+  border-radius: 0 1rem 0 0;
+  transform: rotate(-12deg);
+}
+
+.gift-box--closed .gift-box__ribbon-band,
+.gift-box--closed .gift-box__ribbon-bow,
+.gift-box--open .gift-box__ribbon-band,
+.gift-box--open .gift-box__ribbon-bow {
+  opacity: 0;
+}
+
+.gift-box--open .gift-box__lid {
+  transform: translate(-0.55rem, -0.72rem) rotate(-17deg);
+}
+
+.gift-box--open .gift-box__visual {
+  filter: drop-shadow(
+    0 0 1rem color-mix(in srgb, var(--gift-color), transparent 35%)
+  );
+}
+
+.gift-box__control {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.gift-box__control:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 0.25rem;
+}
+
+.gift-box__control:hover + *,
+.gift-box:has(.gift-box__control:hover) .gift-box__visual {
+  filter: brightness(1.08);
+}
+
+.problem-gift {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  width: 5.25rem;
+  margin: 0;
+}
+
+.problem-gift__clue {
+  --problem-gift-clue-size: 2rem;
+  display: grid;
+  place-items: center;
+  width: var(--problem-gift-clue-size);
+  height: var(--problem-gift-clue-size);
+  font-size: var(--problem-gift-clue-size);
+  color: #d8cfdf;
+}

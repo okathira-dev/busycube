@@ -1,0 +1,16 @@
+.usb-wire {
+  width: min(100%, 18rem);
+  height: 2rem;
+  border-bottom: 0.25rem solid #55486a;
+}
+.usb-wire span {
+  display: block;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: #818cf8;
+}
+.usb-wire[data-active="true"] span {
+  transform: translateX(min(16rem, 80vw));
+  transition: transform 500ms ease;
+}

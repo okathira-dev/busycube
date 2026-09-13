@@ -1,3 +1,4 @@
+import "./styles.css";
 import InstallDesktopOutlined from "@mui/icons-material/InstallDesktopOutlined";
 import ShareOutlined from "@mui/icons-material/ShareOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";

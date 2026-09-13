@@ -1,0 +1,68 @@
+.s800-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+}
+.s800-stage > p {
+  max-width: 52rem;
+  margin: 0;
+  text-align: center;
+  color: #d8cfdf;
+}
+.s800-article {
+  display: grid;
+  width: min(100%, 52rem);
+  gap: 1.15rem;
+  line-height: 1.8;
+  text-align: left;
+}
+.s800-article p {
+  margin: 0;
+}
+.s800-article section {
+  padding: 1rem 1.15rem;
+  border: 1px solid #5f5474;
+  border-radius: 0.85rem;
+  background: #2a224066;
+}
+.s800-prompts code {
+  border-radius: 0.45rem;
+  padding: 0.32rem 0.5rem;
+  color: #bae6fd;
+  background: #0c4a6e55;
+}
+.s800-prompts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 52rem);
+  gap: 1rem;
+}
+.s800-prompts section {
+  display: grid;
+  justify-items: center;
+  gap: 0.65rem;
+  padding: 1.15rem;
+  border: 1px solid #5f5474;
+  border-radius: 0.85rem;
+  background: #2a224066;
+}
+.s800-prompts h2,
+.s800-prompts p {
+  margin: 0;
+}
+.s800-prompts code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.s800-word {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  background: #171124;
+}
+@media (max-width: 620px) {
+  .s800-prompts {
+    grid-template-columns: 1fr;
+  }
+}

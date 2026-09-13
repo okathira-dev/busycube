@@ -1,0 +1,26 @@
+.s810-stage {
+  gap: 1.25rem;
+}
+.s810-video {
+  width: auto;
+  height: auto;
+  max-width: min(100%, 1080px);
+  max-height: 65vh;
+  background: #f8fafc;
+  object-fit: contain;
+  transition:
+    width 80ms linear,
+    height 80ms linear;
+}
+.s810-problem-row {
+  align-items: start;
+}
+.s810-problem {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  color: #d8cfdf;
+  font:
+    700 0.8rem ui-monospace,
+    monospace;
+}

@@ -1,3 +1,4 @@
+import "./styles.css";
 import DevicesFoldOutlined from "@mui/icons-material/DevicesFoldOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

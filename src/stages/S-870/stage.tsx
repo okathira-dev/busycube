@@ -1,3 +1,4 @@
+import "./styles.css";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";
 import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";

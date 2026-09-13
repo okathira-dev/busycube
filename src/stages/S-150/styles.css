@@ -1,0 +1,29 @@
+.accessibility-keyboard-button {
+  pointer-events: none;
+}
+.accessibility-select {
+  display: grid;
+  gap: 0.5rem;
+  width: min(100%, 32rem);
+  color: #d8cfdf;
+  font-weight: 700;
+}
+.accessibility-select select {
+  width: 100%;
+  border: 1px solid #665979;
+  border-radius: 0.7rem;
+  padding: 0.75rem 0.9rem;
+  color: #f7f3ff;
+  background: #2a2240;
+}
+.accessibility-details {
+  display: grid;
+  gap: 0.5rem;
+  width: min(100%, 32rem);
+}
+.accessibility-details details {
+  border: 1px solid #665979;
+  border-radius: 0.65rem;
+  padding: 0.7rem 0.9rem;
+  background: #211a32;
+}

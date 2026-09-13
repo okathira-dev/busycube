@@ -1,3 +1,4 @@
+import "./styles.css";
 import BluetoothOutlined from "@mui/icons-material/BluetoothOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

@@ -1,3 +1,4 @@
+import "./styles.css";
 import AccountTreeOutlined from "@mui/icons-material/AccountTreeOutlined";
 import SelectAllOutlined from "@mui/icons-material/SelectAllOutlined";
 import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";

@@ -1,3 +1,4 @@
+import "./styles.css";
 import RouteOutlined from "@mui/icons-material/RouteOutlined";
 import {
   defineStageModule,

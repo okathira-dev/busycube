@@ -12,6 +12,7 @@ import {
   unicodeFixtures,
 } from "../fixtures/unicode/data";
 import { initPocRegistry } from "./registry";
+import "./styles.css";
 
 const requestedPoc = new URL(location.href).searchParams.get("poc");
 if (requestedPoc) {

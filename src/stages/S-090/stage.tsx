@@ -1,3 +1,4 @@
+import "./styles.css";
 import NotificationsOutlined from "@mui/icons-material/NotificationsOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

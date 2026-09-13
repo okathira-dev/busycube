@@ -1,0 +1,18 @@
+.gamepad-meter {
+  display: grid;
+  gap: 0.6rem;
+  width: min(100%, 20rem);
+}
+.gamepad-meter::before,
+.gamepad-meter::after {
+  color: #a9a0b8;
+  font-size: 0.72rem;
+}
+.gamepad-meter span {
+  display: block;
+  min-width: 0.25rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fb7185, #fbbf24);
+  transition: width 80ms linear;
+}

@@ -1,3 +1,4 @@
+import "./styles.css";
 import ScreenRotationOutlined from "@mui/icons-material/ScreenRotationOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

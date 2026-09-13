@@ -1,3 +1,4 @@
+import "./styles.css";
 import KeyboardOutlined from "@mui/icons-material/KeyboardOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

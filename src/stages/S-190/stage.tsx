@@ -1,3 +1,4 @@
+import "./styles.css";
 import ColorizeOutlined from "@mui/icons-material/ColorizeOutlined";
 import DesktopWindowsOutlined from "@mui/icons-material/DesktopWindowsOutlined";
 import WindowOutlined from "@mui/icons-material/WindowOutlined";

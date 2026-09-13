@@ -1,3 +1,4 @@
+import "./styles.css";
 import OpenInNewOutlined from "@mui/icons-material/OpenInNewOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

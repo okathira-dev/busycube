@@ -1,0 +1,13 @@
+.wake-light {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: #473f2a;
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+.wake-light[data-active="true"] {
+  background: #facc15;
+  box-shadow: 0 0 3rem #facc1588;
+}

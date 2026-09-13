@@ -3,6 +3,9 @@ export default {
   testEnvironment: "node",
   // parser実装をfetch統一にしたため、Jestではfile://のみsetupで補完する。
   setupFiles: ["<rootDir>/jest.setup.ts"],
+  moduleNameMapper: {
+    "\\.css$": "<rootDir>/jest.styleMock.cjs",
+  },
   transform: {
     "^.+.tsx?$": [
       "ts-jest",

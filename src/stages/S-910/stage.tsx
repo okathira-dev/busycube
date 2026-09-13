@@ -1,3 +1,4 @@
+import "./styles.css";
 import SubtitlesOutlined from "@mui/icons-material/SubtitlesOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

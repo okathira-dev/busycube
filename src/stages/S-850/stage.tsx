@@ -1,3 +1,4 @@
+import "./styles.css";
 import PictureInPictureAltOutlined from "@mui/icons-material/PictureInPictureAltOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

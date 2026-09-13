@@ -1,0 +1,12 @@
+.light-meter {
+  width: min(22rem, 90%);
+  height: 1rem;
+  overflow: hidden;
+  border: 1px solid #66567e;
+  border-radius: 999px;
+}
+.light-meter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #171329, #fff1a8);
+}

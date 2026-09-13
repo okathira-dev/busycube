@@ -1,0 +1,27 @@
+.fatal {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.fatal > section {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  width: min(36rem, 100%);
+  padding: 2rem;
+}
+
+.fatal__box {
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 0.8rem;
+  background: #fb7185;
+  color: #171020;
+  font-size: 3rem;
+  font-weight: 900;
+}

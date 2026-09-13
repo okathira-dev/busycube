@@ -1,5 +1,10 @@
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { detectLocale, messages } from "../i18n";
+import "./AppErrorBoundary.css";
 
 interface Props {
   children: ReactNode;
@@ -26,16 +31,18 @@ export class AppErrorBoundary extends Component<Props, State> {
     const copy = messages[detectLocale()];
     return (
       <main className="fatal">
-        <section role="alert">
+        <Paper component="section" variant="outlined">
           <div className="fatal__box" aria-hidden="true">
             !
           </div>
-          <h1>{copy.fatalTitle}</h1>
-          <p>{copy.fatalBody}</p>
-          <button type="button" onClick={() => window.location.reload()}>
+          <Alert severity="error">
+            <AlertTitle>{copy.fatalTitle}</AlertTitle>
+            {copy.fatalBody}
+          </Alert>
+          <Button variant="contained" onClick={() => window.location.reload()}>
             {copy.reload}
-          </button>
-        </section>
+          </Button>
+        </Paper>
       </main>
     );
   }

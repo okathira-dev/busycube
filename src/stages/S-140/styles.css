@@ -1,0 +1,6 @@
+.cloud-clue {
+  color: #dbeafe;
+  font-size: clamp(7rem, 28vw, 12rem);
+  line-height: 1;
+  filter: drop-shadow(0 0 2rem #60a5fa66);
+}

@@ -1,0 +1,11 @@
+.capture-preview {
+  max-width: min(100%, 640px);
+}
+.capture-preview {
+  width: min(100%, 28rem);
+  aspect-ratio: 16 / 9;
+  border: 1px solid #55486a;
+  border-radius: 1rem;
+  background: #090711;
+  object-fit: cover;
+}

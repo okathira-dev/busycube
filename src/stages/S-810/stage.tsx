@@ -1,3 +1,4 @@
+import "./styles.css";
 import AspectRatioOutlined from "@mui/icons-material/AspectRatioOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

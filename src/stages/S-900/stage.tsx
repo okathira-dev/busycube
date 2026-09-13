@@ -1,3 +1,4 @@
+import "./styles.css";
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

@@ -1,0 +1,41 @@
+.s840-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+}
+.s840-scroll-root {
+  width: min(640px, calc(100vw - 3rem));
+  height: 420px;
+  overflow: auto;
+  border: 2px solid #2dd4bf;
+  border-radius: 0.95rem;
+  background: #061e1f;
+  box-shadow: inset 0 0 0 12px #2dd4bf18;
+}
+.s840-scroll-root:focus-visible {
+  outline: 3px solid #f7d68a;
+  outline-offset: 0.25rem;
+}
+.s840-plane {
+  position: relative;
+  width: 2600px;
+  height: 2200px;
+  background-image:
+    linear-gradient(#2dd4bf14 1px, transparent 1px),
+    linear-gradient(90deg, #2dd4bf14 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+.s840-target {
+  position: absolute;
+  top: 1100px;
+  left: 1500px;
+  border: 2px solid #d5fff7;
+  border-radius: 0.75rem;
+  background: repeating-linear-gradient(
+    45deg,
+    #2dd4bf26,
+    #2dd4bf26 14px,
+    #ffffff08 14px,
+    #ffffff08 28px
+  );
+}

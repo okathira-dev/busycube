@@ -1,0 +1,41 @@
+.s760-card {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) 1fr;
+  gap: 1.25rem;
+  width: min(100%, 44rem);
+  border: 1px solid #7c6a9d;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8fafc, #dbeafe);
+  color: #172554;
+  text-align: left;
+}
+.s760-card img {
+  width: 100%;
+  border-radius: 1rem;
+}
+.s760-card dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-content: center;
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+.s760-card dt {
+  font-weight: 700;
+}
+.s760-card dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .s760-card {
+    grid-template-columns: 1fr;
+  }
+  .s760-card img {
+    width: 8rem;
+    justify-self: center;
+  }
+}

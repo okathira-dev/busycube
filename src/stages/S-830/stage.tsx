@@ -1,3 +1,4 @@
+import "./styles.css";
 import HourglassEmptyOutlined from "@mui/icons-material/HourglassEmptyOutlined";
 import LockOutlined from "@mui/icons-material/LockOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
