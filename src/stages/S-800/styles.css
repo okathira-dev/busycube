@@ -30,6 +30,9 @@
   padding: 0.32rem 0.5rem;
   color: #bae6fd;
   background: #0c4a6e55;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 .s800-prompts {
   display: grid;
@@ -49,11 +52,6 @@
 .s800-prompts h2,
 .s800-prompts p {
   margin: 0;
-}
-.s800-prompts code {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  text-align: center;
 }
 .s800-word {
   max-width: 100%;

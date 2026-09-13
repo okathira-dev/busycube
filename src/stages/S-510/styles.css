@@ -4,8 +4,6 @@
   border: 1px solid var(--line, #51496b);
   border-radius: 0.75rem;
   overflow-wrap: anywhere;
-}
-.drop-target {
   min-height: 8rem;
   display: grid;
   place-items: center;

@@ -1,8 +1,6 @@
 .door-clue {
   font-size: clamp(7rem, 28vw, 12rem);
   line-height: 1;
-}
-.door-clue {
   transform-origin: left center;
   transition: transform 240ms ease;
 }

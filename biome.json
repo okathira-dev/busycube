@@ -39,6 +39,15 @@
             "inputComponents": ["TextField", "Slider", "Select"]
           }
         }
+      },
+      "complexity": {
+        "noImportantStyles": "error"
+      },
+      "nursery": {
+        "noDuplicateSelectors": "error"
+      },
+      "style": {
+        "noDescendingSpecificity": "error"
       }
     },
     "domains": {

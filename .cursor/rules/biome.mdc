@@ -11,3 +11,5 @@ alwaysApply: false
 - 通常の一括確認は `pnpm run check` を使用してください。
 - 手作業で Biome と競合する整形を追加しないでください。
 - 自動修正を行った場合も diff を確認し、依頼外の変更が混ざっていないことを確認してください。
+- CSSでは重複selector、`!important`、詳細度の逆転をerrorとして扱います。
+- CSSの `noUnusedClasses` はHTMLや実行時に生成するclassを誤検知するため一括適用せず、`useBaseline` は新しいWeb APIを扱うステージのCSSを制限するため有効化しません。nursery ruleは実コードへの試走後に個別採用してください。

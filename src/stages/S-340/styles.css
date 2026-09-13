@@ -7,13 +7,11 @@
   border-radius: 0.8rem;
   background: #2b2340;
   font-size: 1.5rem;
+  view-transition-name: var(--transition-name, none);
 }
 .transition-tiles {
   display: flex;
   gap: 0.8rem;
-}
-.transition-tiles span {
-  view-transition-name: var(--transition-name, none);
 }
 .transition-tiles span:nth-child(1) {
   --transition-name: busycube-diamond;
