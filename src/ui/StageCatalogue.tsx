@@ -176,9 +176,11 @@ function StageCard({ stage, locale, stages, onOpen }: StageCardProps) {
         <CardContent className="stage-card__text">
           <Stack
             direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            gap={1}
+            sx={{
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1,
+            }}
           >
             <Typography className="stage-card__id" component="p">
               {stage.id}

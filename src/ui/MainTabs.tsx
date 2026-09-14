@@ -42,7 +42,7 @@ export function MainTabs({ value, labels, ariaLabel, onChange }: Props) {
         variant="scrollable"
         scrollButtons={false}
         textColor="inherit"
-        TabIndicatorProps={{ hidden: true }}
+        slotProps={{ indicator: { hidden: true } }}
       >
         {(Object.keys(labels) as MainView[]).map((view) => (
           <StyledTab key={view} value={view} label={labels[view]} />

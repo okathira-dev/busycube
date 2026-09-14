@@ -115,7 +115,7 @@ export function SettingsView({
           {copy.settings}
         </Typography>
 
-        <Stack spacing={1} alignItems="flex-start">
+        <Stack spacing={1} sx={{ alignItems: "flex-start" }}>
           <Typography variant="h6" component="h3">
             {copy.language}
           </Typography>
@@ -137,7 +137,7 @@ export function SettingsView({
         >
           {storageMessage}
         </Alert>
-        <Stack direction="row" flexWrap="wrap" gap={1}>
+        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
           <Button
             variant="outlined"
             startIcon={<FileDownloadOutlined />}
@@ -156,7 +156,7 @@ export function SettingsView({
         </Stack>
 
         <Divider />
-        <Stack spacing={1.5} alignItems="flex-start">
+        <Stack spacing={1.5} sx={{ alignItems: "flex-start" }}>
           <Typography variant="h6" component="h3">
             {copy.pwa}
           </Typography>
@@ -179,7 +179,7 @@ export function SettingsView({
         </Stack>
 
         <Divider />
-        <Stack spacing={1.5} alignItems="flex-start">
+        <Stack spacing={1.5} sx={{ alignItems: "flex-start" }}>
           <Typography variant="h6" component="h3">
             {copy.drive}
           </Typography>
@@ -207,7 +207,7 @@ export function SettingsView({
             <Alert severity="warning" className="drive-recovery">
               <Stack spacing={1.5}>
                 <Typography>{driveFailureMessage}</Typography>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
+                <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
                   <Button size="small" onClick={onDriveRetry}>
                     {copy.driveRetry}
                   </Button>
@@ -222,7 +222,7 @@ export function SettingsView({
                     key={replica.id}
                   >
                     <code>{replica.name}</code>
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
+                    <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
                       <Button
                         size="small"
                         onClick={() => onDriveExportReplica(replica)}
@@ -246,7 +246,7 @@ export function SettingsView({
           )}
 
           {driveConnected && (
-            <Stack direction="row" flexWrap="wrap" gap={1}>
+            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
               <Button onClick={onDriveDisconnect}>
                 {copy.driveDisconnect}
               </Button>
@@ -261,7 +261,7 @@ export function SettingsView({
         </Stack>
 
         <Alert severity="info">{copy.privacy}</Alert>
-        <Stack direction="row" flexWrap="wrap" gap={2}>
+        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
           <Link href={`./privacy/index.html?locale=${locale}`}>
             {copy.privacyPolicy}
           </Link>

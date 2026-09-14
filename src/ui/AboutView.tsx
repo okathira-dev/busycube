@@ -24,7 +24,7 @@ export function AboutView({ headingId, locale }: Props) {
           {copy.about}
         </Typography>
         <Typography>{copy.aboutBody}</Typography>
-        <Stack direction="row" flexWrap="wrap" gap={2}>
+        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
           <Link href={`./privacy/index.html?locale=${locale}`}>
             {copy.privacyPolicy}
           </Link>
