@@ -15,12 +15,12 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "types": ["node", "vite/client", "vitest/globals"],
     /* Linting */
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitAny": true,
-    /* jest */
     "esModuleInterop": true
   },
   "include": ["src"],

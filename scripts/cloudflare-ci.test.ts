@@ -149,7 +149,7 @@ describe("resolveWorkersDevUrls", () => {
 
 describe("fetchJsonWithRetry", () => {
   test("一時的なserver errorだけをretryする", async () => {
-    const fetchImpl = jest
+    const fetchImpl = vi
       .fn<Promise<Response>, [URL | RequestInfo, RequestInit?]>()
       .mockResolvedValueOnce(new Response("temporary", { status: 503 }))
       .mockResolvedValueOnce(
@@ -171,7 +171,7 @@ describe("fetchJsonWithRetry", () => {
   });
 
   test("client errorはretryしない", async () => {
-    const fetchImpl = jest.fn(async () =>
+    const fetchImpl = vi.fn(async () =>
       Promise.resolve(new Response("bad request", { status: 400 })),
     );
 
@@ -190,7 +190,7 @@ describe("fetchJsonWithRetry", () => {
 describe("runSmokeTests", () => {
   test("共通endpointとheaderを確認する", async () => {
     const requestedUrls: string[] = [];
-    const fetchImpl = jest.fn(
+    const fetchImpl = vi.fn(
       async (input: URL | RequestInfo, init?: RequestInit) => {
         const url = String(input);
         requestedUrls.push(url);
@@ -239,7 +239,7 @@ describe("runSmokeTests", () => {
 
   test("一時的な失敗をretryする", async () => {
     let rootAttempts = 0;
-    const fetchImpl = jest.fn(async (input: URL | RequestInfo) => {
+    const fetchImpl = vi.fn(async (input: URL | RequestInfo) => {
       const path = new URL(String(input)).pathname;
       if (path === "/" && rootAttempts === 0) {
         rootAttempts += 1;

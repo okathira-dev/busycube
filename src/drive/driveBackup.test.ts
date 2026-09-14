@@ -25,7 +25,7 @@ function replica(id: string, name: string) {
 describe("Drive replica backup sync", () => {
   it("creates one installation-owned replica when none exists", async () => {
     const calls: Array<[RequestInfo | URL, RequestInit | undefined]> = [];
-    const fetcher: typeof fetch = jest.fn(async (input, init) => {
+    const fetcher: typeof fetch = vi.fn(async (input, init) => {
       calls.push([input, init]);
       if (calls.length === 1) return jsonResponse({ files: [] });
       if (calls.length === 2) {
@@ -55,7 +55,7 @@ describe("Drive replica backup sync", () => {
       "B01",
     );
     let call = 0;
-    const fetcher: typeof fetch = jest.fn(async () => {
+    const fetcher: typeof fetch = vi.fn(async () => {
       call += 1;
       if (call === 1) {
         return jsonResponse({
@@ -82,7 +82,7 @@ describe("Drive replica backup sync", () => {
   it("retries the complete merge after an ETag conflict", async () => {
     const local = createProgressDocument("ja", "local");
     let call = 0;
-    const fetcher: typeof fetch = jest.fn(async () => {
+    const fetcher: typeof fetch = vi.fn(async () => {
       call += 1;
       if (call === 1 || call === 4) {
         return jsonResponse({
@@ -105,7 +105,7 @@ describe("Drive replica backup sync", () => {
 
   it("does not upload after a corrupt replica", async () => {
     const broken = replica("broken-file", "busycube-progress-broken.json");
-    const fetcher: typeof fetch = jest
+    const fetcher: typeof fetch = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ files: [broken] }))
       .mockResolvedValueOnce(
@@ -124,7 +124,7 @@ describe("Drive replica backup sync", () => {
   });
 
   it("deletes every replica, not an arbitrary newest file", async () => {
-    const fetcher: typeof fetch = jest
+    const fetcher: typeof fetch = vi
       .fn()
       .mockResolvedValueOnce(
         jsonResponse({
