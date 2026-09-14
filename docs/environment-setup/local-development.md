@@ -2,10 +2,11 @@
 
 ## 必要な実行環境
 
-- Node.js 24.14.0以上
-- pnpm 11.24.0
+- Node.js 24.21.0以上
+- pnpm 12.4.1
 
 package managerはpnpmだけを使う。npmやYarnのlockfileは追加しない。
+pnpmは`devEngines.runtime`に従い、project内のscript実行に指定されたNode.jsバージョンを使用する。
 
 ## セットアップ
 
@@ -22,16 +23,16 @@ pnpm run preview
 
 ## 主なコマンド
 
-| 目的 | コマンド |
-| --- | --- |
-| ステージ索引と一覧の生成 | `pnpm run busycube:stages:generate` |
-| ステージ生成物の更新漏れ確認 | `pnpm run busycube:stages:check` |
-| Markdownの検査 | `pnpm run docs:lint` |
-| Markdown内リンクの検査 | `pnpm run docs:links` |
-| 通常の静的検査 | `pnpm run check` |
-| 自動テスト | `pnpm run test:ci` |
-| 本番build | `pnpm run build` |
-| Workersのdry run | `pnpm run deploy:dry-run` |
+| 目的                         | コマンド                            |
+| ---------------------------- | ----------------------------------- |
+| ステージ索引と一覧の生成     | `pnpm run busycube:stages:generate` |
+| ステージ生成物の更新漏れ確認 | `pnpm run busycube:stages:check`    |
+| Markdownの検査               | `pnpm run docs:lint`                |
+| Markdown内リンクの検査       | `pnpm run docs:links`               |
+| 通常の静的検査               | `pnpm run check`                    |
+| 自動テスト                   | `pnpm run test:ci`                  |
+| 本番build                    | `pnpm run build`                    |
+| Workersのdry run             | `pnpm run deploy:dry-run`           |
 
 ## ステージの変更
 

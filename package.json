@@ -3,9 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "packageManager": "pnpm@11.24.0",
+  "packageManager": "pnpm@12.4.1",
   "engines": {
-    "node": ">=24.14.0"
+    "node": ">=24.21.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.21.0",
+      "onFail": "download"
+    }
   },
   "scripts": {
     "predev": "pnpm run busycube:stages:generate",
@@ -89,9 +96,5 @@
     "src/**/*.{js,jsx,ts,tsx,json,css,html}": [
       "biome check"
     ]
-  },
-  "volta": {
-    "node": "24.14.0",
-    "pnpm": "11.24.0"
   }
 }
