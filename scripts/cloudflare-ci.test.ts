@@ -1,3 +1,4 @@
+import { securityHeaders } from "../worker/securityHeaders";
 import {
   fetchJsonWithRetry,
   isVersionFullyDeployed,
@@ -5,6 +6,12 @@ import {
   resolveWorkersDevUrls,
   runSmokeTests,
 } from "./cloudflare-ci.ts";
+
+const addSecurityHeaders = (headers: Headers) => {
+  for (const [name, value] of Object.entries(securityHeaders)) {
+    headers.set(name, value);
+  }
+};
 
 const versionPayload = (
   items: Array<{
@@ -197,9 +204,7 @@ describe("runSmokeTests", () => {
         const path = new URL(url).pathname;
         const headers = new Headers();
         if (path === "/") {
-          headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-          headers.set("X-Content-Type-Options", "nosniff");
-          headers.set("X-Frame-Options", "SAMEORIGIN");
+          addSecurityHeaders(headers);
         } else if (
           path === "/manifest.webmanifest" ||
           path === "/service-worker.js"
@@ -207,8 +212,7 @@ describe("runSmokeTests", () => {
           headers.set("Cache-Control", "no-cache");
         } else if (path === "/offline-beacon/network-probe") {
           headers.set("Cache-Control", "no-store");
-          headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-          headers.set("X-Content-Type-Options", "nosniff");
+          addSecurityHeaders(headers);
         } else if (path === "/payment/method") {
           expect(init?.method).toBe("HEAD");
           headers.set("Cache-Control", "no-store");
@@ -249,10 +253,8 @@ describe("runSmokeTests", () => {
         "Cache-Control": path.includes("network-probe")
           ? "no-store"
           : "no-cache",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "SAMEORIGIN",
       });
+      addSecurityHeaders(headers);
       if (path === "/payment/method") {
         headers.set(
           "Link",

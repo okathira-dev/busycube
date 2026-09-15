@@ -31,8 +31,13 @@ pnpm run preview
 | Markdown内リンクの検査       | `pnpm run docs:links`               |
 | 通常の静的検査               | `pnpm run check`                    |
 | 自動テスト                   | `pnpm run test:ci`                  |
+| 主要機能のcoverage検査       | `pnpm run test:core`                |
+| 画面遷移とa11yのE2E検査      | `pnpm run test:e2e`                 |
+| PWAアイコンの再生成          | `pnpm run pwa:icons:generate`       |
 | 本番build                    | `pnpm run build`                    |
 | Workersのdry run             | `pnpm run deploy:dry-run`           |
+
+`pnpm run check`はPWAアイコンが元SVGと一致することも検査する。`pnpm run build`は初期読込assetと最大JavaScript chunkのgzip／raw容量予算を最後に検査し、超過時は失敗する。
 
 ## ステージの変更
 

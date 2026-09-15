@@ -1,5 +1,6 @@
 import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import { securityHeaders } from "../worker/securityHeaders";
 
 type FetchLike = typeof fetch;
 type Sleep = (milliseconds: number) => Promise<void>;
@@ -25,9 +26,7 @@ const smokeChecks: readonly SmokeCheck[] = [
     path: "/",
     expectedStatus: 200,
     headers: {
-      "referrer-policy": "strict-origin-when-cross-origin",
-      "x-content-type-options": "nosniff",
-      "x-frame-options": "SAMEORIGIN",
+      ...securityHeaders,
     },
   },
   { path: "/?stage=S-090", expectedStatus: 200 },
@@ -46,8 +45,7 @@ const smokeChecks: readonly SmokeCheck[] = [
     expectedStatus: 204,
     headers: {
       "cache-control": "no-store",
-      "referrer-policy": "strict-origin-when-cross-origin",
-      "x-content-type-options": "nosniff",
+      ...securityHeaders,
     },
   },
   {

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { securityHeaders } from "./securityHeaders";
 
 type AssetBinding = {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
@@ -25,8 +26,9 @@ app.use("*", async (context, next) => {
   await next();
   // public/_headersはStatic Assetsだけに適用されるため、Worker responseには
   // 必要な防御用headerをここでも付与する。
-  context.header("Referrer-Policy", "strict-origin-when-cross-origin");
-  context.header("X-Content-Type-Options", "nosniff");
+  for (const [name, value] of Object.entries(securityHeaders)) {
+    context.header(name, value);
+  }
 });
 
 for (const [route, manifestPath] of Object.entries(paymentManifestRoutes)) {

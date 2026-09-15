@@ -3,7 +3,7 @@
 const workerUrl = new URL(self.location.href);
 const developmentMode = workerUrl.searchParams.get("mode") === "development";
 const cachePrefix = "busycube-";
-const cacheVersion = "v6";
+const cacheVersion = "v7";
 const shellCacheName = `${cachePrefix}shell-${cacheVersion}`;
 const assetCacheName = `${cachePrefix}assets-${cacheVersion}`;
 const scopeUrl = new URL(self.registration.scope);
@@ -13,7 +13,13 @@ const shellFiles = [
   "./",
   "./manifest.webmanifest",
   "./icon.svg",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./icon-maskable-192.png",
+  "./icon-maskable-512.png",
+  "./apple-touch-icon.png",
   "./licenses/index.html",
+  "./licenses/localize.js",
   "./licenses/jsqr-Apache-2.0.txt",
   "./licenses/mediabunny-MPL-2.0.txt",
   "./licenses/unifont-OFL-1.1.txt",

@@ -22,6 +22,8 @@ export default defineConfig({
   environments: {
     client: {
       build: {
+        // 容量劣化はscripts/check-build-budgets.mjsでgzip／rawの両方を検出する。
+        chunkSizeWarningLimit: 540,
         // HTML入口はすべてブラウザーbuildだけに限定する。最上位へinputを置くと
         // Worker環境にも継承され、Vite 8／RolldownではHTMLの仮想moduleが
         // Workerのentry pointとして扱われてしまう。
