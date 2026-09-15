@@ -36,7 +36,7 @@ export function AboutView({ headingId, locale }: Props) {
     >
       <Stack spacing={3}>
         <Stack spacing={1}>
-          <Typography id={headingId} variant="h4" component="h2">
+          <Typography id={headingId} variant="h4" component="h2" tabIndex={-1}>
             {copy.about}
           </Typography>
           <Typography color="text.secondary">{copy.aboutBody}</Typography>

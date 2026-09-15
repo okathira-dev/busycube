@@ -25,6 +25,8 @@ export const messages = {
   ja: {
     tagline: "いつものブラウザが、パズルになる。",
     subtitle: "ブラウザそのものが鍵となる新感覚パズル。",
+    metaDescription:
+      "ブラウザ、端末、権限、ファイルを手掛かりに箱を開けるWeb APIパズルゲーム。",
     stages: "箱の部屋",
     settings: "設定",
     about: "このゲームについて",
@@ -159,6 +161,8 @@ export const messages = {
   en: {
     tagline: "Your everyday browser becomes the puzzle.",
     subtitle: "A new kind of puzzle game where the browser itself is the key.",
+    metaDescription:
+      "A Web API puzzle game where browser, device, permissions, and files become clues.",
     stages: "Box room",
     settings: "Settings",
     about: "About this game",

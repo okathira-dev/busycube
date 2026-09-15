@@ -19,11 +19,17 @@ export async function prepareProgressImport(
   file: File,
   current: ProgressDocument,
 ): Promise<ProgressImportResult> {
-  let raw: unknown;
+  let source: string;
   try {
-    raw = JSON.parse(await file.text());
+    source = await file.text();
   } catch {
     return { status: "read-error" };
+  }
+  let raw: unknown;
+  try {
+    raw = JSON.parse(source);
+  } catch {
+    return { status: "corrupt" };
   }
   const parsed = parseProgressDocument(raw);
   if (parsed.status === "corrupt") return { status: "corrupt" };

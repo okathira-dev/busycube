@@ -40,6 +40,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:core": "vitest run --coverage --config vitest.core.config.ts",
+    "test:e2e": "playwright test",
     "pretest:ci": "pnpm run busycube:stages:check",
     "test:ci": "vitest run --coverage",
     "busycube:stages:generate": "node scripts/generateBusycubeStageIndex.mjs",
@@ -59,6 +61,7 @@
     "three": "^0.186.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "2.5.13",
     "@cloudflare/vite-plugin": "^1.54.8",
     "@cloudflare/workers-types": "^5.20260911.1",
@@ -67,6 +70,7 @@
     "@commitlint/types": "^21.2.0",
     "@markuplint/jsx-parser": "^5.0.0",
     "@markuplint/react-spec": "^5.0.0",
+    "@playwright/test": "^1.63.0",
     "@testing-library/react": "^16.3.3",
     "@types/dom-mediacapture-transform": "^0.1.12",
     "@types/node": "^24.12.0",

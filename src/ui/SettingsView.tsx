@@ -228,7 +228,7 @@ export function SettingsView({
       variant="outlined"
     >
       <Stack spacing={3}>
-        <Typography id={headingId} variant="h4" component="h2">
+        <Typography id={headingId} variant="h4" component="h2" tabIndex={-1}>
           {copy.settings}
         </Typography>
 

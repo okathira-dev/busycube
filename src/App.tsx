@@ -1,5 +1,5 @@
 import Button from "@mui/material/Button";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   mergeProgressDocuments,
   type ProgressDocument,
@@ -23,6 +23,7 @@ import { LanguageSelect } from "./ui/LanguageSelect";
 import { uiText } from "./ui/locale";
 import { MainTabs } from "./ui/MainTabs";
 import { ProgressStorageAlert } from "./ui/ProgressStorageAlert";
+import { pageMetadata } from "./ui/pageMetadata";
 import {
   type ProgressImportResult,
   prepareProgressImport,
@@ -229,6 +230,27 @@ export function App() {
     ? catalogueStages.find((stage) => stage.manifest.id === selectedStageId)
     : undefined;
   const selectedManifest = selectedCatalogueStage?.manifest;
+
+  useEffect(() => {
+    const metadata = pageMetadata({
+      locale,
+      view,
+      stageName: selectedManifest?.name[locale],
+      displayCode: selectedCatalogueStage?.displayCode,
+    });
+    document.title = metadata.title;
+    document
+      .querySelector<HTMLMetaElement>('meta[name="description"]')
+      ?.setAttribute("content", metadata.description);
+  }, [locale, selectedCatalogueStage?.displayCode, selectedManifest, view]);
+
+  useLayoutEffect(() => {
+    if (view === "stages") return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(headingIds[view])?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [view]);
   // ステージを没入型の画面として扱う。利用者が一覧で認識するaccess group順を
   // 前後関係の正本にし、プレイ領域では通常のヒーローとタブを表示しない。
   const selectedStageIndex = selectedCatalogueStage
@@ -278,6 +300,11 @@ export function App() {
               stages: copy.stages,
               settings: copy.settings,
               about: copy.aboutTab,
+            }}
+            hrefs={{
+              stages: appUrlForView(window.location.href, "stages"),
+              settings: appUrlForView(window.location.href, "settings"),
+              about: appUrlForView(window.location.href, "about"),
             }}
             ariaLabel={uiText(locale, "primaryNav")}
             onChange={showMainView}
