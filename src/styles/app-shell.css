@@ -10,7 +10,17 @@
 
 .shell-toolbar {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 1rem;
+  min-height: 2.75rem;
+}
+
+.shell-brand {
+  margin-right: auto;
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
 }
 
 .language-select__value {
@@ -38,7 +48,6 @@
   font-size: 0.78rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  text-decoration: none;
 }
 
 .hero h1 {
@@ -92,5 +101,15 @@
 @media (max-width: 560px) {
   .app-shell {
     padding-top: 0.5rem;
+  }
+
+  .shell-toolbar {
+    gap: 0.5rem;
+  }
+
+  .shell-brand {
+    min-width: 0;
+    padding-inline: 0.25rem;
+    font-size: 1.1rem;
   }
 }

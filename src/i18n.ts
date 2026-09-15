@@ -28,10 +28,23 @@ export const messages = {
     stages: "箱の部屋",
     settings: "設定",
     about: "このゲームについて",
+    aboutTab: "ゲームについて",
     privacyPolicy: "プライバシーポリシー",
     termsOfService: "利用規約",
     thirdPartyLicenses: "第三者ライセンス（同梱本文）",
     progress: "開いた箱",
+    continueStage: "次の未クリア",
+    allStagesSolved: "すべて開きました",
+    searchStages: "型番・ステージ名で検索",
+    progressFilter: "進捗",
+    accessFilter: "プレイ環境",
+    filterAll: "すべて",
+    filterUnstarted: "未着手",
+    filterPartial: "途中",
+    filterSolved: "クリア済み",
+    clearFilters: "絞り込みを解除",
+    stageResults: "表示中のステージ",
+    noStageResults: "条件に合うステージがありません。",
     boxes: "箱",
     planned: "準備中",
     available: "挑戦できる",
@@ -49,6 +62,20 @@ export const messages = {
       "権限は必要な箱を操作したときだけ求めます。カメラやマイクの生データは保存・送信しません。",
     aboutBody:
       "画面の中だけでなく、タブ、端末、権限、ファイルなども手掛かりになるパズルです。",
+    aboutPlayTitle: "遊び方",
+    aboutPlayChoose: "箱の部屋から気になるステージを選びます。",
+    aboutPlayObserve:
+      "画面だけでなく、ブラウザー、端末、権限、ファイルの反応も観察します。",
+    aboutPlaySupport:
+      "環境によって開けない箱もあります。すべての箱を開けなくても遊べます。",
+    aboutSafetyTitle: "安全性とデータ",
+    aboutSafetyPermission:
+      "カメラやマイクなどの権限は、必要な箱を操作したときだけ求めます。",
+    aboutSafetyLocal:
+      "進捗はこのブラウザーに保存され、Google Driveバックアップは任意です。",
+    aboutSafetySecurity:
+      "ブラウザーや端末の通常の安全機能を無効にする必要はありません。",
+    relatedDocuments: "関連文書",
     unavailable: "この箱は、現在の環境ではまだ開けられません。",
     previousStage: "前のステージ",
     nextStage: "次のステージ",
@@ -65,7 +92,16 @@ export const messages = {
       "保存データを読み取れません。自動では上書きしていません。必要なら進捗を初期化してください。",
     storageFuture:
       "新しい版で作られた進捗です。この版では上書きせず読み取り専用にします。",
+    localProgress: "この端末の進捗",
     exportProgress: "進捗を書き出す",
+    importProgress: "進捗を読み込む",
+    importPreviewBoxes: "新しく開く箱",
+    importPreviewMarkers: "追加される進行情報",
+    importConfirm: "現在の進捗を残したまま、このファイルの進捗を追加します。",
+    importSuccess: "ファイルの進捗をこの端末へ追加しました。",
+    importNoChanges: "このファイルから追加される進捗はありません。",
+    importInvalid: "Busycubeの進捗ファイルとして読み取れませんでした。",
+    importFuture: "新しい版で作られたため、この版では読み込めません",
     resetProgress: "この端末の進捗を初期化",
     resetConfirm:
       "この端末に保存したBusycubeの進捗を削除します。元に戻せません。",
@@ -81,8 +117,11 @@ export const messages = {
     pwaApplyUpdate: "新しい版に更新",
     drive: "Google Driveバックアップ（任意）",
     driveUnconfigured:
-      "公開環境にGoogle OAuth Client IDが設定されていません。ローカル進捗には影響しません。",
-    driveIdle: "アプリ専用の非表示領域だけを使います。",
+      "この環境ではGoogle Driveバックアップを利用できません。ローカル進捗は引き続き保存されます。",
+    driveIdle: "Google Driveにはまだ接続していません。",
+    driveStorageExplanation:
+      "Busycubeの進捗バックアップだけを保存します。Google Drive内のほかのファイルを見たり、変更したりすることはありません。",
+    driveStorageTechnical: "技術仕様：Google Drive appDataFolder",
     driveSync: "Google Driveに接続して同期",
     driveMergeNotice:
       "同期時に選んだGoogleアカウントと現在のローカル進捗を統合します。別アカウントを選ぶと、そのクリア情報も混ざります。",
@@ -110,6 +149,7 @@ export const messages = {
     driveDelete: "Driveバックアップを削除",
     driveDeleteConfirm:
       "Google Driveのアプリ専用バックアップを完全に削除します。ローカル進捗は削除しません。",
+    privacyAndDocuments: "プライバシーと関連文書",
   },
   en: {
     tagline: "Your everyday browser becomes the puzzle.",
@@ -117,10 +157,23 @@ export const messages = {
     stages: "Box room",
     settings: "Settings",
     about: "About this game",
+    aboutTab: "About",
     privacyPolicy: "Privacy policy",
     termsOfService: "Terms of service",
     thirdPartyLicenses: "Third-party licenses (bundled texts)",
     progress: "Opened boxes",
+    continueStage: "Next unopened stage",
+    allStagesSolved: "All boxes are open",
+    searchStages: "Search by model or stage name",
+    progressFilter: "Progress",
+    accessFilter: "Play environment",
+    filterAll: "All",
+    filterUnstarted: "Not started",
+    filterPartial: "In progress",
+    filterSolved: "Completed",
+    clearFilters: "Clear filters",
+    stageResults: "Stages shown",
+    noStageResults: "No stages match these filters.",
     boxes: "boxes",
     planned: "Coming soon",
     available: "Ready",
@@ -138,6 +191,20 @@ export const messages = {
       "Permissions are requested only after you interact with a box that needs them. Raw camera and microphone data is never stored or sent.",
     aboutBody:
       "The clues extend beyond the page into tabs, devices, permissions, files, and the browser itself.",
+    aboutPlayTitle: "How to play",
+    aboutPlayChoose: "Choose any stage that interests you in the box room.",
+    aboutPlayObserve:
+      "Observe the browser, device, permissions, and files—not only the page.",
+    aboutPlaySupport:
+      "Some boxes depend on your environment. You can play without opening every box.",
+    aboutSafetyTitle: "Safety and data",
+    aboutSafetyPermission:
+      "Camera, microphone, and other permissions are requested only after you operate a box that needs them.",
+    aboutSafetyLocal:
+      "Progress stays in this browser; Google Drive backup is optional.",
+    aboutSafetySecurity:
+      "You never need to disable normal browser or device security features.",
+    relatedDocuments: "Related documents",
     unavailable: "This box cannot be opened in the current environment yet.",
     previousStage: "Previous stage",
     nextStage: "Next stage",
@@ -153,7 +220,18 @@ export const messages = {
       "Stored data cannot be read and has not been overwritten. Reset progress if you want to recover.",
     storageFuture:
       "This progress was created by a newer version. It remains read-only here.",
+    localProgress: "Progress on this device",
     exportProgress: "Export progress",
+    importProgress: "Import progress",
+    importPreviewBoxes: "New boxes opened",
+    importPreviewMarkers: "Progress markers added",
+    importConfirm:
+      "Add this file's progress while preserving your current progress.",
+    importSuccess: "Progress from the file was added to this device.",
+    importNoChanges: "This file has no progress to add.",
+    importInvalid: "This file could not be read as Busycube progress.",
+    importFuture:
+      "This file was created by a newer version and cannot be imported",
     resetProgress: "Reset progress on this device",
     resetConfirm:
       "Delete Busycube progress stored on this device? This cannot be undone.",
@@ -169,8 +247,11 @@ export const messages = {
     pwaApplyUpdate: "Update to the new version",
     drive: "Google Drive backup (optional)",
     driveUnconfigured:
-      "No Google OAuth client ID is configured for this deployment. Local progress is unaffected.",
-    driveIdle: "Only the app's hidden data folder is used.",
+      "Google Drive backup is not available in this environment. Local progress will still be stored.",
+    driveIdle: "Google Drive is not connected yet.",
+    driveStorageExplanation:
+      "Busycube stores only its progress backup. It cannot view or change your other files in Google Drive.",
+    driveStorageTechnical: "Technical details: Google Drive appDataFolder",
     driveSync: "Connect Google Drive and sync",
     driveMergeNotice:
       "Sync merges local progress with the Google account you select. Choosing another account mixes its cleared boxes into the same grow-only progress.",
@@ -197,6 +278,7 @@ export const messages = {
     driveDelete: "Delete Drive backup",
     driveDeleteConfirm:
       "Permanently delete the app-only Google Drive backup? Local progress will remain.",
+    privacyAndDocuments: "Privacy and related documents",
   },
 } as const;
 

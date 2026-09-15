@@ -1,12 +1,13 @@
 import { styled } from "@mui/material/styles";
 import Tab, { tabClasses } from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import type { MainView } from "./appRoute";
 
-export type MainView = "stages" | "settings" | "about";
+export type { MainView } from "./appRoute";
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
-  width: "fit-content",
-  maxWidth: "100%",
+  width: "100%",
+  maxWidth: "44rem",
   margin: `${theme.spacing(2)} auto ${theme.spacing(5)}`,
   padding: theme.spacing(0.5),
   border: `1px solid ${theme.palette.divider}`,
@@ -39,8 +40,7 @@ export function MainTabs({ value, labels, ariaLabel, onChange }: Props) {
       <StyledTabs
         value={value}
         onChange={(_event, nextValue: MainView) => onChange(nextValue)}
-        variant="scrollable"
-        scrollButtons={false}
+        variant="fullWidth"
         textColor="inherit"
         slotProps={{ indicator: { hidden: true } }}
       >

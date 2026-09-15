@@ -1,5 +1,11 @@
 <!doctype html>
-<html lang="ja">
+<html
+  lang="ja"
+  data-title-ja="利用規約 | Busycube"
+  data-title-en="Terms of service | Busycube"
+  data-description-ja="Busycubeの利用規約。ブラウザ機能を利用するパズルゲームの利用条件を説明します。"
+  data-description-en="Busycube terms of service for a puzzle game that uses browser features."
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,28 +15,38 @@
       content="Busycubeの利用規約。ブラウザ機能を利用するパズルゲームの利用条件を説明します。"
     />
     <link rel="stylesheet" href="../public-pages.css" />
-    <title>Terms of service | Busycube</title>
+    <script type="module" src="../legal-locale.ts"></script>
+    <title>利用規約 | Busycube</title>
   </head>
   <body>
     <main class="page-shell">
       <header class="page-header">
-        <a class="page-header__brand" href="/">Busycube</a>
-        <h1>利用規約</h1>
+        <a class="page-header__brand" href="/" data-preserve-locale>Busycube</a>
+        <h1 data-locale="ja" lang="ja">利用規約</h1>
+        <h1 data-locale="en" lang="en">Terms of service</h1>
       </header>
 
-      <p class="language-note">
-        This page is also available in English below. In case of a conflict, the
-        Japanese text takes precedence.
+      <nav class="language-switch" aria-label="Language">
+        <a href="?locale=ja" lang="ja" data-locale-choice="ja">日本語</a>
+        <a href="?locale=en" lang="en" data-locale-choice="en">English</a>
+      </nav>
+
+      <p class="language-note" data-locale="ja" lang="ja">
+        この文書は英語でも読めます。内容に相違がある場合は、日本語版を正文とします。
+      </p>
+      <p class="language-note" data-locale="en" lang="en">
+        This document is also available in Japanese. If the versions differ, the
+        Japanese version takes precedence.
       </p>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>ゲームについて</h2>
         <p>
           Busycubeは、ブラウザ、端末、OS、権限、ファイル、接続機器などを手掛かりにするパズルゲームです。すべての問題がすべてのブラウザ、端末、地域、時点で利用できることは保証しません。
         </p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>利用時の注意</h2>
         <ul>
           <li>権限の許可、外部機器の接続、ファイルの選択は、自分の判断で行ってください。</li>
@@ -40,28 +56,28 @@
         </ul>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>Google Driveバックアップ</h2>
         <p>
-          Google Driveバックアップは任意の機能です。利用する場合は、Googleの規約およびポリシーにも従ってください。同期するデータと削除方法は<a href="../privacy/index.html">プライバシーポリシー</a>に説明します。
+          Google Driveバックアップは任意の機能です。利用する場合は、Googleの規約およびポリシーにも従ってください。同期するデータと削除方法は<a href="../privacy/index.html" data-preserve-locale>プライバシーポリシー</a>に説明します。
         </p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>変更</h2>
         <p>
           機能、対応環境、利用条件は必要に応じて変更されることがあります。重要な変更は、このページまたはゲーム内で知らせます。
         </p>
       </section>
 
-      <section class="policy-section" lang="en">
+      <section class="policy-section" data-locale="en" lang="en">
         <h2>About the game</h2>
         <p>
           Busycube is a puzzle game that uses clues from browsers, devices, operating systems, permissions, files, and connected hardware. Not every puzzle is available in every browser, device, region, or at every time.
         </p>
       </section>
 
-      <section class="policy-section" lang="en">
+      <section class="policy-section" data-locale="en" lang="en">
         <h2>Using the game</h2>
         <ul>
           <li>Decide for yourself whether to grant permissions, connect devices, or select files.</li>
@@ -71,22 +87,25 @@
         </ul>
       </section>
 
-      <section class="policy-section" lang="en">
+      <section class="policy-section" data-locale="en" lang="en">
         <h2>Optional Google Drive backup</h2>
         <p>
-          Google Drive backup is optional. If you use it, you must also follow Google's terms and policies. The data that is synced and how to delete it are described in the <a href="../privacy/index.html">Privacy Policy</a>.
+          Google Drive backup is optional. If you use it, you must also follow Google's terms and policies. The data that is synced and how to delete it are described in the <a href="../privacy/index.html" data-preserve-locale>Privacy Policy</a>.
         </p>
       </section>
 
-      <section class="policy-section" lang="en">
+      <section class="policy-section" data-locale="en" lang="en">
         <h2>Changes</h2>
         <p>
           Features, supported environments, and these terms may change when necessary. Important changes will be announced on this page or in the game.
         </p>
       </section>
 
-      <footer class="page-footer">
-        <a href="../privacy/index.html">プライバシーポリシー / Privacy policy</a>
+      <footer class="page-footer" data-locale="ja" lang="ja">
+        <a href="../privacy/index.html" data-preserve-locale>プライバシーポリシー</a>
+      </footer>
+      <footer class="page-footer" data-locale="en" lang="en">
+        <a href="../privacy/index.html" data-preserve-locale>Privacy policy</a>
       </footer>
     </main>
   </body>

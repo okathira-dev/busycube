@@ -12,6 +12,7 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -32,8 +33,11 @@ import "./ManifestStageHost.css";
 
 interface Props {
   manifest: StageManifest;
+  displayCode: string;
   previousStage?: StageManifest;
+  previousDisplayCode?: string;
   nextStage?: StageManifest;
+  nextDisplayCode?: string;
   locale: Locale;
   progress: ProgressController;
   services: StageServices;
@@ -115,8 +119,11 @@ function stageProgress(manifest: StageManifest, progress: ProgressController) {
 
 export function ManifestStageHost({
   manifest,
+  displayCode,
   previousStage,
+  previousDisplayCode,
   nextStage,
+  nextDisplayCode,
   locale,
   progress,
   services,
@@ -140,6 +147,13 @@ export function ManifestStageHost({
   persistSolveRef.current = progress.solve;
   persistMarkRef.current = progress.mark;
   const copy = messages[locale];
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useLayoutEffect(() => {
+    // 一覧の深いscroll位置をstageへ持ち込まず、画面遷移を見出しから読み始められるようにする。
+    window.scrollTo({ top: 0 });
+    headingRef.current?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
     // 遅延ロード完了前に別ステージへ移動しても、古い結果でstateを更新しない。
@@ -236,8 +250,10 @@ export function ManifestStageHost({
         {copy.back}
       </Button>
       <header className="stage-view__header">
-        <p>{manifest.id}</p>
-        <h2 id={activeStageHeadingId}>{manifest.name[locale]}</h2>
+        <p>{displayCode}</p>
+        <h2 id={activeStageHeadingId} ref={headingRef} tabIndex={-1}>
+          {manifest.name[locale]}
+        </h2>
         <Chip
           className="stage-state"
           color={persistentlyComplete ? "success" : "default"}
@@ -309,6 +325,7 @@ export function ManifestStageHost({
                   {copy.previousStage}
                 </span>
                 <strong className="stage-view__navigation-name">
+                  <span>{previousDisplayCode}</span>
                   {previousStage.name[locale]}
                 </strong>
                 <ArrowBackOutlined
@@ -328,6 +345,7 @@ export function ManifestStageHost({
                   {copy.nextStage}
                 </span>
                 <strong className="stage-view__navigation-name">
+                  <span>{nextDisplayCode}</span>
                   {nextStage.name[locale]}
                 </strong>
                 <ArrowForwardOutlined

@@ -1,4 +1,5 @@
 import {
+  countProgressAdditions,
   createProgressDocument,
   hasStageMarker,
   markStage,
@@ -40,6 +41,28 @@ describe("Busycube progress", () => {
       markers: ["entered"],
     });
     expect(hasStageMarker(merged, "S-010", "entered")).toBe(true);
+  });
+
+  it("counts only progress that an import would add", () => {
+    const current = markStage(
+      solveBox(createProgressDocument("ja", "a"), "S-010", "B01"),
+      "S-010",
+      "entered",
+    );
+    const imported = markStage(
+      solveBox(
+        solveBox(createProgressDocument("en", "b"), "S-010", "B01"),
+        "S-010",
+        "B02",
+      ),
+      "S-010",
+      "returned",
+    );
+
+    expect(countProgressAdditions(current, imported)).toEqual({
+      addedBoxes: 1,
+      addedMarkers: 1,
+    });
   });
 
   it("rejects old development saves instead of carrying migration code", () => {

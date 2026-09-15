@@ -33,6 +33,11 @@
   font-size: clamp(2rem, 7vw, 3.4rem);
 }
 
+.stage-view__header h2:focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 0.35rem;
+}
+
 .stage-state {
   position: absolute;
   top: 1rem;
@@ -116,6 +121,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.stage-view__navigation-name span {
+  margin-right: 0.5rem;
+  color: #ffd166;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8em;
 }
 
 .stage-view__navigation-button--previous .stage-view__navigation-label,

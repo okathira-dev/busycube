@@ -1,3 +1,4 @@
+import type { ButtonProps } from "@mui/material/Button";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -12,6 +13,7 @@ interface Props {
   message: string;
   cancelLabel: string;
   confirmLabel: string;
+  confirmColor?: ButtonProps["color"];
   onCancel(): void;
   onConfirm(): void;
 }
@@ -23,6 +25,7 @@ export function ConfirmDialog({
   message,
   cancelLabel,
   confirmLabel,
+  confirmColor = "error",
   onCancel,
   onConfirm,
 }: Props) {
@@ -35,7 +38,7 @@ export function ConfirmDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>{cancelLabel}</Button>
-        <Button color="error" variant="contained" onClick={onConfirm}>
+        <Button color={confirmColor} variant="contained" onClick={onConfirm}>
           {confirmLabel}
         </Button>
       </DialogActions>
