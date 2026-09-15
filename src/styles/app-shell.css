@@ -73,6 +73,10 @@
   min-height: 24rem;
 }
 
+.storage-alert {
+  margin: 0 auto 1rem;
+}
+
 .panel {
   width: 100%;
   margin: 0;

@@ -92,10 +92,17 @@ export function useDriveBackup(progress: ProgressController) {
   }, [accessToken, progress]);
 
   const disconnect = useCallback(async () => {
-    if (accessToken) await revokeDriveAccessToken(accessToken);
-    setAccessToken(null);
-    setFailure(null);
-    setState(clientId ? "idle" : "unconfigured");
+    try {
+      if (accessToken) await revokeDriveAccessToken(accessToken);
+      setAccessToken(null);
+      setFailure(null);
+      setState(clientId ? "idle" : "unconfigured");
+      return true;
+    } catch (error) {
+      setState("error");
+      setFailure(failureFrom(error));
+      return false;
+    }
   }, [accessToken]);
 
   const removeRemote = useCallback(async () => {
@@ -141,6 +148,7 @@ export function useDriveBackup(progress: ProgressController) {
     async (replica: DriveReplica) => {
       if (!accessToken) return;
       try {
+        setState("syncing");
         await deleteDriveReplica(accessToken, replica);
         setFailure(null);
         setState("idle");

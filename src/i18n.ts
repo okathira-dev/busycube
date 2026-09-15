@@ -92,6 +92,8 @@ export const messages = {
       "保存データを読み取れません。自動では上書きしていません。必要なら進捗を初期化してください。",
     storageFuture:
       "新しい版で作られた進捗です。この版では上書きせず読み取り専用にします。",
+    storageRetry: "保存を再試行",
+    storageOpenSettings: "設定を開く",
     localProgress: "この端末の進捗",
     exportProgress: "進捗を書き出す",
     importProgress: "進捗を読み込む",
@@ -105,6 +107,9 @@ export const messages = {
     resetProgress: "この端末の進捗を初期化",
     resetConfirm:
       "この端末に保存したBusycubeの進捗を削除します。元に戻せません。",
+    resetSuccess: "この端末の進捗を初期化しました。",
+    resetFailed:
+      "進捗を初期化できませんでした。ブラウザの保存設定を確認して再試行してください。",
     pwa: "オフラインとインストール",
     pwaDevelopment:
       "開発モードではキャッシュせず、Service Worker機能だけを有効にしています。",
@@ -220,6 +225,8 @@ export const messages = {
       "Stored data cannot be read and has not been overwritten. Reset progress if you want to recover.",
     storageFuture:
       "This progress was created by a newer version. It remains read-only here.",
+    storageRetry: "Retry storage",
+    storageOpenSettings: "Open settings",
     localProgress: "Progress on this device",
     exportProgress: "Export progress",
     importProgress: "Import progress",
@@ -235,6 +242,9 @@ export const messages = {
     resetProgress: "Reset progress on this device",
     resetConfirm:
       "Delete Busycube progress stored on this device? This cannot be undone.",
+    resetSuccess: "Progress on this device was reset.",
+    resetFailed:
+      "Progress could not be reset. Check browser storage settings and try again.",
     pwa: "Offline and installation",
     pwaDevelopment:
       "Development mode keeps Service Worker APIs active without caching files.",

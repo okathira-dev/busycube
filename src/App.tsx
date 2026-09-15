@@ -22,6 +22,7 @@ import {
 import { LanguageSelect } from "./ui/LanguageSelect";
 import { uiText } from "./ui/locale";
 import { MainTabs } from "./ui/MainTabs";
+import { ProgressStorageAlert } from "./ui/ProgressStorageAlert";
 import {
   type ProgressImportResult,
   prepareProgressImport,
@@ -284,6 +285,14 @@ export function App() {
         </>
       )}
 
+      <ProgressStorageAlert
+        locale={locale}
+        state={progress.storageState}
+        message={storageMessage}
+        onRetry={progress.retryStorage}
+        onOpenSettings={() => showMainView("settings")}
+      />
+
       <main className="content">
         {view === "stages" &&
         selectedManifest &&
@@ -346,7 +355,7 @@ export function App() {
             onExport={exportProgress}
             onPrepareImport={inspectProgressImport}
             onMergeImport={mergeImportedProgress}
-            onReset={() => void progress.reset()}
+            onReset={progress.reset}
             onApplyUpdate={serviceWorker.applyUpdate}
             onDriveSync={() => void drive.sync()}
             onDriveDisconnect={() => void drive.disconnect()}

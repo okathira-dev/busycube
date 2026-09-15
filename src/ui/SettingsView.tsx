@@ -63,7 +63,7 @@ interface Props {
   onExport(): void;
   onPrepareImport(file: File): Promise<ProgressImportResult>;
   onMergeImport(document: ProgressDocument): void;
-  onReset(): void;
+  onReset(): Promise<boolean>;
   onApplyUpdate(): void;
   onDriveSync(): void;
   onDriveDisconnect(): void;
@@ -143,10 +143,16 @@ export function SettingsView({
           ? copy.driveRemoveReplica
           : copy.importProgress;
 
-  const confirm = () => {
+  const confirm = async () => {
     const current = confirmation;
     setConfirmation(null);
-    if (current?.kind === "reset") onReset();
+    if (current?.kind === "reset") {
+      const reset = await onReset();
+      setImportNotice({
+        severity: reset ? "success" : "warning",
+        message: reset ? copy.resetSuccess : copy.resetFailed,
+      });
+    }
     if (current?.kind === "delete-drive") onDriveDelete();
     if (current?.kind === "delete-replica") {
       onDriveRemoveReplica(current.replica);
@@ -377,6 +383,7 @@ export function SettingsView({
               <Button
                 startIcon={<LinkOffOutlined />}
                 onClick={onDriveDisconnect}
+                disabled={driveBusy}
               >
                 {copy.driveDisconnect}
               </Button>
@@ -384,6 +391,7 @@ export function SettingsView({
                 color="error"
                 startIcon={<DeleteForeverOutlined />}
                 onClick={() => setConfirmation({ kind: "delete-drive" })}
+                disabled={driveBusy}
               >
                 {copy.driveDelete}
               </Button>
@@ -416,7 +424,7 @@ export function SettingsView({
         confirmLabel={confirmLabel}
         confirmColor={confirmation?.kind === "import" ? "primary" : "error"}
         onCancel={() => setConfirmation(null)}
-        onConfirm={confirm}
+        onConfirm={() => void confirm()}
       />
     </Paper>
   );
