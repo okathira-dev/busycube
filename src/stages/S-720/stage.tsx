@@ -11,13 +11,13 @@ import { manifest } from "./manifest";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 import {
-  ALL_FORMATS,
   BlobSource,
   BufferTarget,
   CanvasSink,
   CanvasSource,
   Input,
   Output,
+  WEBM,
   WebMOutputFormat,
 } from "mediabunny";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -203,7 +203,7 @@ async function renderVideoRoute(
   const response = await fetch(videoRecoveryAssets[source], { signal });
   const input = new Input({
     source: new BlobSource(await response.blob()),
-    formats: ALL_FORMATS,
+    formats: [WEBM],
   });
   try {
     const track = await input.getPrimaryVideoTrack();

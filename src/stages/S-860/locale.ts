@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "校正刷り", en: "Proofreading" },
+  stageName,
   intro: {
     ja: "ここには入力欄がありません。見出しと文章そのものを選び、誤りを直接直してください。",
     en: "There are no text fields here. Focus the headings and sentences themselves, then correct them directly.",

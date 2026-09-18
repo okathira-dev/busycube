@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "戻る道", en: "The path back" },
+  stageName,
   buildTrail: { ja: "道を3つ積む", en: "Build three steps" },
   useBack: { ja: "ブラウザの戻るを3回", en: "Use browser Back three times" },
   branchFromB: { ja: "AからBへ進む", en: "Go from A to B" },

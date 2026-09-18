@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "外からの呼び声", en: "A call from outside" },
+  stageName,
   callOutside: { ja: "外へ呼ぶ", en: "Call outside" },
   outsideBody: {
     ja: "箱が外で待っています。",

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "文字と好みの四季", en: "Text scales and preferences" },
+  stageName,
   B01: { ja: "小の箱", en: "Small box" },
   B02: { ja: "標準の箱", en: "Standard box" },
   B03: { ja: "大の箱", en: "Large box" },

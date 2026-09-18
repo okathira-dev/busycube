@@ -5,6 +5,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { useLayoutEffect } from "react";
 import { type Locale, messages } from "../i18n";
 
 interface Props {
@@ -26,6 +27,9 @@ function AboutList({ items }: { items: string[] }) {
 
 /** 初めて遊ぶ人が、遊び方と安全性を短時間で把握できる情報だけを示す。 */
 export function AboutView({ headingId, locale }: Props) {
+  useLayoutEffect(() => {
+    document.getElementById(headingId)?.focus({ preventScroll: true });
+  }, [headingId]);
   const copy = messages[locale];
   return (
     <Paper

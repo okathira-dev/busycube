@@ -267,13 +267,22 @@ export function ManifestStageHost({
           className="stage-error"
           severity="error"
           action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => setAttempt((value) => value + 1)}
-            >
-              {uiText(locale, "stageRetry")}
-            </Button>
+            <>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => setAttempt((value) => value + 1)}
+              >
+                {uiText(locale, "stageRetry")}
+              </Button>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => window.location.reload()}
+              >
+                {messages[locale].reload}
+              </Button>
+            </>
           }
         >
           {uiText(locale, "stageCrashed")}

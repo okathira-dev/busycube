@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "渡した印", en: "The shared mark" },
+  stageName,
   shareMark: { ja: "箱の印:", en: "A mark from the box:" },
   share: { ja: "印を渡す", en: "Share the mark" },
   B01: { ja: "共有の箱", en: "Share box" },

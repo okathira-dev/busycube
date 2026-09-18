@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "箱の外の鍵", en: "A key outside the box" },
+  stageName,
   sendKey: { ja: "鍵を外へ", en: "Send key outside" },
   returnKey: { ja: "鍵を戻す", en: "Bring key back" },
   B01: { ja: "鍵を外へ出す箱", en: "Export-key box" },

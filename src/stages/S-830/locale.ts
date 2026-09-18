@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "留守番する箱", en: "Idle Watch" },
+  stageName,
   intro: {
     ja: "開始後、ブラウザは実際の離席と画面ロックを見守ります。60秒の時計ではなく端末の状態が鍵です。",
     en: "After starting, the browser watches real idleness and screen locking. Device state, not a 60-second clock, is the key.",

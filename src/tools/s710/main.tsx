@@ -1,10 +1,15 @@
 import {
-  ALL_FORMATS,
   BlobSource,
   BufferTarget,
   Conversion,
+  HLS_FORMATS,
   Input,
+  MATROSKA,
+  MP4,
+  OGG,
   Output,
+  QTFF,
+  WEBM,
   WebMOutputFormat,
 } from "mediabunny";
 import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
@@ -216,7 +221,8 @@ function Tool() {
     try {
       const input = new Input({
         source: new BlobSource(source),
-        formats: ALL_FORMATS,
+        // video trackは必須だが、HLSのsegment読込に必要な音声形式は保持する。
+        formats: [MP4, QTFF, MATROSKA, WEBM, OGG, ...HLS_FORMATS],
       });
       if (!(await input.canRead()) || !(await input.getPrimaryVideoTrack()))
         throw new DecodeFailure("input cannot be decoded");

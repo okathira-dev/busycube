@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "身分証棚", en: "Federated identity shelf" },
+  stageName,
   B01: { ja: "Google FedCMの箱", en: "Google FedCM box" },
   startGoogle: { ja: "Googleの身分証を提示", en: "Present Google identity" },
   idle: {

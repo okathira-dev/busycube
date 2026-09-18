@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "URLの蛍光ペン", en: "Address-bar Highlighter" },
+  stageName,
   intro: {
     ja: "アドレスバーで同じページのURLを変え、ブラウザ自身に一語だけを示させてください。",
     en: "Change this page's URL in the address bar and let the browser point to exactly one word.",

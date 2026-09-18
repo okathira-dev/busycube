@@ -60,7 +60,9 @@ async function networkFirst(request, cacheName, fallbackUrl = request.url) {
 
 async function cacheFirst(request) {
   const cache = await caches.open(assetCacheName);
-  const cached = await cache.match(request);
+  // Content hash付き同一origin assetは同じ内容。precacheとmodule requestの
+  // Origin差（Vite previewのVary: Origin等）でoffline hitを失わない。
+  const cached = await cache.match(request, { ignoreVary: true });
   if (cached) return cached;
   const response = await fetch(request);
   if (canStore(response)) {

@@ -14,7 +14,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import { type ChangeEvent, useState } from "react";
+import { type ChangeEvent, useLayoutEffect, useState } from "react";
 import type { ProgressDocument } from "../domain/progress";
 import type { DriveReplica } from "../drive/driveBackup";
 import type { DriveFailure, DriveState } from "../hooks/useDriveBackup";
@@ -114,6 +114,9 @@ export function SettingsView({
   onDriveRemoveReplica,
 }: Props) {
   const copy = messages[locale];
+  useLayoutEffect(() => {
+    document.getElementById(headingId)?.focus({ preventScroll: true });
+  }, [headingId]);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [importing, setImporting] = useState(false);
   const [importNotice, setImportNotice] = useState<{

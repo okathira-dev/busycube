@@ -6,6 +6,9 @@ import {
   resolveWorkersDevUrls,
   runSmokeTests,
 } from "./cloudflare-ci.ts";
+import { checkStaticDelivery } from "./delivery-smoke.ts";
+
+vi.mock("./delivery-smoke.ts", () => ({ checkStaticDelivery: vi.fn() }));
 
 const addSecurityHeaders = (headers: Headers) => {
   for (const [name, value] of Object.entries(securityHeaders)) {
@@ -230,6 +233,10 @@ describe("runSmokeTests", () => {
     );
 
     await runSmokeTests("https://preview.example", fetchImpl, async () => {});
+    expect(checkStaticDelivery).toHaveBeenCalledWith(
+      new URL("https://preview.example"),
+      fetchImpl,
+    );
 
     expect(requestedUrls).toEqual([
       "https://preview.example/",

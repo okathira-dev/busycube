@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "変形する映像", en: "Shape-shifting video" },
+  stageName,
   frameUnsupported: {
     ja: "このブラウザでは表示中フレームの寸法を観測できません。",
     en: "This browser cannot observe presented video frames.",

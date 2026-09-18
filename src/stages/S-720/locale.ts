@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "映像復元室", en: "Video recovery room" },
+  stageName,
   connectPrompt: {
     ja: "動画ノードを出力へつないでください。",
     en: "Connect a source to the output.",

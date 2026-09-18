@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "浮かぶ箱", en: "Floating Box" },
+  stageName,
   intro: {
     ja: "箱を小さな常時手前の別画面へ移します。その画面の箱だけを押してください。",
     en: "Move the box to a small always-on-top document. Press only the box in that document.",

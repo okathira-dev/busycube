@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "同時に押す", en: "Press together" },
+  stageName,
   pressed: { ja: "押下", en: "Pressed" },
   axis: { ja: "軸", en: "axis" },
   gestureHint: {

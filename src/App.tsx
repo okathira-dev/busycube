@@ -1,5 +1,5 @@
 import Button from "@mui/material/Button";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   mergeProgressDocuments,
   type ProgressDocument,
@@ -11,7 +11,6 @@ import { useServiceWorker } from "./hooks/useServiceWorker";
 import { detectLocale, type Locale, messages, productCopy } from "./i18n";
 import { ManifestStageHost } from "./runtime/ManifestStageHost";
 import { stageIndex } from "./runtime/stage-index.generated";
-import { AboutView } from "./ui/AboutView";
 import {
   type AppRoute,
   appUrlForStage,
@@ -28,14 +27,22 @@ import {
   type ProgressImportResult,
   prepareProgressImport,
 } from "./ui/progressImport";
-import { SettingsView } from "./ui/SettingsView";
 import { StageCatalogue } from "./ui/StageCatalogue";
 import {
   buildCatalogueStages,
   findNextIncompleteStage,
 } from "./ui/stageCatalogueModel";
+import { ViewLoadBoundary } from "./ui/ViewLoadBoundary";
 
 type StageId = (typeof stageIndex)[number]["id"];
+const SettingsView = lazy(() =>
+  import("./ui/SettingsView").then((module) => ({
+    default: module.SettingsView,
+  })),
+);
+const AboutView = lazy(() =>
+  import("./ui/AboutView").then((module) => ({ default: module.AboutView })),
+);
 const totalBoxCount = stageIndex.reduce(
   (total, stage) => total + stage.boxIds.length,
   0,
@@ -179,7 +186,7 @@ export function App() {
   }, []);
 
   // pushState自身はpopstateを発火しないため、共有可能なURLとReactの状態を同時に更新する。
-  const openStage = (stageId: StageId, fromCatalogue = false) => {
+  const openStage = useCallback((stageId: StageId, fromCatalogue = false) => {
     const restore = {
       stageId,
       ...(fromCatalogue ? { scrollY: window.scrollY } : {}),
@@ -192,7 +199,12 @@ export function App() {
     );
     setRoute({ view: "stages", stageId });
     setStageAttemptId((current) => current + 1);
-  };
+  }, []);
+
+  const openCatalogueStage = useCallback(
+    (stageId: string) => openStage(stageId as StageId, true),
+    [openStage],
+  );
 
   const showStageList = () => {
     const restore =
@@ -244,13 +256,6 @@ export function App() {
       ?.setAttribute("content", metadata.description);
   }, [locale, selectedCatalogueStage?.displayCode, selectedManifest, view]);
 
-  useLayoutEffect(() => {
-    if (view === "stages") return;
-    const frame = window.requestAnimationFrame(() => {
-      document.getElementById(headingIds[view])?.focus({ preventScroll: true });
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [view]);
   // ステージを没入型の画面として扱う。利用者が一覧で認識するaccess group順を
   // 前後関係の正本にし、プレイ領域では通常のヒーローとタブを表示しない。
   const selectedStageIndex = selectedCatalogueStage
@@ -321,86 +326,92 @@ export function App() {
       />
 
       <main className="content">
-        {view === "stages" &&
-        selectedManifest &&
-        progress.storageState !== "loading" ? (
-          <ManifestStageHost
-            key={`${selectedManifest.id}:${stageAttemptId}`}
-            manifest={selectedManifest}
-            displayCode={selectedCatalogueStage?.displayCode ?? ""}
-            locale={locale}
-            progress={progress}
-            services={{
-              drive: { configured: drive.configured, sync: drive.sync },
-            }}
-            onBack={showStageList}
-            previousStage={previousCatalogueStage?.manifest}
-            previousDisplayCode={previousCatalogueStage?.displayCode}
-            onPrevious={
-              previousCatalogueStage
-                ? () => openStage(previousCatalogueStage.manifest.id as StageId)
-                : undefined
-            }
-            nextStage={nextCatalogueStage?.manifest}
-            nextDisplayCode={nextCatalogueStage?.displayCode}
-            onNext={
-              nextCatalogueStage
-                ? () => openStage(nextCatalogueStage.manifest.id as StageId)
-                : undefined
-            }
-          />
-        ) : view === "stages" ? (
-          <StageCatalogue
-            headingId={headingIds.stages}
-            heading={copy.stages}
-            progressLabel={copy.progress}
-            solvedCount={solvedCount}
-            totalBoxCount={totalBoxCount}
-            locale={locale}
-            stages={catalogueStages}
-            progressStages={progress.document.stages}
-            nextIncompleteStage={nextIncompleteStage}
-            restore={catalogueRestore}
-            onOpen={(stageId) => openStage(stageId as StageId, true)}
-          />
-        ) : null}
+        <ViewLoadBoundary
+          key={`${view}:${selectedStageId ?? ""}`}
+          locale={locale}
+        >
+          {view === "stages" &&
+          selectedManifest &&
+          progress.storageState !== "loading" ? (
+            <ManifestStageHost
+              key={`${selectedManifest.id}:${stageAttemptId}`}
+              manifest={selectedManifest}
+              displayCode={selectedCatalogueStage?.displayCode ?? ""}
+              locale={locale}
+              progress={progress}
+              services={{
+                drive: { configured: drive.configured, sync: drive.sync },
+              }}
+              onBack={showStageList}
+              previousStage={previousCatalogueStage?.manifest}
+              previousDisplayCode={previousCatalogueStage?.displayCode}
+              onPrevious={
+                previousCatalogueStage
+                  ? () =>
+                      openStage(previousCatalogueStage.manifest.id as StageId)
+                  : undefined
+              }
+              nextStage={nextCatalogueStage?.manifest}
+              nextDisplayCode={nextCatalogueStage?.displayCode}
+              onNext={
+                nextCatalogueStage
+                  ? () => openStage(nextCatalogueStage.manifest.id as StageId)
+                  : undefined
+              }
+            />
+          ) : view === "stages" ? (
+            <StageCatalogue
+              headingId={headingIds.stages}
+              heading={copy.stages}
+              progressLabel={copy.progress}
+              solvedCount={solvedCount}
+              totalBoxCount={totalBoxCount}
+              locale={locale}
+              stages={catalogueStages}
+              progressStages={progress.document.stages}
+              nextIncompleteStage={nextIncompleteStage}
+              restore={catalogueRestore}
+              onOpen={openCatalogueStage}
+            />
+          ) : null}
 
-        {view === "settings" && (
-          <SettingsView
-            headingId={headingIds.settings}
-            locale={locale}
-            storageState={progress.storageState}
-            storageMessage={storageMessage}
-            serviceWorkerState={serviceWorker.state}
-            serviceWorkerMessage={serviceWorkerMessage}
-            driveState={drive.state}
-            driveStatusMessage={driveStatusMessage}
-            driveConfigured={drive.configured}
-            driveConnected={drive.connected}
-            driveFailure={drive.failure}
-            driveFailureMessage={driveFailureMessage}
-            onExport={exportProgress}
-            onPrepareImport={inspectProgressImport}
-            onMergeImport={mergeImportedProgress}
-            onReset={progress.reset}
-            onApplyUpdate={serviceWorker.applyUpdate}
-            onDriveSync={() => void drive.sync()}
-            onDriveDisconnect={() => void drive.disconnect()}
-            onDriveDelete={() => void drive.removeRemote()}
-            onDriveRetry={() => void drive.sync()}
-            onDriveDismissFailure={drive.dismissFailure}
-            onDriveExportReplica={(replica) =>
-              void drive.exportFailedReplica(replica)
-            }
-            onDriveRemoveReplica={(replica) =>
-              void drive.removeFailedReplica(replica)
-            }
-          />
-        )}
+          {view === "settings" && (
+            <SettingsView
+              headingId={headingIds.settings}
+              locale={locale}
+              storageState={progress.storageState}
+              storageMessage={storageMessage}
+              serviceWorkerState={serviceWorker.state}
+              serviceWorkerMessage={serviceWorkerMessage}
+              driveState={drive.state}
+              driveStatusMessage={driveStatusMessage}
+              driveConfigured={drive.configured}
+              driveConnected={drive.connected}
+              driveFailure={drive.failure}
+              driveFailureMessage={driveFailureMessage}
+              onExport={exportProgress}
+              onPrepareImport={inspectProgressImport}
+              onMergeImport={mergeImportedProgress}
+              onReset={progress.reset}
+              onApplyUpdate={serviceWorker.applyUpdate}
+              onDriveSync={() => void drive.sync()}
+              onDriveDisconnect={() => void drive.disconnect()}
+              onDriveDelete={() => void drive.removeRemote()}
+              onDriveRetry={() => void drive.sync()}
+              onDriveDismissFailure={drive.dismissFailure}
+              onDriveExportReplica={(replica) =>
+                void drive.exportFailedReplica(replica)
+              }
+              onDriveRemoveReplica={(replica) =>
+                void drive.removeFailedReplica(replica)
+              }
+            />
+          )}
 
-        {view === "about" && (
-          <AboutView headingId={headingIds.about} locale={locale} />
-        )}
+          {view === "about" && (
+            <AboutView headingId={headingIds.about} locale={locale} />
+          )}
+        </ViewLoadBoundary>
       </main>
     </div>
   );

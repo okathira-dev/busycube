@@ -1,4 +1,5 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   loadingFont: {
@@ -9,7 +10,7 @@ export const locale = defineStageLocale({
     ja: "Unicode用fixtureフォントを利用できません",
     en: "Unicode fixture font unavailable",
   },
-  stageName: { ja: "数字の遠い親戚", en: "Distant relatives of digits" },
+  stageName,
   answer: { ja: "答え", en: "Answer" },
   sharedAnswer: { ja: "共通の答え", en: "Shared answer" },
   B01: { ja: "異体数字 1", en: "Numeral variant 1" },

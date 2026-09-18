@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "四つの回線", en: "Four network routes" },
+  stageName,
   B01: { ja: "Wi-Fiの箱", en: "Wi-Fi box" },
   B02: { ja: "携帯回線の箱", en: "Cellular box" },
   B03: { ja: "有線の箱", en: "Ethernet box" },

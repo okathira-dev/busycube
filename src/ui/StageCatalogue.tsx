@@ -19,7 +19,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { memo, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import type { ProgressDocument } from "../domain/progress";
 import { deriveStageProgress } from "../domain/stageRuntime";
 import { messages } from "../i18n";
@@ -59,7 +59,7 @@ interface Props {
 }
 
 /** 独立したstage群を、access groupと進捗から探せるcatalogueとして提示する。 */
-export function StageCatalogue({
+export const StageCatalogue = memo(function StageCatalogue({
   headingId,
   heading,
   progressLabel,
@@ -319,7 +319,7 @@ export function StageCatalogue({
       </div>
     </section>
   );
-}
+});
 
 interface StageCardProps {
   stage: CatalogueStage;

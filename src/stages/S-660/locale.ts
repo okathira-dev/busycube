@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "負荷の三景", en: "Pressure seasons" },
+  stageName,
   unavailable: {
     ja: "この環境ではCPU Pressureを購読できない",
     en: "CPU Pressure is unavailable in this environment",

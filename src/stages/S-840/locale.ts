@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "ぴったり重ねる", en: "Perfect Alignment" },
+  stageName,
   intro: {
     ja: "大きな平面を縦にも横にも動かし、窓をほとんど全面で重ねてください。",
     en: "Move across the large plane in both directions until the window is almost completely aligned.",

@@ -1,6 +1,7 @@
-import { appendFileSync } from "node:fs";
+import { appendFileSync, readdirSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { securityHeaders } from "../worker/securityHeaders";
+import { securityHeaders } from "../worker/securityHeaders.ts";
+import { checkMediaDelivery, checkStaticDelivery } from "./delivery-smoke.ts";
 
 type FetchLike = typeof fetch;
 type Sleep = (milliseconds: number) => Promise<void>;
@@ -415,6 +416,7 @@ export async function runSmokeTests(
     }
     console.log(`OK ${check.method ?? "GET"} ${url.href}`);
   }
+  await checkStaticDelivery(origin, fetchImpl);
 }
 
 async function main(): Promise<void> {
@@ -437,6 +439,16 @@ async function main(): Promise<void> {
       break;
     case "smoke":
       await runSmokeTests(requiredEnvironment("BUSYCUBE_BASE_URL"));
+      console.log(
+        JSON.stringify(
+          await checkMediaDelivery(
+            new URL(requiredEnvironment("BUSYCUBE_BASE_URL")),
+            readdirSync("dist/client/assets")
+              .filter((name) => /\.(?:webm|mp4|pack)$/.test(name))
+              .map((name) => `/assets/${name}`),
+          ),
+        ),
+      );
       break;
     default:
       throw new Error(`未対応のcommandです: ${command ?? "なし"}`);
