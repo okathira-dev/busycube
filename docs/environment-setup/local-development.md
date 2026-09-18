@@ -21,6 +21,8 @@ pnpm run dev
 pnpm run preview
 ```
 
+previewはbuild後にCloudflareのStatic AssetsとWorkerを起動し、text応答をクライアントの対応に応じてBrotli/gzip圧縮する。キャッシュ・security headerは本番と同じ設定を使う。再buildせず起動する場合は`pnpm exec vite preview`を使う。CDN、公開HTTPS、回線遅延まで再現するものではない。
+
 ## 主なコマンド
 
 | 目的                         | コマンド                            |
@@ -37,7 +39,7 @@ pnpm run preview
 | 本番build                    | `pnpm run build`                    |
 | Workersのdry run             | `pnpm run deploy:dry-run`           |
 
-`pnpm run check`はPWAアイコンが元SVGと一致することも検査する。`pnpm run build`は初期読込assetと最大JavaScript chunkのgzip／raw容量予算を最後に検査し、超過時は失敗する。
+`pnpm run check`はPWAアイコンが元SVGと一致することも検査する。容量失敗ゲートは設けず、build時のVite標準警告と任意の分析で容量を確認する。
 
 ## ステージの変更
 

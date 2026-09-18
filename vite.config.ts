@@ -1,7 +1,9 @@
 import { resolve } from "node:path";
+import { constants } from "node:zlib";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import compression from "compression";
+import { type Connect, defineConfig } from "vite";
 
 const root = resolve(import.meta.dirname, "src");
 const outDir = resolve(import.meta.dirname, "dist");
@@ -13,7 +15,33 @@ export default defineConfig({
   envDir: import.meta.dirname,
   appType: "mpa",
   assetsInclude: ["**/*.pack"],
-  plugins: [react(), cloudflare({ configPath: "../wrangler.jsonc" })],
+  plugins: [
+    react(),
+    {
+      name: "preview-compression",
+      // Cloudflareの配信middlewareより先に登録し、ローカルpreviewだけを圧縮する。
+      configurePreviewServer(server) {
+        server.middlewares.use(
+          // compressionはNode HTTPにも対応するが、公開型はExpress handlerに限定される。
+          compression({
+            brotli: { params: { [constants.BROTLI_PARAM_QUALITY]: 5 } },
+            filter(req, res) {
+              // 部分応答・media・204を変換せず、圧縮可能なtext応答だけを対象にする。
+              return (
+                !req.headers.range &&
+                res.statusCode === 200 &&
+                /^(?:text\/|application\/(?:javascript|json)|image\/svg\+xml)/i.test(
+                  String(res.getHeader("Content-Type") ?? ""),
+                ) &&
+                compression.filter(req, res)
+              );
+            },
+          }) as Connect.NextHandleFunction,
+        );
+      },
+    },
+    cloudflare({ configPath: "../wrangler.jsonc" }),
+  ],
   worker: { format: "es" },
   build: {
     outDir,

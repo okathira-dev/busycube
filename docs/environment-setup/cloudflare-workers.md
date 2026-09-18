@@ -27,6 +27,8 @@ pnpm run preview
 
 `pnpm run preview`はCloudflare Viteプラグインのpreview環境でStatic AssetsとHono Workerを同時に動かす。`/`、`/?stage=S-090`、`/manifest.webmanifest`、`/service-worker.js`を配信する。Payment Handlerの次のrouteは`GET`と`HEAD`に204と`Link: <…>; rel=payment-method-manifest`を返す。
 
+preview専用middlewareで圧縮可能な200のtext応答をBrotli（level 5）/gzipへ変換する。`Accept-Encoding`の交渉と`Vary`を扱い、Range要求・media・204は変換しない。既存のETag・cache・security headerは維持し、devや本番Workerにはmiddlewareを適用しない。Cloudflare CDNの圧縮率や応答遅延まで同一にするものではない。
+
 - `/payment/method`
 - `/poc/payment/method`
 - `/poc/payment/decoy-method`

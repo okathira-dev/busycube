@@ -348,3 +348,34 @@ pnpm exec node scripts/measure-build-performance.mjs <before-client-directory> <
 - 404にも`/assets/*`のimmutable headerが付くことを観測した。HTML再読込は新hashを参照するため検証した回復経路は成立するが、将来同じ旧URLを再公開する保持方式を選ぶ場合は負のcacheも検討する。
 
 このuploadは改善版の実配信検証であり、本番切替・本番切替後の旧asset保持・実XR機器での成功sessionを検証したものではない。容量ゲートやRUM、独自Range server、複雑なcache追跡は追加しない。改善実装と数値比較・候補配信確認は完了し、人手台帳の未確認項目はそのまま残す。実機XR確認と本番リリース判断は別途必要。
+
+### Lighthouse: ローカルpreviewと公開本番の差
+
+2026-09-17にLighthouse 13.4.1・Edge 153・headless・mobile・既定のsimulated throttling（RTT 150 ms、1,638.4 Kbps、CPU倍率4）で測定。Lighthouseの結果を説明するための条件であり、回線SLAや新しい容量ゲートは設けない。ローカルpreview、固定候補Version、本番を順に各3回測定し、続いて同じpreviewにBrotli level 5だけを加えたローカルproxyを3回測定した。通常のstorage resetを有効にし、既存の個人browser profileは使わない。コード・公開Version・本番trafficは変更していない。
+
+| 条件（3回の中央値） | Performance | FCP 秒 | LCP 秒 | TBT ms | CLS | 初期JS/CSS転送bytes | 展開後bytes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 同じbuildのローカルpreview | 76 | 4.069 | 4.219 | 0 | 0 | 581,752 | 572,599 |
+| 同じpreviewにBrotliだけを追加 | 96 | 1.974 | 2.124 | 132 | 0 | 176,992 | 572,599 |
+| Cloudflare候補Version | 93 | 2.487 | 2.637 | 20 | 0 | 194,210 | 572,599 |
+| 公開本番 | 97 | 2.133 | 2.133 | 0 | 0 | 141,185 | 419,957 |
+
+Speed Index中央値は各条件のFCPと同じ。スコアの各回はpreview 76/77/76、圧縮proxy 96/96/96、候補98/93/93、本番100/97/97。転送bytesはLighthouseのnetwork requestのtransferSizeを初期asset JS/CSSに限定して合計したもので、応答headerを含む。SWの全要求やmediaは含めない。proxy条件は別origin・後続測定のため完全に唯一変数だけの実験ではなく、TBTにも差が出た。全条件で同じページ本文・同じ現在版assetを配信する圧縮比較として扱う。
+
+自動展開しないHTTP GETで、現在のentry JSはpreviewが非圧縮246,401 bytes、候補はBrotli 72,739 bytes、本番の異なるentryはBrotli 62,420 bytes。ローカルpreviewのimmutable指定は本番と同じでも、圧縮は再現していない。圧縮追加でFCP約4.07→1.97秒と短縮したことから、ご提示の約4.1秒と77点には非圧縮配信が大きく寄与している。localhostの実RTTが小さくてもLighthouseのsimulationでは転送量が効く。[Lighthouse throttling](https://github.com/GoogleChrome/lighthouse/blob/main/docs/throttling.md)
+
+一方、公開本番とのコード差もある。現在版の初期JS/CSSは展開後で36.35%多く、要求は6→9件。JS bootup中央値74→207 ms、main-thread work中央値380→621 msを観測した。以前の改善比較の基準`e4ff28b`は公開本番の配布物ではなく、本番より軽くなったことを示す数値ではない。本番のcommitはこの調査では確定していない。
+
+HTML応答時間も本番中央値27 msに対し候補465 ms。候補と本番のURL差による応答遅延があり、その内部原因は未特定で、すべてをコードの差と扱わない。公開URLの1回のスコアだけで回帰量を断定しない。
+
+現在版の未使用JS診断はReact DOMの`client`とアプリ/MUI等の`index`に計約59 KiBの推計を出した。初期表示で実行されないcodeをすべて削除可能とは扱わず、機能利用時のcoverageと照合する。初期assetにThree.js rendererとMediabunnyは含まれておらず、これらのchunk分割では今回のトップFCPを直接改善できない。`i18n`のようなchunk名も文言専用とは限らず、現在のchunkにはEmotion関連codeも存在する。
+
+次の優先調査は、現在版と本番の機能差・React/MUI依存差、一覧/共通UIのcoverageと初期描画CPU、候補URLのHTML応答の差。アプリへのSSR導入や追加chunk設定を原因確認より先に決めない。測定用Lighthouseは一時実行し、packageやlockfileへ追加していない。生のJSON reportと比較proxyはローカルのignored測定領域に保存した。
+
+### 通常previewへの圧縮適用
+
+2026-09-18にViteの`configurePreviewServer`へ標準の`compression` middlewareを追加した。Cloudflare配信middlewareより先に登録し、別proxyや別originなしで通常の`pnpm run preview` / `pnpm exec vite preview`にBrotli level 5とgzip交渉を適用する。dev・本番Workerの処理は変えない。静的cache/security headerを維持し、Range要求・media・非200応答は圧縮しない。middlewareと型定義は開発依存とする。[compression公式資料](https://github.com/expressjs/compression)
+
+実HTTPでentryのBrotli body 67,614 bytes、gzip 74,651 bytes、identity 246,401 bytesを確認。展開した本文はすべてbuild済みJSと一致し、圧縮拒否のq=0、`Vary: Accept-Encoding`、304、HEAD、404、Payment GET/HEADの204とLink、media Rangeの非圧縮も確認した。buildのentry hashは変わっていない。
+
+通常previewで同じmobile/simulate設定のLighthouseを3回再測定し、97/97/97点、FCP中央値1.971秒、LCP 2.121秒、TBT 122 msだった。以前の非圧縮previewは76点・FCP 4.069秒。別日の計測であり厳密な回帰量とは扱わないが、通常起動でも非圧縮による評価差を減らせた。TBTは本番と一致せず、コード自体が軽くなった変更ではない。check、47ファイル148テスト、build、Vite設定単独の型検査に成功。CDN・HTTPS・本番の応答遅延や圧縮率まで再現するものではない。
