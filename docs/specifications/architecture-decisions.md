@@ -190,7 +190,7 @@ URL自体をギミックに使う場合も、通常の再読み込みで404に�
 | ブラウザ自動テスト | 画面遷移、保存、複数タブの一部、エラー境界 |
 | 人手テスト | 権限UI、実機センサー、PWA、外部機器、Google OAuth、複数端末 |
 
-公開URLのMIME、cache、Range response、security headerはGit内のasset検査では代替できないため、Previewと本番へのdeploy後に配信スモークテストで確認する。
+公開URL固有のMIME、cache、Range response、security headerは、変更時の人手確認とCloudflareのLogs／Analyticsで確認する。通常のdeploy Workflowには配信スモークテストを重複させない。
 
 人手テストが必要なステージは、それ自体を例外扱いせず、最初から人手確認台帳へ紐付ける。
 
