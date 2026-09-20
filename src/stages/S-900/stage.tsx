@@ -16,11 +16,8 @@ import { hasS900CorrectOrder, type S900ReelId } from "./functions";
 import { locale } from "./locale";
 
 type SegmentManifest = {
-  schemaVersion: number;
   mimeType: string;
   frameRate: number;
-  width: number;
-  height: number;
   leadIn: SegmentDescription;
   reels: Readonly<Record<S900ReelId, SegmentDescription>>;
 };
@@ -31,7 +28,7 @@ type SegmentDescription = {
 };
 
 const manifestUrl = new URL(
-  "../../fixtures/s900/assets/generation-manifest.json",
+  "../../fixtures/s900/assets/media-source-segments.json",
   import.meta.url,
 ).href;
 const emptyCaptionsUrl = new URL(
@@ -90,11 +87,8 @@ async function createSplicedVideo(
   if (!response.ok) throw new Error("segment fixture unavailable");
   const manifest = (await response.json()) as SegmentManifest;
   if (
-    manifest.schemaVersion !== 2 ||
     !Number.isFinite(manifest.frameRate) ||
     manifest.frameRate <= 0 ||
-    manifest.width !== 640 ||
-    manifest.height !== 360 ||
     !MediaSource.isTypeSupported(manifest.mimeType)
   ) {
     throw new Error("VP8 MediaSource unavailable");

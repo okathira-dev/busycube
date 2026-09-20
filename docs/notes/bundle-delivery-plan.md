@@ -213,25 +213,7 @@ S-730のrendererは追加528,004 raw / 130,060 gzip bytes。rendererまで取得
 | FCP ms | 156 | 156 | 136 | 136 |
 | ScriptDuration ms | 87.16 | 83.80 | 79.70 | 77.52 |
 
-トップのBrotli本体は11.54%減、XR機器のないS-730は45.18%減。S-730のreadyは18.62%短縮した。トップの時間は測定を繰り返すと前後の大小が変わる程度の差で、表示速度の確実な改善とは主張しない。全5回の生データと限界は[測定データ](./bundle-measurements.json)へ保存した。
-
-### 再現方法
-
-```sh
-pnpm exec vite build --manifest
-pnpm exec node scripts/report-build-size.mjs index.html stages/S-720/stage.tsx stages/S-730/stage.tsx stages/S-730/xrRenderer.ts tools/s710/index.html
-```
-
-`report-build-size.mjs`はstatic importsを再帰集計し、JS/CSSのraw、gzip、Brotli、main shell取得済みの追加分、別途必要なdynamic importsを報告する。HTML・動画・runtime fetchは対象外。分析後は`pnpm run build`で通常の配布物へ戻す。
-
-前後の`dist/client`を別の場所に保持して、次を実行する。
-
-```sh
-pnpm exec node scripts/measure-build-performance.mjs <before-client-directory> <after-client-directory>
-pnpm exec node scripts/measure-build-performance.mjs <before-client-directory> <after-client-directory> '/?stage=S-730&locale=en'
-```
-
-Playwright標準Chromiumが必要。既存Edgeを使う場合は`BUSYCUBE_MEASURE_BROWSER=msedge`を環境変数で指定する。JSONへ5回の各測定と中央値を出力する。loopback配信の比較用であり、Cloudflare本番の遅延・圧縮levelを再現するツールではない。
+トップのBrotli本体は11.54%減、XR機器のないS-730は45.18%減。S-730のreadyは18.62%短縮した。トップの時間は測定を繰り返すと前後の大小が変わる程度の差で、表示速度の確実な改善とは主張しない。表は当時の5回の測定中央値であり、一時的な計測スクリプトと生データは継続的な製品検査ではないためリポジトリへ維持しない。
 
 ### 検証範囲と残り
 
@@ -309,15 +291,7 @@ S-710 QR入力fixtureを実変換し、出力videoの4.5秒frameをCanvasへ描�
 
 SWファイルがbyte単位で同じ2つの実build（一覧メモ化直前と現在）を同一originで切替・rollback・再切替した。すべてwaiting更新なし。オンライン訪問後にofflineでS-010をdocument reloadでき、JS/CSS閉包と実mouse開箱の保存を維持した。終了cache30件・881,463 bytes。通知/PWA API成功や全stage/mediaのoffline保証とは扱わない。
 
-再現例:
-
-```sh
-pnpm exec node scripts/measure-build-performance.mjs <before-client-directory> <after-client-directory> '/?stage=S-010&locale=en' navigate
-pnpm exec node scripts/measure-build-performance.mjs <before-client-directory> <after-client-directory> '/?view=settings&locale=en'
-pnpm exec node scripts/measure-build-performance.mjs <before-client-directory> <after-client-directory> '/tools/s710/?locale=en'
-```
-
-生データは`finalNavigation`、`finalLabVitals`、`finalSecondaryEntrances`、`unchangedWorker`へ保存。最終`check`とEdge14件成功、通常buildにclient分析manifestなしを確認済み。
+当時の生データは`finalNavigation`、`finalLabVitals`、`finalSecondaryEntrances`、`unchangedWorker`として評価した。最終`check`とEdge14件成功、通常buildにclient分析manifestなしを確認済み。
 
 ### 完了auditの現在地
 

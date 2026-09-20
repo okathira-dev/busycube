@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import MouseOutlined from "@mui/icons-material/MouseOutlined";
-import { stageIndex } from "./stage-index.generated";
+import { stageIndex } from "./stage-index";
 import {
   defineStageManifest,
   defineStageModule,

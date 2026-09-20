@@ -1,8 +1,5 @@
 {
-  "schemaVersion": 1,
   "frameRate": 15,
-  "frameCount": 120,
-  "asset": "resolution-sweep.pack",
   "segments": [
     {
       "index": 0,

@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -193,12 +193,6 @@ try {
     ]),
   );
 
-  const { stdout: versionOutput } = await run(ffmpeg, ["-version"]);
-  const manifest = {
-    schemaVersion: 1,
-    generatedBy: versionOutput.split(/\r?\n/u)[0],
-    assets: [],
-  };
   for (const output of outputs) {
     const { stdout } = await run(ffprobe, [
       "-v",
@@ -211,21 +205,13 @@ try {
     ]);
     const probe = sanitizeProbe(JSON.parse(stdout));
     assertPortableManifestValue(probe, "probe");
-    manifest.assets.push({
-      file: output.slice(temporaryRoot.length + 1).replaceAll("\\", "/"),
-      probe,
-    });
+    if (!Array.isArray(probe.streams) || probe.streams.length === 0)
+      throw new Error(`Generated media has no streams: ${output}`);
     await copyFile(
       output,
       join(assetRoot, output.slice(temporaryRoot.length + 1)),
     );
   }
-  assertPortableManifestValue(manifest);
-  await writeFile(
-    join(assetRoot, "generation-manifest.json"),
-    `${JSON.stringify(manifest, null, 2)}\n`,
-    "utf8",
-  );
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }

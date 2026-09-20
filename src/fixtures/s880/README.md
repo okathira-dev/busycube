@@ -8,4 +8,4 @@ runtimeでpayloadを生成・圧縮せず、library / Node fallbackも使いま�
 node scripts/generate-busycube-s880-fixtures.mjs
 ```
 
-`assets.test.ts`はmanifest、圧縮形式、Nodeの独立展開による固定内容を確認します。これは生成物の検証であり、製品stageのfallbackではありません。
+生成スクリプトは書き込み前に各形式で展開し、元のpayloadへ戻ることを確認します。通常CIではGit管理済みの圧縮データを再検査しません。

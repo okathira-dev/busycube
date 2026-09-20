@@ -10,7 +10,7 @@ import { useProgress } from "./hooks/useProgress";
 import { useServiceWorker } from "./hooks/useServiceWorker";
 import { detectLocale, type Locale, messages, productCopy } from "./i18n";
 import { ManifestStageHost } from "./runtime/ManifestStageHost";
-import { stageIndex } from "./runtime/stage-index.generated";
+import { stageIndex } from "./runtime/stage-index";
 import {
   type AppRoute,
   appUrlForStage,

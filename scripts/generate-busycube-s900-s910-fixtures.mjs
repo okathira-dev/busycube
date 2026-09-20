@@ -290,6 +290,20 @@ async function inspectVideo(path) {
   };
 }
 
+function assertVideoProbe(probe, durationSeconds) {
+  if (
+    probe.codec !== "vp8" ||
+    probe.width !== width ||
+    probe.height !== height ||
+    probe.averageFrameRate !== `${frameRate}/1` ||
+    Math.abs(probe.durationSeconds - durationSeconds) > 0.01
+  ) {
+    throw new Error(
+      `Unexpected generated video metadata: ${JSON.stringify(probe)}`,
+    );
+  }
+}
+
 try {
   await Promise.all([
     mkdir(s900Root, { recursive: true }),
@@ -304,24 +318,24 @@ try {
     D: { file: "d.webm", frames: 15 },
   };
   for (const [id, segment] of Object.entries(s900Segments)) {
+    const destination = resolve(s900Root, segment.file);
     await encodeVideo(
       `s900-${id}`,
       segment.frames,
       (index, count) => createS900Frame(id, index, count),
-      resolve(s900Root, segment.file),
+      destination,
+    );
+    assertVideoProbe(
+      await inspectVideo(destination),
+      segment.frames / frameRate,
     );
   }
-  const s900Probe = await inspectVideo(resolve(s900Root, "a.webm"));
   await writeFile(
-    resolve(s900Root, "generation-manifest.json"),
+    resolve(s900Root, "media-source-segments.json"),
     `${JSON.stringify(
       {
-        schemaVersion: 2,
-        generator: "ffmpeg",
         mimeType: 'video/webm; codecs="vp8"',
         frameRate,
-        width,
-        height,
         leadIn: s900Segments.lead,
         reels: {
           A: s900Segments.A,
@@ -329,7 +343,6 @@ try {
           C: s900Segments.C,
           D: s900Segments.D,
         },
-        probe: s900Probe,
       },
       null,
       2,
@@ -340,25 +353,7 @@ try {
   const s910Asset = resolve(s910Root, "caption-stage.webm");
   await encodeVideo("s910-caption-stage", 60, createS910Frame, s910Asset);
   const s910Probe = await inspectVideo(s910Asset);
-  await writeFile(
-    resolve(s910Root, "generation-manifest.json"),
-    `${JSON.stringify(
-      {
-        schemaVersion: 2,
-        generator: "ffmpeg",
-        asset: "caption-stage.webm",
-        frameRate,
-        durationSeconds: 4,
-        width,
-        height,
-        visuals: s910Visuals,
-        probe: s910Probe,
-      },
-      null,
-      2,
-    )}\n`,
-    "utf8",
-  );
+  assertVideoProbe(s910Probe, 4);
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }

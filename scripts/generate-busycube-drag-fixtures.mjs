@@ -6,6 +6,7 @@ import { deflateSync } from "node:zlib";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const output = join(root, "..", "public");
+const contractPath = join(root, "..", "src", "fixtures", "drag-contract.json");
 const width = 240;
 const height = 120;
 
@@ -62,26 +63,20 @@ function png(r, g, b) {
 
 await mkdir(output, { recursive: true });
 const assets = [
-  ["drag-layer-a.png", png(239, 68, 68), "legacy layer fixture"],
-  ["drag-layer-b.png", png(34, 197, 94), "legacy layer fixture"],
-  ["drag-layer-c.png", png(59, 130, 246), "legacy layer fixture"],
-  ["drag-page.png", png(245, 158, 11), "native in-page image drag"],
-  ["drag-file.png", png(16, 185, 129), "OS file drag after download"],
-  ["drag-window.png", png(99, 102, 241), "separate-window image drag"],
+  ["page", "drag-page.png", png(245, 158, 11)],
+  ["file", "drag-file.png", png(16, 185, 129)],
+  ["window", "drag-window.png", png(99, 102, 241)],
 ];
 await Promise.all(
-  assets.map(async ([name, bytes]) => writeFile(join(output, name), bytes)),
+  assets.map(async ([, name, bytes]) => writeFile(join(output, name), bytes)),
 );
-const manifest = {
-  width,
-  height,
-  assets: assets.map(([name, bytes, purpose]) => ({
-    name,
-    purpose,
-    sha256: createHash("sha256").update(bytes).digest("hex"),
-  })),
-};
-await writeFile(
-  join(output, "drag-fixtures-manifest.json"),
-  `${JSON.stringify(manifest, null, 2)}\n`,
+const contract = Object.fromEntries(
+  assets.map(([id, filename, bytes]) => [
+    id,
+    {
+      filename,
+      sha256: createHash("sha256").update(bytes).digest("hex"),
+    },
+  ]),
 );
+await writeFile(contractPath, `${JSON.stringify(contract, null, 2)}\n`);

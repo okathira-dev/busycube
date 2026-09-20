@@ -14,23 +14,9 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import fixtures from "../../fixtures/drag-contract.json";
 import { stageText } from "../locale";
 import { locale } from "./locale";
-
-const fixtures = {
-  page: {
-    filename: "drag-page.png",
-    sha256: "7fba1a9dd15b39c8818515ee0690b1971d0bf6416b9a93ea52155b5af91d4a17",
-  },
-  file: {
-    filename: "drag-file.png",
-    sha256: "e0d1295c4edcd5445a01409a9f0f4d6a4e31c012a5abcf4bd732b3fc6584e2dd",
-  },
-  window: {
-    filename: "drag-window.png",
-    sha256: "c88fd86bbcae73533936ed34dc47db782f7daf880c6a17e44e72bd2d37654369",
-  },
-} as const;
 
 function toHex(bytes: ArrayBuffer) {
   return Array.from(new Uint8Array(bytes), (byte) =>

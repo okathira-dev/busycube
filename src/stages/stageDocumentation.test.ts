@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { stageIndex } from "../runtime/stage-index.generated";
+import { stageIndex } from "../runtime/stage-index";
 
 const stageDirectory = join(process.cwd(), "src", "stages");
 const stageIds = readdirSync(stageDirectory)

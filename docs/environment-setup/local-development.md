@@ -25,27 +25,25 @@ previewはbuild後にCloudflareのStatic AssetsとWorkerを起動し、text応�
 
 ## 主なコマンド
 
-| 目的                         | コマンド                            |
-| ---------------------------- | ----------------------------------- |
-| ステージ索引と一覧の生成     | `pnpm run busycube:stages:generate` |
-| ステージ生成物の更新漏れ確認 | `pnpm run busycube:stages:check`    |
-| Markdownの検査               | `pnpm run docs:lint`                |
-| Markdown内リンクの検査       | `pnpm run docs:links`               |
-| 通常の静的検査               | `pnpm run check`                    |
-| 自動テスト                   | `pnpm run test:ci`                  |
-| 主要機能のcoverage検査       | `pnpm run test:core`                |
-| 画面遷移とa11yのE2E検査      | `pnpm run test:e2e`                 |
-| PWAアイコンの再生成          | `pnpm run pwa:icons:generate`       |
-| 本番build                    | `pnpm run build`                    |
-| Workersのdry run             | `pnpm run deploy:dry-run`           |
+| 目的                    | コマンド                           |
+| ----------------------- | ---------------------------------- |
+| ステージ一覧の更新      | `pnpm run busycube:catalog:update` |
+| Markdownの検査          | `pnpm run docs:lint`               |
+| Markdown内リンクの検査  | `pnpm run docs:links`              |
+| 通常の静的検査          | `pnpm run check`                   |
+| 自動テスト              | `pnpm run test:ci`                 |
+| 主要機能のcoverage検査  | `pnpm run test:core`               |
+| 画面遷移とa11yのE2E検査 | `pnpm run test:e2e`                |
+| 本番build               | `pnpm run build`                   |
+| Workersのdry run        | `pnpm run deploy:dry-run`          |
 
-`pnpm run check`はPWAアイコンが元SVGと一致することも検査する。容量失敗ゲートは設けず、build時のVite標準警告と任意の分析で容量を確認する。
+`pnpm run check`はソースコードとドキュメントを検査する。Git管理された固定アセットのバイト列や生成結果との一致は通常検査に含めず、各生成スクリプトが更新時に検証する。容量失敗ゲートは設けず、build時のVite標準警告と任意の分析で容量を確認する。
 
 ## ステージの変更
 
 ステージは`src/stages/S-xxx/`の`manifest.ts`、`locale.ts`、`stage.tsx`を一単位とする。構造とJSDocの要件は[ステージ仕様・実装ガイド](../specifications/stage-authoring-guide.md)に従う。
 
-ステージを追加、削除、またはmanifestを変更した後は、`pnpm run busycube:stages:generate`を実行する。このコマンドはアプリ用stage indexと[ステージ・ギミック一覧](../specifications/stage-catalog.md)を同時に更新する。
+アプリ用stage indexは`src/stages/S-*/manifest.ts`からbuild時に収集される。ステージを追加、削除、または説明を変更した後は、`pnpm run busycube:catalog:update`で[ステージ・ギミック一覧](../specifications/stage-catalog.md)を更新する。
 
 ## Google連携を使う場合
 

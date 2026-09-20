@@ -91,7 +91,7 @@ function loadStageModule(
   const existing = modulePromises.get(manifest);
   if (existing) return existing;
   const promise = manifest.load().then((module) => {
-    // 生成索引と遅延ロード先の食い違いは、不完全なステージを描画する前に検出する。
+    // manifest索引と遅延ロード先の食い違いは、不完全なステージを描画する前に検出する。
     const declared = new Set<string>(manifest.boxIds);
     const implemented = Object.keys(module.boxes);
     if (

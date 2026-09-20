@@ -1,5 +1,4 @@
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
@@ -361,21 +360,13 @@ try {
         `Generated QR did not survive VP9 encoding for slot ${slot.id}.`,
       );
     const bytes = await readFile(output);
-    assets.push({
-      ...slot,
-      file: `remote-slot-${slot.id}.webm`,
-      sha256: createHash("sha256").update(bytes).digest("hex"),
-      bytes: bytes.length,
-      width,
-      height,
-      seconds: 8,
-      textRange: [0, 4],
-      qrRange: [4, 8],
-    });
+    if (!bytes.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])))
+      throw new Error(`Generated slot ${slot.id} is not a WebM file.`);
+    assets.push(slot);
   }
   await writeFile(
-    resolve(assetRoot, "generation-manifest.json"),
-    `${JSON.stringify({ generator: "scripts/generate-busycube-s700-fixtures.mjs", assets }, null, 2)}\n`,
+    resolve(assetRoot, "remote-playback-fixtures.json"),
+    `${JSON.stringify({ assets }, null, 2)}\n`,
   );
   console.log(`Generated ${assets.length} S-700 Remote Playback fixtures.`);
 } finally {
