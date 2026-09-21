@@ -2,9 +2,16 @@
   --gift-width: 4.5rem;
   --gift-height: 3.5rem;
   --gift-lid-height: 0.8rem;
+  --gift-left-space: 1rem;
+  --gift-right-space: 0.25rem;
+  --gift-top-space: 3rem;
   position: relative;
-  width: var(--gift-width);
-  height: calc(var(--gift-height) + 1.2rem);
+  width: calc(
+    var(--gift-left-space) +
+    var(--gift-width) +
+    var(--gift-right-space)
+  );
+  height: calc(var(--gift-top-space) + var(--gift-height));
   color: var(--gift-color);
 }
 
@@ -12,6 +19,7 @@
   --gift-width: 3.2rem;
   --gift-height: 2.7rem;
   --gift-lid-height: 0.65rem;
+  --gift-top-space: 2.4rem;
   margin-top: 0.45rem;
 }
 
@@ -19,12 +27,15 @@
   --gift-width: 2.1rem;
   --gift-height: 1.65rem;
   --gift-lid-height: 0.42rem;
-  margin-top: -0.15rem;
+  --gift-top-space: 2.25rem;
 }
 
 .gift-box__visual {
   position: absolute;
-  inset: 1.2rem 0 0;
+  top: var(--gift-top-space);
+  left: var(--gift-left-space);
+  width: var(--gift-width);
+  height: var(--gift-height);
   transition: filter 180ms ease;
 }
 
@@ -143,7 +154,7 @@
   display: grid;
   justify-items: center;
   gap: 0.35rem;
-  width: 5.25rem;
+  width: max-content;
   margin: 0;
 }
 

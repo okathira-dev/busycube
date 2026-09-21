@@ -39,10 +39,9 @@
 
 .stage-catalogue__filters {
   display: grid;
-  grid-template-columns: minmax(14rem, 2fr) minmax(10rem, 1fr) minmax(
-      12rem,
-      1fr
-    ) auto;
+  grid-template-columns:
+    minmax(14rem, 2fr) minmax(10rem, 1fr) minmax(12rem, 1fr)
+    auto;
   gap: 0.75rem;
   align-items: center;
   padding: 1rem;
