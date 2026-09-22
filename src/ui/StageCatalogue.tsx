@@ -26,7 +26,7 @@ import { messages } from "../i18n";
 import type { StageAccessKind, StageIdFormat } from "../runtime/stageContract";
 import { preloadOnActivation } from "./activationIntent";
 import { GiftBox, type GiftBoxState } from "./GiftBox";
-import { stageCardLabel, uiText } from "./locale";
+import { uiText } from "./locale";
 import { type CatalogueStage, stageAccessOrder } from "./stageCatalogueModel";
 import "./StageCatalogue.css";
 
@@ -370,13 +370,6 @@ function StageCard({
         className="stage-card__action"
         {...preloadOnActivation(() => onPreload(manifest.id))}
         onClick={() => onOpen(manifest.id)}
-        aria-label={stageCardLabel(
-          locale,
-          `${stage.displayCode} ${manifest.name[locale]}`,
-          solvedBoxes,
-          boxIds.length,
-          status,
-        )}
       >
         <GiftBox
           state={giftState}
@@ -406,7 +399,6 @@ function StageCard({
           <Typography className="stage-card__heading" component="h4">
             {manifest.name[locale]}
           </Typography>
-          <span className="sr-only">{copy.start}</span>
         </CardContent>
       </CardActionArea>
     </Card>

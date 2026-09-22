@@ -28,13 +28,6 @@ export const uiLocale = defineLocale({
   clusterSensors: { ja: "位置とセンサー", en: "Location & sensors" },
 });
 
-const stageCardLabels = {
-  ja: (stage: string, solved: number, total: number, status: string) =>
-    `${stage}、${solved}/${total}、${status}`,
-  en: (stage: string, solved: number, total: number, status: string) =>
-    `${stage}, ${solved}/${total}, ${status}`,
-} as const;
-
 export type UiLocaleKey = keyof typeof uiLocale;
 export type StageMapClusterLabel =
   | "clusterInput"
@@ -44,19 +37,6 @@ export type StageMapClusterLabel =
   | "clusterHardware"
   | "clusterSensors";
 
-export function uiText(
-  locale: "ja" | "en",
-  key: Exclude<UiLocaleKey, "stageCardLabel">,
-): string {
+export function uiText(locale: "ja" | "en", key: UiLocaleKey): string {
   return uiLocale[key][locale];
-}
-
-export function stageCardLabel(
-  locale: "ja" | "en",
-  stage: string,
-  solved: number,
-  total: number,
-  status: string,
-): string {
-  return stageCardLabels[locale](stage, solved, total, status);
 }
