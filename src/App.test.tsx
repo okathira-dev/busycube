@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 const mocks = vi.hoisted(() => ({
   progress: {
@@ -66,7 +66,9 @@ describe("App shell", () => {
   it("uses link navigation and updates page metadata", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("link", { name: "Settings" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("link", { name: "Settings" }));
+    });
 
     expect(
       await screen.findByRole("heading", { name: "Settings" }),

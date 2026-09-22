@@ -31,7 +31,7 @@ function settingsProps(
     driveFailure: null,
     driveFailureMessage: "Drive sync failed.",
     onExport: vi.fn(),
-    onPrepareImport: vi.fn(async () => ({ status: "corrupt" })),
+    onPrepareImport: vi.fn(async () => ({ status: "corrupt" as const })),
     onMergeImport: vi.fn(),
     onReset: vi.fn(async () => true),
     onApplyUpdate: vi.fn(),
