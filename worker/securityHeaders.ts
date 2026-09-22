@@ -3,7 +3,7 @@ export const contentSecurityPolicy = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'self'",
-  "script-src 'self' https://accounts.google.com",
+  "script-src 'self' https://accounts.google.com https://static.cloudflareinsights.com",
   "connect-src 'self' https://accounts.google.com https://www.googleapis.com",
   "img-src 'self' data: blob:",
   "media-src 'self' data: blob:",

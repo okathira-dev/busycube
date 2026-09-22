@@ -56,3 +56,35 @@ describe("StageCatalogue preload", () => {
     expect(onPreload).toHaveBeenCalledWith("S-999");
   });
 });
+
+describe("StageCatalogue accessible names", () => {
+  it.each([
+    ["ja", "試験ステージ"],
+    ["en", "Test stage"],
+  ] as const)(
+    "uses the card content as its %s accessible name",
+    (locale, name) => {
+      render(
+        <StageCatalogue
+          headingId="stage-heading"
+          heading="Box room"
+          progressLabel="Progress"
+          solvedCount={0}
+          totalBoxCount={1}
+          locale={locale}
+          stages={[stage]}
+          progressStages={{}}
+          nextIncompleteStage={stage}
+          restore={null}
+          onOpen={vi.fn()}
+          onPreload={vi.fn()}
+        />,
+      );
+
+      const card = screen.getByRole("button", {
+        name: new RegExp(`D-001\\s+0/1\\s+${name}`),
+      });
+      expect(card.hasAttribute("aria-label")).toBe(false);
+    },
+  );
+});
