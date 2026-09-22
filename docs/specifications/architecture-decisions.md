@@ -180,6 +180,16 @@ Cloudflare WorkersのHTTPSを公開前提とし、混在コンテンツを許さ
 
 URL自体をギミックに使う場合も、通常の再読み込みで404にならない設計にする。URL表現を決める前に、Cloudflare Workers上の直接アクセスとPWA起動を人手で確認する。
 
+### 遅延読込と画面遷移
+
+一覧のstage cardと「続きから」、stage画面の「前のステージ」「次のステージ」は、primary pointerの押下またはkeyboardによる実行開始を先読みの合図として使う。各buttonが実際に遷移する対象をその時点で解決し、対象stage moduleだけを取得する。選択後もmoduleの読込完了までは現在画面を維持する。hoverやfocusだけでは取得を始めず、低速回線で未選択stageのchunkが選択stageと帯域を奪い合う状態を避ける。URLと表示stageは読込完了後に同時に切り替え、短い読込で「読み込んでいます」の文字列だけが一瞬表示される状態を作らない。
+
+遅延読込する「設定」「ゲームについて」も同じ実行開始条件で対象viewだけを取得し、hoverやfocusでは取得しない。React transitionで読込完了まで現在画面を維持し、待機が180msを超えた場合だけ共通spinnerを表示する。
+
+先読みが間に合わず待機が続く場合だけ、現在画面の上へ非言語のspinnerを表示する。spinnerを一定時間維持するために遷移を遅らせず、moduleが準備できた時点で直ちに進む。直リンク、再読込、back／forwardのように遷移前の先読みができない入口では、stage領域のspinnerをfallbackとして使い、layout shiftを抑える最小限の高さだけを確保する。
+
+この遷移は現在の小さなroute状態とHistory APIの境界で扱う。nested route、route loader、redirect、action、route単位のerror処理が増え、同じ制御を独自実装する範囲が広がった時点でrouter libraryの導入を再検討する。
+
 ## テスト可能性
 
 ブラウザAPIの多くは、JSDOMや単体テストだけでは保証できない。そこで次の3層に分ける。

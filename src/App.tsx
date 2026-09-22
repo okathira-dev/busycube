@@ -1,16 +1,32 @@
 import Button from "@mui/material/Button";
-import { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import CircularProgress from "@mui/material/CircularProgress";
+import {
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import {
   mergeProgressDocuments,
   type ProgressDocument,
 } from "./domain/progress";
 import { countSolvedBoxes } from "./domain/stageRuntime";
+import { useDelayedVisibility } from "./hooks/useDelayedVisibility";
 import { useDriveBackup } from "./hooks/useDriveBackup";
 import { useProgress } from "./hooks/useProgress";
 import { useServiceWorker } from "./hooks/useServiceWorker";
 import { detectLocale, type Locale, messages, productCopy } from "./i18n";
-import { ManifestStageHost } from "./runtime/ManifestStageHost";
+import {
+  ManifestStageHost,
+  preloadStageInBackground,
+  preloadStageModule,
+} from "./runtime/ManifestStageHost";
+import { type PreloadTask, preloadInBackground } from "./runtime/preload";
 import { stageIndex } from "./runtime/stage-index";
+import type { StageIdFormat } from "./runtime/stageContract";
 import {
   type AppRoute,
   appUrlForStage,
@@ -18,6 +34,7 @@ import {
   type MainView,
   readAppRoute,
 } from "./ui/appRoute";
+import { DriveSyncToast } from "./ui/DriveSyncToast";
 import { LanguageSelect } from "./ui/LanguageSelect";
 import { uiText } from "./ui/locale";
 import { MainTabs } from "./ui/MainTabs";
@@ -35,19 +52,29 @@ import {
 import { ViewLoadBoundary } from "./ui/ViewLoadBoundary";
 
 type StageId = (typeof stageIndex)[number]["id"];
+const loadSettingsView = () => import("./ui/SettingsView");
+const loadAboutView = () => import("./ui/AboutView");
+const mainViewPreloaders: Partial<Record<MainView, PreloadTask>> = {
+  settings: loadSettingsView,
+  about: loadAboutView,
+};
 const SettingsView = lazy(() =>
-  import("./ui/SettingsView").then((module) => ({
+  loadSettingsView().then((module) => ({
     default: module.SettingsView,
   })),
 );
 const AboutView = lazy(() =>
-  import("./ui/AboutView").then((module) => ({ default: module.AboutView })),
+  loadAboutView().then((module) => ({ default: module.AboutView })),
 );
 const totalBoxCount = stageIndex.reduce(
   (total, stage) => total + stage.boxIds.length,
   0,
 );
 const catalogueStages = buildCatalogueStages(stageIndex);
+const catalogueStageById = new Map(
+  catalogueStages.map((stage) => [stage.manifest.id, stage] as const),
+);
+const navigationPendingDelayMs = 180;
 
 const headingIds = {
   stages: "busycube-stages-heading",
@@ -85,6 +112,17 @@ export function App() {
   // 同じステージへ履歴移動した場合も実行中の資源と一時状態を作り直すため、
   // URL上のIDとは別に訪問単位のキーを持つ。
   const [stageAttemptId, setStageAttemptId] = useState(0);
+  const [pendingStageId, setPendingStageId] = useState<StageId | null>(null);
+  const stageNavigationGenerationRef = useRef(0);
+  const [isNavigationPending, startNavigation] = useTransition();
+  const showStagePending = useDelayedVisibility(
+    pendingStageId !== null,
+    navigationPendingDelayMs,
+  );
+  const showViewPending = useDelayedVisibility(
+    isNavigationPending,
+    navigationPendingDelayMs,
+  );
   const view = route.view;
   const selectedStageId = route.stageId;
   const copy = messages[locale];
@@ -176,37 +214,67 @@ export function App() {
       if (!nextRoute.stageId && catalogueReturnRef.current) {
         setCatalogueRestore({ ...catalogueReturnRef.current });
       }
-      setRoute(nextRoute);
-      if (nextRoute.stageId) {
-        setStageAttemptId((current) => current + 1);
-      }
+      stageNavigationGenerationRef.current += 1;
+      setPendingStageId(null);
+      startNavigation(() => {
+        setRoute(nextRoute);
+        if (nextRoute.stageId) {
+          setStageAttemptId((current) => current + 1);
+        }
+      });
     };
     window.addEventListener("popstate", syncRoute);
     return () => window.removeEventListener("popstate", syncRoute);
   }, []);
 
   // pushState自身はpopstateを発火しないため、共有可能なURLとReactの状態を同時に更新する。
-  const openStage = useCallback((stageId: StageId, fromCatalogue = false) => {
-    const restore = {
-      stageId,
-      ...(fromCatalogue ? { scrollY: window.scrollY } : {}),
-    };
-    catalogueReturnRef.current = restore;
-    window.history.pushState(
-      { busycube: { catalogueReturn: restore } },
-      "",
-      appUrlForStage(window.location.href, stageId),
-    );
-    setRoute({ view: "stages", stageId });
-    setStageAttemptId((current) => current + 1);
-  }, []);
+  const openStage = useCallback(
+    async (stageId: StageId, fromCatalogue = false) => {
+      const target = catalogueStageById.get(stageId);
+      if (!target) return;
+      const generation = stageNavigationGenerationRef.current + 1;
+      stageNavigationGenerationRef.current = generation;
+      const restore = {
+        stageId,
+        ...(fromCatalogue ? { scrollY: window.scrollY } : {}),
+      };
+      setPendingStageId(stageId);
+      try {
+        await preloadStageModule(target.manifest);
+      } catch {
+        // 遷移先に既存の再試行UIがあるため、失敗時もその画面へ進める。
+      }
+      if (generation !== stageNavigationGenerationRef.current) return;
+      setPendingStageId(null);
+      catalogueReturnRef.current = restore;
+      window.history.pushState(
+        { busycube: { catalogueReturn: restore } },
+        "",
+        appUrlForStage(window.location.href, stageId),
+      );
+      // モジュールは準備済みなので、ここでは遷移を保留せずURLと同時に確定する。
+      setRoute({ view: "stages", stageId });
+      setStageAttemptId((current) => current + 1);
+    },
+    [],
+  );
 
   const openCatalogueStage = useCallback(
-    (stageId: string) => openStage(stageId as StageId, true),
+    (stageId: StageIdFormat) => {
+      if (isStageId(stageId)) void openStage(stageId, true);
+    },
     [openStage],
   );
 
+  const preloadStage = useCallback((stageId: StageIdFormat) => {
+    if (!isStageId(stageId)) return;
+    const target = catalogueStageById.get(stageId);
+    if (target) preloadStageInBackground(target.manifest);
+  }, []);
+
   const showStageList = () => {
+    stageNavigationGenerationRef.current += 1;
+    setPendingStageId(null);
     const restore =
       catalogueReturnRef.current ??
       (selectedStageId ? { stageId: selectedStageId } : null);
@@ -216,17 +284,24 @@ export function App() {
       "",
       appUrlForView(window.location.href, "stages"),
     );
-    setRoute({ view: "stages", stageId: null });
+    startNavigation(() => setRoute({ view: "stages", stageId: null }));
   };
 
   const showMainView = (nextView: MainView) => {
+    stageNavigationGenerationRef.current += 1;
+    setPendingStageId(null);
     window.history.pushState(
       {},
       "",
       appUrlForView(window.location.href, nextView),
     );
-    setRoute({ view: nextView, stageId: null });
+    startNavigation(() => setRoute({ view: nextView, stageId: null }));
     window.scrollTo({ top: 0 });
+  };
+
+  const preloadMainView = (nextView: MainView) => {
+    const preload = mainViewPreloaders[nextView];
+    if (preload) preloadInBackground(preload);
   };
 
   const changeLocale = (nextLocale: Locale) => {
@@ -313,6 +388,7 @@ export function App() {
             }}
             ariaLabel={uiText(locale, "primaryNav")}
             onChange={showMainView}
+            onPreload={preloadMainView}
           />
         </>
       )}
@@ -327,12 +403,10 @@ export function App() {
 
       <main className="content">
         <ViewLoadBoundary
-          key={`${view}:${selectedStageId ?? ""}`}
           locale={locale}
+          resetKey={`${view}:${selectedStageId ?? ""}`}
         >
-          {view === "stages" &&
-          selectedManifest &&
-          progress.storageState !== "loading" ? (
+          {view === "stages" && selectedManifest ? (
             <ManifestStageHost
               key={`${selectedManifest.id}:${stageAttemptId}`}
               manifest={selectedManifest}
@@ -347,15 +421,20 @@ export function App() {
               previousDisplayCode={previousCatalogueStage?.displayCode}
               onPrevious={
                 previousCatalogueStage
-                  ? () =>
-                      openStage(previousCatalogueStage.manifest.id as StageId)
+                  ? () => {
+                      void openStage(
+                        previousCatalogueStage.manifest.id as StageId,
+                      );
+                    }
                   : undefined
               }
               nextStage={nextCatalogueStage?.manifest}
               nextDisplayCode={nextCatalogueStage?.displayCode}
               onNext={
                 nextCatalogueStage
-                  ? () => openStage(nextCatalogueStage.manifest.id as StageId)
+                  ? () => {
+                      void openStage(nextCatalogueStage.manifest.id as StageId);
+                    }
                   : undefined
               }
             />
@@ -372,6 +451,7 @@ export function App() {
               nextIncompleteStage={nextIncompleteStage}
               restore={catalogueRestore}
               onOpen={openCatalogueStage}
+              onPreload={preloadStage}
             />
           ) : null}
 
@@ -413,6 +493,24 @@ export function App() {
           )}
         </ViewLoadBoundary>
       </main>
+
+      {(showStagePending || showViewPending) && (
+        <div className="navigation-pending" role="status">
+          <CircularProgress aria-hidden="true" size={28} />
+          <span className="sr-only">
+            {uiText(locale, showStagePending ? "stageLoading" : "viewLoading")}
+          </span>
+        </div>
+      )}
+
+      <DriveSyncToast
+        state={drive.state}
+        message={
+          drive.state === "error" ? driveFailureMessage : driveStatusMessage
+        }
+        openSettingsLabel={copy.storageOpenSettings}
+        onOpenSettings={() => showMainView("settings")}
+      />
     </div>
   );
 }

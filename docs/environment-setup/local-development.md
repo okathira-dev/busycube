@@ -23,6 +23,8 @@ pnpm run preview
 
 previewはbuild後にCloudflareのStatic AssetsとWorkerを起動し、text応答をクライアントの対応に応じてBrotli/gzip圧縮する。キャッシュ・security headerは本番と同じ設定を使う。再buildせず起動する場合は`pnpm exec vite preview`を使う。CDN、公開HTTPS、回線遅延まで再現するものではない。
 
+preview起動中に別processでbuildし直した場合は、古いasset manifestと新しいcontent hash付きassetが混在しないようpreviewも再起動する。
+
 ## 主なコマンド
 
 | 目的                    | コマンド                           |

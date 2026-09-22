@@ -1,6 +1,7 @@
 import Button from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
 import type { MouseEvent } from "react";
+import { preloadOnActivation } from "./activationIntent";
 import type { MainView } from "./appRoute";
 
 export type { MainView } from "./appRoute";
@@ -35,6 +36,7 @@ interface Props {
   hrefs: Record<MainView, string>;
   ariaLabel: string;
   onChange(value: MainView): void;
+  onPreload?(value: MainView): void;
 }
 
 function shouldHandleInApp(event: MouseEvent<HTMLElement>): boolean {
@@ -48,7 +50,14 @@ function shouldHandleInApp(event: MouseEvent<HTMLElement>): boolean {
 }
 
 /** URLを保った通常linkとして、主要3画面の現在地とSPA遷移を両立する。 */
-export function MainTabs({ value, labels, hrefs, ariaLabel, onChange }: Props) {
+export function MainTabs({
+  value,
+  labels,
+  hrefs,
+  ariaLabel,
+  onChange,
+  onPreload,
+}: Props) {
   return (
     <StyledNav aria-label={ariaLabel}>
       {(Object.keys(labels) as MainView[]).map((view) => (
@@ -56,6 +65,9 @@ export function MainTabs({ value, labels, hrefs, ariaLabel, onChange }: Props) {
           href={hrefs[view]}
           key={view}
           aria-current={view === value ? "page" : undefined}
+          {...preloadOnActivation(() => onPreload?.(view), {
+            shouldHandlePointer: shouldHandleInApp,
+          })}
           onClick={(event) => {
             if (!shouldHandleInApp(event)) return;
             event.preventDefault();

@@ -130,6 +130,7 @@ export const messages = {
       "Busycubeの進捗バックアップだけを保存します。Google Drive内のほかのファイルを見たり、変更したりすることはありません。",
     driveStorageTechnical: "技術仕様：Google Drive appDataFolder",
     driveSync: "Google Driveに接続して同期",
+    driveToastNotice: "同期中と結果は、どの画面にいても画面下部に表示します。",
     driveMergeNotice:
       "同期時に選んだGoogleアカウントと現在のローカル進捗を統合します。別アカウントを選ぶと、そのクリア情報も混ざります。",
     driveAuthorizing: "Googleの許可画面を待っています…",
@@ -267,6 +268,8 @@ export const messages = {
       "Busycube stores only its progress backup. It cannot view or change your other files in Google Drive.",
     driveStorageTechnical: "Technical details: Google Drive appDataFolder",
     driveSync: "Connect Google Drive and sync",
+    driveToastNotice:
+      "Sync progress and results appear at the bottom of every screen.",
     driveMergeNotice:
       "Sync merges local progress with the Google account you select. Choosing another account mixes its cleared boxes into the same grow-only progress.",
     driveAuthorizing: "Waiting for Google authorization…",

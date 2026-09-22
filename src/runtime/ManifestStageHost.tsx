@@ -23,7 +23,9 @@ import {
 } from "../domain/stageRuntime";
 import type { ProgressController } from "../hooks/useProgress";
 import { type Locale, messages } from "../i18n";
+import { preloadOnActivation } from "../ui/activationIntent";
 import { uiText } from "../ui/locale";
+import { preloadInBackground } from "./preload";
 import type {
   StageManifest,
   StageModule,
@@ -52,9 +54,14 @@ interface BoundaryProps {
   children: ReactNode;
 }
 
+interface StageModuleCacheEntry {
+  readonly promise: Promise<StageModule>;
+  module?: StageModule;
+}
+
 const activeStageHeadingId = "busycube-active-stage-heading";
 // 通常の再描画や再訪では同じ遅延ロード結果を共有し、明示的な再試行時だけ破棄する。
-const modulePromises = new WeakMap<StageManifest, Promise<StageModule>>();
+const moduleCache = new WeakMap<StageManifest, StageModuleCacheEntry>();
 
 // 個別ステージの例外をアプリ全体へ波及させず、一覧へ戻れる外枠を残す。
 class StageErrorBoundary extends Component<BoundaryProps, { failed: boolean }> {
@@ -87,24 +94,37 @@ function loadStageModule(
   manifest: StageManifest,
   forceReload = false,
 ): Promise<StageModule> {
-  if (forceReload) modulePromises.delete(manifest);
-  const existing = modulePromises.get(manifest);
-  if (existing) return existing;
-  const promise = manifest.load().then((module) => {
-    // manifest索引と遅延ロード先の食い違いは、不完全なステージを描画する前に検出する。
-    const declared = new Set<string>(manifest.boxIds);
-    const implemented = Object.keys(module.boxes);
-    if (
-      module.id !== manifest.id ||
-      implemented.length !== declared.size ||
-      implemented.some((boxId) => !declared.has(boxId))
-    ) {
-      throw new Error(`Invalid module contract for ${manifest.id}`);
-    }
-    return module;
-  });
-  modulePromises.set(manifest, promise);
-  return promise;
+  if (forceReload) moduleCache.delete(manifest);
+  const existing = moduleCache.get(manifest);
+  if (existing) return existing.promise;
+  const entry: StageModuleCacheEntry = {
+    promise: manifest.load().then((module) => {
+      // manifest索引と遅延ロード先の食い違いは、不完全なステージを描画する前に検出する。
+      const declared = new Set<string>(manifest.boxIds);
+      const implemented = Object.keys(module.boxes);
+      if (
+        module.id !== manifest.id ||
+        implemented.length !== declared.size ||
+        implemented.some((boxId) => !declared.has(boxId))
+      ) {
+        throw new Error(`Invalid module contract for ${manifest.id}`);
+      }
+      entry.module = module;
+      return module;
+    }),
+  };
+  moduleCache.set(manifest, entry);
+  return entry.promise;
+}
+
+/** 利用者が選択操作を始めたステージを、画面遷移より先に取得する。 */
+export function preloadStageModule(manifest: StageManifest) {
+  return loadStageModule(manifest);
+}
+
+/** 選択操作から呼ぶstage moduleのfire-and-forget preload。 */
+export function preloadStageInBackground(manifest: StageManifest) {
+  preloadInBackground(() => preloadStageModule(manifest));
 }
 
 function stageProgress(manifest: StageManifest, progress: ProgressController) {
@@ -131,10 +151,13 @@ export function ManifestStageHost({
   onPrevious,
   onNext,
 }: Props) {
-  const [module, setModule] = useState<StageModule | null>(null);
+  const [module, setModule] = useState<StageModule | null>(
+    () => moduleCache.get(manifest)?.module ?? null,
+  );
   const [loadError, setLoadError] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [signal, setSignal] = useState<AbortSignal | null>(null);
+  const [abortController] = useState(() => new AbortController());
+  const signal = abortController.signal;
   const { solved, solvedCount } = stageProgress(manifest, progress);
   // 入場前のクリアと今回のクリアを分け、再訪時にも箱の開封演出を成立させる。
   const [solvedBeforeEntry] = useState(() => new Set(solved));
@@ -174,10 +197,8 @@ export function ManifestStageHost({
 
   useEffect(() => {
     // ステージ配下のlistener・timer・streamを離脱時に一括して停止する契約。
-    const controller = new AbortController();
-    setSignal(controller.signal);
-    return () => controller.abort();
-  }, []);
+    return () => abortController.abort();
+  }, [abortController]);
 
   const solve = useCallback(
     (boxId: string) => {
@@ -287,10 +308,10 @@ export function ManifestStageHost({
         >
           {uiText(locale, "stageCrashed")}
         </Alert>
-      ) : !module || !signal ? (
+      ) : progress.storageState === "loading" || !module ? (
         <div className="stage-loading" role="status">
-          <CircularProgress size={22} />
-          <span>{uiText(locale, "stageLoading")}</span>
+          <CircularProgress aria-hidden="true" size={28} />
+          <span className="sr-only">{uiText(locale, "stageLoading")}</span>
         </div>
       ) : (
         <div className="stage-view__play-area">
@@ -329,7 +350,12 @@ export function ManifestStageHost({
               className="stage-view__navigation-button stage-view__navigation-button--previous"
               variant="outlined"
             >
-              <CardActionArea onClick={onPrevious}>
+              <CardActionArea
+                {...preloadOnActivation(() =>
+                  preloadStageInBackground(previousStage),
+                )}
+                onClick={onPrevious}
+              >
                 <span className="stage-view__navigation-label">
                   {copy.previousStage}
                 </span>
@@ -349,7 +375,12 @@ export function ManifestStageHost({
               className="stage-view__navigation-button stage-view__navigation-button--next"
               variant="outlined"
             >
-              <CardActionArea onClick={onNext}>
+              <CardActionArea
+                {...preloadOnActivation(() =>
+                  preloadStageInBackground(nextStage),
+                )}
+                onClick={onNext}
+              >
                 <span className="stage-view__navigation-label">
                   {copy.nextStage}
                 </span>

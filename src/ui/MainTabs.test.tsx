@@ -35,6 +35,7 @@ describe("MainTabs", () => {
 
   it("handles an ordinary click in-app", () => {
     const onChange = vi.fn();
+    const onPreload = vi.fn();
     render(
       <MainTabs
         value="stages"
@@ -42,11 +43,24 @@ describe("MainTabs", () => {
         hrefs={hrefs}
         ariaLabel="Primary"
         onChange={onChange}
+        onPreload={onPreload}
       />,
     );
     const settings = screen.getByRole("link", { name: "Settings" });
 
+    fireEvent.pointerEnter(settings);
+    fireEvent.focus(settings);
+    fireEvent.pointerDown(settings, { button: 2 });
+    expect(onPreload).not.toHaveBeenCalled();
+
+    fireEvent.pointerDown(settings, { button: 0 });
+    expect(onPreload).toHaveBeenCalledWith("settings");
     fireEvent.click(settings);
     expect(onChange).toHaveBeenCalledWith("settings");
+
+    onPreload.mockClear();
+    const about = screen.getByRole("link", { name: "About" });
+    fireEvent.keyDown(about, { key: "Enter" });
+    expect(onPreload).toHaveBeenCalledWith("about");
   });
 });

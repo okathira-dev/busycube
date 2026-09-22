@@ -328,15 +328,19 @@ export function SettingsView({
             {copy.driveMergeNotice}
           </Typography>
           {driveConfigured && (
-            <Button
-              variant="contained"
-              startIcon={<CloudSyncOutlined />}
-              loading={driveBusy}
-              onClick={onDriveSync}
-              sx={{ alignSelf: "flex-start" }}
-            >
-              {copy.driveSync}
-            </Button>
+            <Stack spacing={1} sx={{ alignItems: "flex-start" }}>
+              <Button
+                variant="contained"
+                startIcon={<CloudSyncOutlined />}
+                loading={driveBusy}
+                onClick={onDriveSync}
+              >
+                {copy.driveSync}
+              </Button>
+              <Typography color="text.secondary" variant="body2">
+                {copy.driveToastNotice}
+              </Typography>
+            </Stack>
           )}
 
           {driveFailure && (

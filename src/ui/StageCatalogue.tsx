@@ -23,7 +23,8 @@ import { memo, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import type { ProgressDocument } from "../domain/progress";
 import { deriveStageProgress } from "../domain/stageRuntime";
 import { messages } from "../i18n";
-import type { StageAccessKind } from "../runtime/stageContract";
+import type { StageAccessKind, StageIdFormat } from "../runtime/stageContract";
+import { preloadOnActivation } from "./activationIntent";
 import { GiftBox, type GiftBoxState } from "./GiftBox";
 import { stageCardLabel, uiText } from "./locale";
 import { type CatalogueStage, stageAccessOrder } from "./stageCatalogueModel";
@@ -55,7 +56,8 @@ interface Props {
   progressStages: ProgressDocument["stages"];
   nextIncompleteStage?: CatalogueStage;
   restore: { stageId: string; scrollY?: number } | null;
-  onOpen(stageId: string): void;
+  onOpen(stageId: StageIdFormat): void;
+  onPreload(stageId: StageIdFormat): void;
 }
 
 /** 独立したstage群を、access groupと進捗から探せるcatalogueとして提示する。 */
@@ -71,6 +73,7 @@ export const StageCatalogue = memo(function StageCatalogue({
   nextIncompleteStage,
   restore,
   onOpen,
+  onPreload,
 }: Props) {
   const copy = messages[locale];
   const [markerToken, setMarkerToken] = useState<string | null>(null);
@@ -173,6 +176,9 @@ export const StageCatalogue = memo(function StageCatalogue({
             className="section-heading__action"
             variant="contained"
             startIcon={<PlayArrowOutlined />}
+            {...preloadOnActivation(() =>
+              onPreload(nextIncompleteStage.manifest.id),
+            )}
             onClick={() => onOpen(nextIncompleteStage.manifest.id)}
           >
             {copy.continueStage}
@@ -297,6 +303,7 @@ export const StageCatalogue = memo(function StageCatalogue({
                         locale={locale}
                         stages={progressStages}
                         onOpen={onOpen}
+                        onPreload={onPreload}
                       />
                     </li>
                   ))}
@@ -325,10 +332,17 @@ interface StageCardProps {
   stage: CatalogueStage;
   locale: "ja" | "en";
   stages: ProgressDocument["stages"];
-  onOpen(stageId: string): void;
+  onOpen(stageId: StageIdFormat): void;
+  onPreload(stageId: StageIdFormat): void;
 }
 
-function StageCard({ stage, locale, stages, onOpen }: StageCardProps) {
+function StageCard({
+  stage,
+  locale,
+  stages,
+  onOpen,
+  onPreload,
+}: StageCardProps) {
   const copy = messages[locale];
   const manifest = stage.manifest;
   const boxIds = manifest.boxIds;
@@ -354,6 +368,7 @@ function StageCard({ stage, locale, stages, onOpen }: StageCardProps) {
     >
       <CardActionArea
         className="stage-card__action"
+        {...preloadOnActivation(() => onPreload(manifest.id))}
         onClick={() => onOpen(manifest.id)}
         aria-label={stageCardLabel(
           locale,
