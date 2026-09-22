@@ -29,3 +29,7 @@ jobs:
         run: pnpm run test:ci
       - name: Build
         run: pnpm run build
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Browser smoke test
+        run: pnpm run test:e2e

@@ -1,0 +1,7 @@
+.sound-ring {
+  width: 6rem;
+  height: 6rem;
+  border: 0.8rem solid #60a5fa;
+  border-radius: 50%;
+  transition: transform 80ms linear;
+}

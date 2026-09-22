@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "ポップオーバー迷路", en: "Popover Maze" },
+  stageName,
   intro: {
     ja: "浮かぶ部屋をクリックして、画面端で動く影の箱が本物になる場所を探してください。",
     en: "Click through the floating rooms until an edge-aware shadow box becomes real.",

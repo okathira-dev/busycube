@@ -1,3 +1,4 @@
+import "./styles.css";
 import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
 import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
 import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";

@@ -1,0 +1,8 @@
+.eyedropper-target {
+  width: 7rem;
+  height: 7rem;
+  border: 0.4rem solid #21192f;
+  border-radius: 50%;
+  cursor: crosshair;
+  box-shadow: 0 0 2rem #a78bfa66;
+}

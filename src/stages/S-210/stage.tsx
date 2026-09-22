@@ -1,3 +1,4 @@
+import "./styles.css";
 import BadgeOutlined from "@mui/icons-material/BadgeOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

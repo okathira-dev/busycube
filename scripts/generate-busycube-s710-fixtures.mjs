@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -273,26 +273,11 @@ try {
   await makeSegment(b03Segments[1], 1, "qr", qrPath);
   await makeSegment(b03Segments[2], 5, "moving");
   await concatSegments(b03Segments, join(assetRoot, "qr-frame-input.webm"));
-  await writeFile(
-    join(assetRoot, "generation-manifest.json"),
-    `${JSON.stringify(
-      {
-        schemaVersion: 1,
-        durationSeconds: 10,
-        blackWindow: [4, 5],
-        qrWindow: [4, 5],
-        qrPayload: "S710_QR_TEST",
-        assets: ["dark-frame-input.webm", "qr-frame-input.webm"],
-      },
-      null,
-      2,
-    )
-      .replaceAll("[\n    4,\n    5\n  ]", "[4, 5]")
-      .replaceAll(
-        '[\n    "dark-frame-input.webm",\n    "qr-frame-input.webm"\n  ]',
-        '["dark-frame-input.webm", "qr-frame-input.webm"]',
-      )}\n`,
-  );
+  for (const name of ["dark-frame-input.webm", "qr-frame-input.webm"]) {
+    const bytes = await readFile(join(assetRoot, name));
+    if (!bytes.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])))
+      throw new Error(`Generated ${name} is not a WebM file.`);
+  }
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }

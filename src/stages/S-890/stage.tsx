@@ -1,3 +1,4 @@
+import "./styles.css";
 import FullscreenOutlined from "@mui/icons-material/FullscreenOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

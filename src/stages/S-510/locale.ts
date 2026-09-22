@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "窓を越えるドラッグ", en: "Drag across boundaries" },
+  stageName,
   dropTarget: { ja: "ドロップ先", en: "Drop target" },
   dropHint: {
     ja: "緑=受け付ける / 赤=受け付けない。ドラッグ中も色とカーソルを確認。",

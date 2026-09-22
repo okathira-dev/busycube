@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "その場でつくる字幕", en: "Captions Made Live" },
+  stageName,
   intro: {
     ja: "映像に現れる3つの記号へ、再生中に対応する字幕を足してください。字幕はファイルからではなく、この場でtrackへ追加されます。",
     en: "Add the matching caption while each of the three symbols appears. Captions are added to the track here, not loaded from a file.",

@@ -1,0 +1,24 @@
+.transition-tiles span {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid #7a6a92;
+  border-radius: 0.8rem;
+  background: #2b2340;
+  font-size: 1.5rem;
+  view-transition-name: var(--transition-name, none);
+}
+.transition-tiles {
+  display: flex;
+  gap: 0.8rem;
+}
+.transition-tiles span:nth-child(1) {
+  --transition-name: busycube-diamond;
+}
+.transition-tiles span:nth-child(2) {
+  --transition-name: busycube-circle;
+}
+.transition-tiles span:nth-child(3) {
+  --transition-name: busycube-triangle;
+}

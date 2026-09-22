@@ -7,13 +7,14 @@
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node", "vitest/globals"]
   },
   "include": [
     "vite.config.ts",
     "eslint.config.js",
-    "jest.config.js",
-    "jest.setup.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
     "commitlint.config.ts",
     "scripts/**/*.ts"
   ]

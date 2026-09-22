@@ -1,0 +1,59 @@
+.s820-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+}
+.s820-plane {
+  position: relative;
+  display: grid;
+  width: min(100%, 38rem);
+  min-height: 18rem;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid #55445f;
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at center, #4b1833 0 2px, transparent 3px),
+    linear-gradient(135deg, #1f172b, #150f1f);
+  background-size:
+    28px 28px,
+    auto;
+}
+.s820-plane[data-locked="true"] {
+  border-color: #fb7185;
+  box-shadow: inset 0 0 4rem #fb718533;
+}
+.s820-reticle {
+  display: grid;
+  min-width: 3rem;
+  min-height: 3rem;
+  place-items: center;
+  color: #fef3c7;
+  font:
+    2rem / 1 ui-monospace,
+    monospace;
+}
+.s820-reticle .problem-gift {
+  transform: scale(1.15);
+}
+.s820-position,
+.s820-targets {
+  margin: 0;
+  color: #d8cfdf;
+  font-family: ui-monospace, monospace;
+}
+.s820-targets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 38rem);
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+  text-align: center;
+}
+@media (max-width: 620px) {
+  .s820-targets {
+    grid-template-columns: 1fr;
+  }
+}

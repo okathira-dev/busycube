@@ -1,0 +1,4 @@
+.eye-clue {
+  font-size: clamp(6rem, 25vw, 10rem);
+  line-height: 1;
+}

@@ -1,3 +1,4 @@
+import "./styles.css";
 import SelectAllOutlined from "@mui/icons-material/SelectAllOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "動画変換室", en: "Video conversion room" },
+  stageName,
   iframeTitle: {
     ja: "外部動画圧縮ツール",
     en: "Embedded video compression tool",

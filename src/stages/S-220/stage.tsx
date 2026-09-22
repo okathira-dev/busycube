@@ -1,3 +1,4 @@
+import "./styles.css";
 import HistoryOutlined from "@mui/icons-material/HistoryOutlined";
 import KeyboardReturnOutlined from "@mui/icons-material/KeyboardReturnOutlined";
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "圧縮された荷物", en: "Compressed Parcels" },
+  stageName,
   intro: {
     ja: "3つの荷物はそれぞれ異なる封印形式です。形式を選んで、実際にストリーム展開してください。",
     en: "The three parcels each use a different seal. Choose a format and actually stream-decompress it.",

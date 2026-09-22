@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "許可の四扉", en: "Four permission doors" },
+  stageName,
   geolocation: { ja: "位置情報", en: "geolocation" },
   notifications: { ja: "通知", en: "notifications" },
   camera: { ja: "カメラ", en: "camera" },

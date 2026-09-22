@@ -1,5 +1,11 @@
 <!doctype html>
-<html lang="ja">
+<html
+  lang="ja"
+  data-title-ja="プライバシーポリシー | Busycube"
+  data-title-en="Privacy policy | Busycube"
+  data-description-ja="Busycubeのプライバシーポリシー。権限、進捗保存、任意のGoogle Driveバックアップについて説明します。"
+  data-description-en="Busycube privacy policy covering permissions, progress storage, and optional Google Drive backup."
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,28 +15,38 @@
       content="Busycubeのプライバシーポリシー。権限、進捗保存、任意のGoogle Driveバックアップについて説明します。"
     />
     <link rel="stylesheet" href="../public-pages.css" />
-    <title>Privacy policy | Busycube</title>
+    <script type="module" src="../legal-locale.ts"></script>
+    <title>プライバシーポリシー | Busycube</title>
   </head>
   <body>
     <main class="page-shell">
       <header class="page-header">
-        <a class="page-header__brand" href="/">Busycube</a>
-        <h1>プライバシーポリシー</h1>
+        <a class="page-header__brand" href="/" data-preserve-locale>Busycube</a>
+        <h1 data-locale="ja" lang="ja">プライバシーポリシー</h1>
+        <h1 data-locale="en" lang="en">Privacy policy</h1>
       </header>
 
-      <p class="language-note">
-        This page is also available in English below. In case of a conflict, the
-        Japanese text takes precedence.
+      <nav class="language-switch" aria-label="Language">
+        <a href="?locale=ja" lang="ja" data-locale-choice="ja">日本語</a>
+        <a href="?locale=en" lang="en" data-locale-choice="en">English</a>
+      </nav>
+
+      <p class="language-note" data-locale="ja" lang="ja">
+        この文書は英語でも読めます。内容に相違がある場合は、日本語版を正文とします。
+      </p>
+      <p class="language-note" data-locale="en" lang="en">
+        This document is also available in Japanese. If the versions differ, the
+        Japanese version takes precedence.
       </p>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>概要</h2>
         <p>
           Busycubeは、ブラウザや端末の機能を使うパズルゲームです。ゲームを遊ぶために、アカウント登録や個人情報の入力は必要ありません。
         </p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>この端末に保存する情報</h2>
         <ul>
           <li>開いた問題箱とステージの進捗</li>
@@ -42,7 +58,7 @@
         </p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>権限と一時的なデータ</h2>
         <p>
           カメラ、マイク、画面共有、位置情報、通知、外部機器などの権限は、必要な問題を自分で操作した時だけ求めます。許可しなくてもゲーム全体は利用できます。
@@ -52,7 +68,7 @@
         </p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>任意のGoogle Driveバックアップ</h2>
         <p>
           Google Driveバックアップは任意です。選んだ場合だけ、Googleの認可画面を表示し、Google Driveのアプリ専用・非表示領域（<code>drive.appdata</code>）に進捗バックアップを保存します。Drive全体の閲覧、プロフィール、メールアドレスの取得は要求しません。
@@ -62,38 +78,53 @@
         </p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" data-locale="ja" lang="ja">
         <h2>お問い合わせ</h2>
         <p>
           Google Driveバックアップに関するお問い合わせは、Googleの認可画面に表示されるサポート窓口をご利用ください。
         </p>
       </section>
 
-      <section class="policy-section" lang="en">
-        <h2>Privacy Policy</h2>
+      <section class="policy-section" data-locale="en" lang="en">
+        <h2>Overview</h2>
         <p>
           Busycube is a puzzle game that uses browser and device features. You do not need to create an account or enter personal information to play.
         </p>
-        <h3>Data stored on this device</h3>
+      </section>
+
+      <section class="policy-section" data-locale="en" lang="en">
+        <h2>Data stored on this device</h2>
         <p>
           The game stores opened boxes, stage progress, display language, and the minimum environment observations needed for play in this browser. It does not store an exact device model, full User-Agent string, location history, external-device serial number, or camera and microphone inventories.
         </p>
-        <h3>Permissions and temporary data</h3>
+      </section>
+
+      <section class="policy-section" data-locale="en" lang="en">
+        <h2>Permissions and temporary data</h2>
         <p>
           Permissions for features such as camera, microphone, screen sharing, location, notifications, and external devices are requested only after you choose to operate a box that needs them. Raw media, location, and device input may be processed in the browser while a puzzle runs, but are not sent outside the browser and are released when no longer needed.
         </p>
-        <h3>Optional Google Drive backup</h3>
+      </section>
+
+      <section class="policy-section" data-locale="en" lang="en">
+        <h2>Optional Google Drive backup</h2>
         <p>
           If you choose Google Drive backup, Busycube requests access only to the app-specific hidden Drive folder using the <code>drive.appdata</code> scope. It does not request access to your full Drive, profile, or email address. Access tokens stay in memory only during sync. You can disconnect or delete Drive backups in Settings; deleting local progress and deleting Drive backups are separate actions.
         </p>
-        <h3>Contact</h3>
+      </section>
+
+      <section class="policy-section" data-locale="en" lang="en">
+        <h2>Contact</h2>
         <p>
           For Google Drive backup support, use the support contact shown on the Google authorization screen.
         </p>
       </section>
 
-      <footer class="page-footer">
-        <a href="../terms/index.html">利用規約 / Terms of service</a>
+      <footer class="page-footer" data-locale="ja" lang="ja">
+        <a href="../terms/index.html" data-preserve-locale>利用規約</a>
+      </footer>
+      <footer class="page-footer" data-locale="en" lang="en">
+        <a href="../terms/index.html" data-preserve-locale>Terms of service</a>
       </footer>
     </main>
   </body>

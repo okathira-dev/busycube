@@ -1,0 +1,11 @@
+.s750-sms {
+  width: min(100%, 36rem);
+  overflow: auto;
+  border: 1px solid #4d4265;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  background: #0b0910;
+  color: #f8fafc;
+  text-align: left;
+  white-space: pre-wrap;
+}

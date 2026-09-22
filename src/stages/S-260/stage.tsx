@@ -1,3 +1,4 @@
+import "./styles.css";
 import ColorizeOutlined from "@mui/icons-material/ColorizeOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

@@ -1,0 +1,34 @@
+.history-trail {
+  display: flex;
+  gap: 0.7rem;
+}
+.navigation-branch-guide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: #cfc7db;
+  font-family: ui-monospace, monospace;
+}
+.navigation-branch-guide span {
+  border: 1px solid #665979;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  color: #a49bad;
+  background: #211a32;
+}
+.navigation-branch-guide span[data-active="true"] {
+  border-color: #ffd166;
+  color: #171020;
+  background: #ffd166;
+}
+.history-trail span {
+  width: 3rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  background: #453956;
+}
+.history-trail span[data-active="true"] {
+  background: #fb7185;
+}

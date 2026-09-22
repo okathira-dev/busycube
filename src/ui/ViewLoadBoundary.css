@@ -1,0 +1,5 @@
+.view-loading {
+  display: grid;
+  min-height: clamp(12rem, 36vh, 24rem);
+  place-items: center;
+}

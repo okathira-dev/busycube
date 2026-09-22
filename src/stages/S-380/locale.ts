@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "三つの資格情報", en: "Three credentials" },
+  stageName,
   passkeyAccount: { ja: "passkeyアカウント", en: "Passkey account" },
   passkeyNote: {
     ja: "作成したpasskeyは端末のpasskey管理画面に残る。遊び終えたらBusycube用passkeyをそこで削除できる。",

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "消えない灯り", en: "The light that stays" },
+  stageName,
   keepAwake: { ja: "灯りを保つ", en: "Keep the light awake" },
   returnAfterAcquire: {
     ja: "取得後にタブを隠し、戻る。",

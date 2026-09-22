@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "映像の継ぎ目", en: "Video Splices" },
+  stageName,
   intro: {
     ja: "順番の刻まれた4本の短いリールを、映写機の4つの空き枠へ番号どおりに入れます。完成した映像を最後まで再生してください。",
     en: "Place the four short, numbered reels into the projector's empty slots in their printed order. Play the completed video to the end.",

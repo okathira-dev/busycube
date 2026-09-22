@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "遠い箱", en: "Distant Boxes" },
+  stageName,
   intro: {
     ja: "ポインターを固定して、マウス移動だけで果てのない平面を進みます。中心に箱が来たら押してください。",
     en: "Lock the pointer and cross an endless plane using mouse movement alone. Press the box when it reaches the center.",

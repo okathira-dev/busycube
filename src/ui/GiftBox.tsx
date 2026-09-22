@@ -5,6 +5,7 @@ import {
   resolveStageBoxColor,
   type StageBoxHandle,
 } from "../runtime/stageContract";
+import "./GiftBox.css";
 
 export type GiftBoxState = "ribboned" | "closed" | "open";
 

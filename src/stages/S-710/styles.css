@@ -1,0 +1,23 @@
+.s710-stage {
+  display: grid;
+  gap: 1.5rem;
+}
+.s710-tool-frame {
+  width: 100%;
+  min-height: 34rem;
+  border: 1px solid #5b4e70;
+  border-radius: 1rem;
+  background: #eef2f7;
+  box-shadow: 0 1.25rem 3rem #09061188;
+}
+.s710-answer {
+  position: sticky;
+  bottom: 1rem;
+  z-index: 3;
+  border: 1px solid #5f5076;
+  border-radius: 1rem;
+  padding: 0.85rem;
+  background: #171329ee;
+  box-shadow: 0 0.8rem 2rem #090611aa;
+  backdrop-filter: blur(8px);
+}

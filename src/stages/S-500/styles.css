@@ -1,0 +1,8 @@
+.cipher-text,
+.cipher-result {
+  max-width: 38rem;
+  padding: 1rem;
+  border: 1px solid var(--line, #51496b);
+  border-radius: 0.75rem;
+  overflow-wrap: anywhere;
+}

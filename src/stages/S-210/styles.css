@@ -1,0 +1,26 @@
+.badge-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 5rem;
+  height: 5rem;
+  border: 1px solid #6d5d84;
+  border-radius: 1.2rem;
+  background: #1b1529;
+  color: #e9ddff;
+  font-size: 2rem;
+  font-weight: 800;
+}
+.badge-preview span {
+  position: absolute;
+  top: -0.65rem;
+  right: -0.65rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #fbbf24;
+  color: #171020;
+  font-size: 0.9rem;
+}

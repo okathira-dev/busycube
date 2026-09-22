@@ -10,6 +10,6 @@ $env:BUSYCUBE_FFPROBE_PATH = "<trusted-ffprobe-path>"
 node scripts/generate-busycube-s900-s910-fixtures.mjs
 ```
 
-`assets.test.ts` verifies the FFmpeg manifest, dimensions, frame counts, probe metadata, and each embedded WebM header.
+`assets/media-source-segments.json` contains only the segment timing and MIME data required at runtime. The generator validates FFmpeg probe metadata while updating the assets; normal CI does not revalidate committed WebM bytes.
 
 FFmpeg's WebM muxer randomizes `TrackUID` even with bitexact flags. The generator normalizes the standard track UID and its tag target to a fixed value after encoding; it does not alter encoded frames. Running the same generator twice with the same toolchain therefore produces byte-identical Git assets without maintaining a separate checksum file.

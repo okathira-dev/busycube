@@ -1,0 +1,12 @@
+.parallel-puzzle {
+  display: grid;
+  gap: 1.75rem;
+}
+.encoding-group {
+  display: grid;
+  gap: 1rem;
+}
+.encoding-group h2 {
+  margin: 0;
+  color: #d8c5ff;
+}

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "活字の鍵", en: "The type key" },
+  stageName,
   B01: { ja: "OS活字の箱", en: "Installed-type box" },
   download: { ja: "専用活字をダウンロード", en: "Download the dedicated font" },
   scan: { ja: "OSの活字を探す", en: "Find the OS font" },

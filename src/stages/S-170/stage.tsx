@@ -1,3 +1,4 @@
+import "./styles.css";
 import ScheduleOutlined from "@mui/icons-material/ScheduleOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

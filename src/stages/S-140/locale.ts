@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "もう一つの端末", en: "Another device" },
+  stageName,
   connectDevices: { ja: "端末をつなぐ", en: "Connect devices" },
   driveNotConfigured: {
     ja: "Google Drive未設定",

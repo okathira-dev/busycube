@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "キーボードでたどる", en: "Keyboard paths" },
+  stageName,
   clue: {
     ja: "クリックできない箱へTabで移動し、selectは文字入力で探す。detailsは複数を開閉する。",
     en: "Reach the pointer-inert box with Tab, search the select by typing, and toggle several details.",

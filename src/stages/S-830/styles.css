@@ -1,0 +1,11 @@
+.s830-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+}
+.s830-stage > p {
+  max-width: 48rem;
+  margin: 0;
+  color: #d8cfdf;
+  text-align: center;
+}

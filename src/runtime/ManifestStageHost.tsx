@@ -1,9 +1,18 @@
+import ArrowBackOutlined from "@mui/icons-material/ArrowBackOutlined";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardActionArea from "@mui/material/CardActionArea";
+import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import {
   Component,
   type ErrorInfo,
   type ReactNode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -14,19 +23,29 @@ import {
 } from "../domain/stageRuntime";
 import type { ProgressController } from "../hooks/useProgress";
 import { type Locale, messages } from "../i18n";
+import { preloadOnActivation } from "../ui/activationIntent";
 import { uiText } from "../ui/locale";
+import { preloadInBackground } from "./preload";
 import type {
   StageManifest,
   StageModule,
   StageServices,
 } from "./stageContract";
+import "./ManifestStageHost.css";
 
 interface Props {
   manifest: StageManifest;
+  displayCode: string;
+  previousStage?: StageManifest;
+  previousDisplayCode?: string;
+  nextStage?: StageManifest;
+  nextDisplayCode?: string;
   locale: Locale;
   progress: ProgressController;
   services: StageServices;
   onBack(): void;
+  onPrevious?(): void;
+  onNext?(): void;
 }
 
 interface BoundaryProps {
@@ -35,9 +54,16 @@ interface BoundaryProps {
   children: ReactNode;
 }
 
-const activeStageHeadingId = "busycube-active-stage-heading";
-const modulePromises = new WeakMap<StageManifest, Promise<StageModule>>();
+interface StageModuleCacheEntry {
+  readonly promise: Promise<StageModule>;
+  module?: StageModule;
+}
 
+const activeStageHeadingId = "busycube-active-stage-heading";
+// 通常の再描画や再訪では同じ遅延ロード結果を共有し、明示的な再試行時だけ破棄する。
+const moduleCache = new WeakMap<StageManifest, StageModuleCacheEntry>();
+
+// 個別ステージの例外をアプリ全体へ波及させず、一覧へ戻れる外枠を残す。
 class StageErrorBoundary extends Component<BoundaryProps, { failed: boolean }> {
   state = { failed: false };
 
@@ -55,9 +81,9 @@ class StageErrorBoundary extends Component<BoundaryProps, { failed: boolean }> {
 
   render() {
     return this.state.failed ? (
-      <div className="stage-error" role="alert">
+      <Alert className="stage-error" severity="error">
         {uiText(this.props.locale, "stageCrashed")}
-      </div>
+      </Alert>
     ) : (
       this.props.children
     );
@@ -68,23 +94,37 @@ function loadStageModule(
   manifest: StageManifest,
   forceReload = false,
 ): Promise<StageModule> {
-  if (forceReload) modulePromises.delete(manifest);
-  const existing = modulePromises.get(manifest);
-  if (existing) return existing;
-  const promise = manifest.load().then((module) => {
-    const declared = new Set<string>(manifest.boxIds);
-    const implemented = Object.keys(module.boxes);
-    if (
-      module.id !== manifest.id ||
-      implemented.length !== declared.size ||
-      implemented.some((boxId) => !declared.has(boxId))
-    ) {
-      throw new Error(`Invalid module contract for ${manifest.id}`);
-    }
-    return module;
-  });
-  modulePromises.set(manifest, promise);
-  return promise;
+  if (forceReload) moduleCache.delete(manifest);
+  const existing = moduleCache.get(manifest);
+  if (existing) return existing.promise;
+  const entry: StageModuleCacheEntry = {
+    promise: manifest.load().then((module) => {
+      // manifest索引と遅延ロード先の食い違いは、不完全なステージを描画する前に検出する。
+      const declared = new Set<string>(manifest.boxIds);
+      const implemented = Object.keys(module.boxes);
+      if (
+        module.id !== manifest.id ||
+        implemented.length !== declared.size ||
+        implemented.some((boxId) => !declared.has(boxId))
+      ) {
+        throw new Error(`Invalid module contract for ${manifest.id}`);
+      }
+      entry.module = module;
+      return module;
+    }),
+  };
+  moduleCache.set(manifest, entry);
+  return entry.promise;
+}
+
+/** 利用者が選択操作を始めたステージを、画面遷移より先に取得する。 */
+export function preloadStageModule(manifest: StageManifest) {
+  return loadStageModule(manifest);
+}
+
+/** 選択操作から呼ぶstage moduleのfire-and-forget preload。 */
+export function preloadStageInBackground(manifest: StageManifest) {
+  preloadInBackground(() => preloadStageModule(manifest));
 }
 
 function stageProgress(manifest: StageManifest, progress: ProgressController) {
@@ -99,27 +139,47 @@ function stageProgress(manifest: StageManifest, progress: ProgressController) {
 
 export function ManifestStageHost({
   manifest,
+  displayCode,
+  previousStage,
+  previousDisplayCode,
+  nextStage,
+  nextDisplayCode,
   locale,
   progress,
   services,
   onBack,
+  onPrevious,
+  onNext,
 }: Props) {
-  const [module, setModule] = useState<StageModule | null>(null);
+  const [module, setModule] = useState<StageModule | null>(
+    () => moduleCache.get(manifest)?.module ?? null,
+  );
   const [loadError, setLoadError] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [signal, setSignal] = useState<AbortSignal | null>(null);
+  const [abortController] = useState(() => new AbortController());
+  const signal = abortController.signal;
   const { solved, solvedCount } = stageProgress(manifest, progress);
+  // 入場前のクリアと今回のクリアを分け、再訪時にも箱の開封演出を成立させる。
   const [solvedBeforeEntry] = useState(() => new Set(solved));
   const [solvedThisAttempt, setSolvedThisAttempt] = useState<
     ReadonlySet<string>
   >(() => new Set());
+  // 永続化関数の更新で各ステージへ渡すコールバックの同一性を崩さない。
   const persistSolveRef = useRef(progress.solve);
   const persistMarkRef = useRef(progress.mark);
   persistSolveRef.current = progress.solve;
   persistMarkRef.current = progress.mark;
   const copy = messages[locale];
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useLayoutEffect(() => {
+    // 一覧の深いscroll位置をstageへ持ち込まず、画面遷移を見出しから読み始められるようにする。
+    window.scrollTo({ top: 0 });
+    headingRef.current?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
+    // 遅延ロード完了前に別ステージへ移動しても、古い結果でstateを更新しない。
     let active = true;
     setModule(null);
     setLoadError(false);
@@ -136,10 +196,9 @@ export function ManifestStageHost({
   }, [attempt, manifest]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    setSignal(controller.signal);
-    return () => controller.abort();
-  }, []);
+    // ステージ配下のlistener・timer・streamを離脱時に一括して停止する契約。
+    return () => abortController.abort();
+  }, [abortController]);
 
   const solve = useCallback(
     (boxId: string) => {
@@ -198,49 +257,145 @@ export function ManifestStageHost({
     [manifest.id, progress.document.stages],
   );
   const capability = module ? safeCapabilityProbe(module.probe) : "unknown";
+  const isUnavailable =
+    capability === "unsupported" || capability === "unavailable";
   const persistentlyComplete = solvedCount === manifest.boxIds.length;
 
   return (
     <section className="stage-view" aria-labelledby={activeStageHeadingId}>
-      <button type="button" className="back-button" onClick={onBack}>
-        ← {copy.back}
-      </button>
+      <Button
+        className="back-button"
+        startIcon={<ArrowBackOutlined />}
+        onClick={onBack}
+      >
+        {copy.back}
+      </Button>
       <header className="stage-view__header">
-        <p>{manifest.id}</p>
-        <h2 id={activeStageHeadingId}>{manifest.name[locale]}</h2>
-        <div
-          className={`stage-state ${persistentlyComplete ? "stage-state--solved" : ""}`}
-        >
-          {solvedCount}/{manifest.boxIds.length}
-        </div>
+        <p>{displayCode}</p>
+        <h2 id={activeStageHeadingId} ref={headingRef} tabIndex={-1}>
+          {manifest.name[locale]}
+        </h2>
+        <Chip
+          className="stage-state"
+          color={persistentlyComplete ? "success" : "default"}
+          variant="outlined"
+          label={`${solvedCount}/${manifest.boxIds.length}`}
+        />
       </header>
 
       {loadError ? (
-        <div className="stage-error" role="alert">
+        <Alert
+          className="stage-error"
+          severity="error"
+          action={
+            <>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => setAttempt((value) => value + 1)}
+              >
+                {uiText(locale, "stageRetry")}
+              </Button>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => window.location.reload()}
+              >
+                {messages[locale].reload}
+              </Button>
+            </>
+          }
+        >
           {uiText(locale, "stageCrashed")}
-          <button
-            type="button"
-            onClick={() => setAttempt((value) => value + 1)}
-          >
-            {uiText(locale, "stageRetry")}
-          </button>
-        </div>
-      ) : !module || !signal ? (
-        <div className="stage-loading">{uiText(locale, "stageLoading")}</div>
-      ) : capability === "unsupported" || capability === "unavailable" ? (
-        <div className="capability-message" role="status">
-          {copy.unavailable}
+        </Alert>
+      ) : progress.storageState === "loading" || !module ? (
+        <div className="stage-loading" role="status">
+          <CircularProgress aria-hidden="true" size={28} />
+          <span className="sr-only">{uiText(locale, "stageLoading")}</span>
         </div>
       ) : (
-        <StageErrorBoundary stageId={manifest.id} locale={locale}>
-          <module.Component
-            locale={locale}
-            signal={signal}
-            boxes={boxes}
-            progress={stageProgressApi}
-            services={services}
-          />
-        </StageErrorBoundary>
+        <div className="stage-view__play-area">
+          {/* 未対応環境でも謎の内容は見せ、実行不能な操作だけをinertで防ぐ。 */}
+          <div
+            className="stage-view__puzzle"
+            inert={isUnavailable ? true : undefined}
+          >
+            <StageErrorBoundary stageId={manifest.id} locale={locale}>
+              <module.Component
+                locale={locale}
+                signal={signal}
+                boxes={boxes}
+                progress={stageProgressApi}
+                services={services}
+              />
+            </StageErrorBoundary>
+          </div>
+          {isUnavailable && (
+            <div className="capability-overlay" role="status">
+              <Alert className="capability-message" severity="warning">
+                {copy.unavailable}
+              </Alert>
+            </div>
+          )}
+        </div>
+      )}
+
+      {((previousStage && onPrevious) || (nextStage && onNext)) && (
+        <nav
+          className="stage-view__navigation"
+          aria-label={`${copy.previousStage} / ${copy.nextStage}`}
+        >
+          {previousStage && onPrevious && (
+            <Card
+              className="stage-view__navigation-button stage-view__navigation-button--previous"
+              variant="outlined"
+            >
+              <CardActionArea
+                {...preloadOnActivation(() =>
+                  preloadStageInBackground(previousStage),
+                )}
+                onClick={onPrevious}
+              >
+                <span className="stage-view__navigation-label">
+                  {copy.previousStage}
+                </span>
+                <strong className="stage-view__navigation-name">
+                  <span>{previousDisplayCode}</span>
+                  {previousStage.name[locale]}
+                </strong>
+                <ArrowBackOutlined
+                  className="stage-view__navigation-arrow"
+                  aria-hidden="true"
+                />
+              </CardActionArea>
+            </Card>
+          )}
+          {nextStage && onNext && (
+            <Card
+              className="stage-view__navigation-button stage-view__navigation-button--next"
+              variant="outlined"
+            >
+              <CardActionArea
+                {...preloadOnActivation(() =>
+                  preloadStageInBackground(nextStage),
+                )}
+                onClick={onNext}
+              >
+                <span className="stage-view__navigation-label">
+                  {copy.nextStage}
+                </span>
+                <strong className="stage-view__navigation-name">
+                  <span>{nextDisplayCode}</span>
+                  {nextStage.name[locale]}
+                </strong>
+                <ArrowForwardOutlined
+                  className="stage-view__navigation-arrow"
+                  aria-hidden="true"
+                />
+              </CardActionArea>
+            </Card>
+          )}
+        </nav>
       )}
     </section>
   );

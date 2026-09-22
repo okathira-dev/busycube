@@ -1,0 +1,9 @@
+.analog-clock {
+  display: grid;
+  place-items: center;
+  width: 11rem;
+  aspect-ratio: 1;
+  border: 0.5rem solid currentColor;
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
+}

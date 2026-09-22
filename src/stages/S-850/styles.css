@@ -1,0 +1,29 @@
+.s850-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+}
+.s850-stage > p {
+  max-width: 48rem;
+  margin: 0;
+  color: #d8cfdf;
+  text-align: center;
+}
+.s850-floating-root {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  align-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  color: #f7f3ff;
+  background: #100d1d;
+  font-family: Inter, "Noto Sans JP", system-ui, sans-serif;
+  text-align: center;
+}
+.s850-floating-root h1 {
+  margin: 0;
+  font:
+    700 1.2rem / 1.2 Georgia,
+    serif;
+}

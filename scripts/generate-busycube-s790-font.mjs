@@ -300,17 +300,12 @@ const font = buildFont();
 await writeFile(outputPath, font);
 const sha256 = createHash("sha256").update(font).digest("hex");
 await writeFile(
-  resolve(assetRoot, "generation-manifest.json"),
+  resolve(assetRoot, "font-contract.json"),
   `${JSON.stringify(
     {
-      generator: "scripts/generate-busycube-s790-font.mjs",
-      asset: "busycube-key.ttf",
       postscriptName: "BusycubeKey-Regular",
-      family: "Busycube Key",
       glyph: "U+E000",
       sha256,
-      bytes: font.length,
-      derivedFromThirdPartyFont: false,
     },
     null,
     2,

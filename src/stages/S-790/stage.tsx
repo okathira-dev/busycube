@@ -1,3 +1,4 @@
+import "./styles.css";
 import InstallDesktopOutlined from "@mui/icons-material/InstallDesktopOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
@@ -10,7 +11,7 @@ import { manifest } from "./manifest";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import assetManifest from "../../fixtures/s790/assets/generation-manifest.json";
+import assetManifest from "../../fixtures/s790/assets/font-contract.json";
 import { stageText } from "../locale";
 import { locale } from "./locale";
 
@@ -43,7 +44,7 @@ function hex(bytes: ArrayBuffer): string {
  * 目的: Git管理TTFをOS標準UIでsystem fontとしてinstallし、Local Font Accessから同じraw bytesと専用glyphを読み戻す。
  * 最初の一手: 「専用フォントを保存」でTTFをdownloadし、OS font preview/install UIでuser installしてから「OSの活字を探す」を押す。
  * 箱ごとの解法:
- * - B01「インストール書体の箱」: PostScript名`BusycubeKey-Regular`を限定queryしてfaceを厳密に一件得て、blob SHA-256がfixture manifestと一致し、そのblobのFontFaceでU+E000をload/checkできると開く。
+ * - B01「インストール書体の箱」: PostScript名`BusycubeKey-Regular`を限定queryしてfaceを厳密に一件得て、blob SHA-256がfont contractと一致し、そのblobのFontFaceでU+E000をload/checkできると開く。
  * 使用API: Local Font Access `queryLocalFonts()`/FontData.blob、Web Crypto SHA-256、Blob URL、CSS Font Loading APIのFontFace/Document.fonts。
  * 権限・privacy: 対象PostScript名一件だけを要求し、他のinstalled font一覧を列挙しない。font bytes/digest/nameを保存・送信せず、OS fontのuninstallは利用者に委ねる。
  * 対応環境: Local Font Accessを実装するdesktop Chromium系browserと、user fontをinstallできるOS。

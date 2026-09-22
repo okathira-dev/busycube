@@ -1,0 +1,7 @@
+.s730-canvas {
+  width: min(100%, 40rem);
+  aspect-ratio: 16 / 9;
+  border: 1px solid #4d4265;
+  border-radius: 1rem;
+  background: #050816;
+}

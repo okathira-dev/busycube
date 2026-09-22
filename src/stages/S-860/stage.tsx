@@ -1,3 +1,4 @@
+import "./styles.css";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

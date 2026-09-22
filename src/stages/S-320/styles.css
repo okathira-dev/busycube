@@ -1,0 +1,30 @@
+.fold-preview {
+  display: grid;
+  grid-template-columns: 1fr 0.7rem 1fr;
+  width: min(100%, 22rem);
+  height: 10rem;
+  perspective: 30rem;
+}
+.fold-preview span {
+  border: 1px solid #6d5d84;
+  background: linear-gradient(135deg, #302640, #151122);
+  transition: transform 300ms ease;
+}
+.fold-preview span:first-child {
+  border-radius: 1rem 0 0 1rem;
+  transform-origin: right;
+}
+.fold-preview span:last-child {
+  border-radius: 0 1rem 1rem 0;
+  transform-origin: left;
+}
+.fold-preview i {
+  background: #090711;
+  box-shadow: 0 0 1rem #a78bfa55;
+}
+.fold-preview[data-folded="true"] span:first-child {
+  transform: rotateY(18deg);
+}
+.fold-preview[data-folded="true"] span:last-child {
+  transform: rotateY(-18deg);
+}

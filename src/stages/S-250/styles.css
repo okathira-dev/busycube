@@ -1,0 +1,16 @@
+.rgb-page {
+  min-height: 60vh;
+}
+.rgb-page--r {
+  background: #f00;
+}
+.rgb-page--g {
+  background: #0f0;
+}
+.rgb-page--b {
+  background: #00f;
+}
+.rgb-monitor--white {
+  background: #fff;
+  color: #111;
+}

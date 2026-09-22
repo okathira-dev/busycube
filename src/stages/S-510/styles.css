@@ -1,0 +1,96 @@
+.drop-target {
+  max-width: 38rem;
+  padding: 1rem;
+  border: 1px solid var(--line, #51496b);
+  border-radius: 0.75rem;
+  overflow-wrap: anywhere;
+  min-height: 8rem;
+  display: grid;
+  place-items: center;
+  border-style: dashed;
+  cursor: not-allowed;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.drop-target[data-drop-state="allowed"] {
+  border-color: #34d399;
+  background: rgb(16 185 129 / 0.09);
+  cursor: copy;
+}
+.drop-target[data-drop-state="rejected"] {
+  border-color: #fb7185;
+  background: rgb(244 63 94 / 0.09);
+  cursor: not-allowed;
+}
+.drop-target[data-drop-state="allowed"][data-dragging="true"] {
+  border-color: #a7f3d0;
+  background: rgb(16 185 129 / 0.2);
+  box-shadow: 0 0 0 0.2rem rgb(52 211 153 / 0.2);
+}
+.drop-target[data-drop-state="rejected"][data-dragging="true"] {
+  border-color: #fda4af;
+  background: rgb(244 63 94 / 0.18);
+  box-shadow: 0 0 0 0.2rem rgb(244 63 94 / 0.16);
+}
+.drop-target__content {
+  display: grid;
+  gap: 0.35rem;
+  text-align: center;
+}
+.drop-target__content small {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+}
+.drag-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+.drag-columns--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.drag-card {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #4c4260;
+  border-radius: 1rem;
+  background: #171329;
+}
+.drag-card iframe {
+  width: 100%;
+  min-height: 10rem;
+  border: 1px solid #665979;
+  border-radius: 0.65rem;
+  background: #111827;
+}
+.drag-fixture {
+  width: min(100%, 240px);
+  height: auto;
+  justify-self: center;
+  border: 1px solid #665979;
+  border-radius: 0.65rem;
+  background: #0f172a;
+  cursor: grab;
+}
+.drag-fixture:active {
+  cursor: grabbing;
+}
+.drag-fixture--disabled {
+  cursor: not-allowed;
+  filter: saturate(0.75);
+}
+.drag-card .drop-target {
+  min-height: 6rem;
+}
+@media (max-width: 720px) {
+  .drag-columns,
+  .drag-columns--three {
+    grid-template-columns: 1fr;
+  }
+}

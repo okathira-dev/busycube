@@ -1,3 +1,4 @@
+import "./styles.css";
 import VolumeUpOutlined from "@mui/icons-material/VolumeUpOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

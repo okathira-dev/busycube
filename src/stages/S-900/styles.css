@@ -1,0 +1,82 @@
+.s900-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.s900-stage > p {
+  max-width: 50rem;
+  margin: 0;
+  color: #d8cfdf;
+  text-align: center;
+}
+.s900-actions button,
+.s900-reel {
+  border: 1px solid #806ba1;
+  border-radius: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  color: #f7f3ff;
+  background: #2a203b;
+  font: inherit;
+  cursor: pointer;
+}
+.s900-workbench {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(100%, 46rem);
+  gap: 1rem;
+}
+.s900-reels,
+.s900-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  list-style: none;
+}
+.s900-reel,
+.s900-slots li {
+  min-height: 4.5rem;
+  border: 1px solid #8b4055;
+  border-radius: 0.75rem;
+}
+.s900-reel:nth-child(1) {
+  background: #51202d;
+}
+.s900-reel:nth-child(2) {
+  background: #51371d;
+}
+.s900-reel:nth-child(3) {
+  background: #1d4c45;
+}
+.s900-reel:nth-child(4) {
+  background: #26395c;
+}
+.s900-slots li {
+  display: grid;
+  place-items: center;
+  color: #fbcfe8;
+  background: #2a1720;
+  font:
+    700 1.1rem ui-monospace,
+    monospace;
+}
+.s900-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+.s900-video {
+  width: min(100%, 40rem);
+  max-height: 22rem;
+  border: 2px solid #77475b;
+  border-radius: 0.85rem;
+  background: #090611;
+}
+@media (max-width: 620px) {
+  .s900-workbench {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "見えない受け渡し", en: "An invisible handoff" },
+  stageName,
   copyReversed: { ja: "逆さの名前をコピー", en: "Copy the reversed name" },
   inspect: { ja: "箱を調べる", en: "Inspect the box" },
   sentReversed: { ja: "逆さの名前を渡した", en: "Sent the reversed name" },

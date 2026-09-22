@@ -74,11 +74,11 @@ Variableとして登録する場合、CLIでは次のように指定できる。
 gh variable set BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID --body "1234567890-example.apps.googleusercontent.com"
 ```
 
-Secretとして登録する場合は、Repository Secretsまたは`cloudflare-workers-preview` EnvironmentのSecretsへ同名で登録する。Production Environmentだけに登録しても、Preview Environmentで行うbuildからは参照できない。
+公開識別子なのでRepository Variableへの登録を推奨する。Secretとして登録する場合はRepository Secrets、またはPreviewとProductionそれぞれのEnvironment Secretsへ同名で登録する。
 
-CloudflareのPreviewとRelease Candidate workflowは、同名のVariableを先に参照し、未登録または空の場合にSecretを参照する。取得した値をworkflow環境変数`VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID`へ渡し、`pnpm run build`で公開JavaScriptへ埋め込む。Client IDは最終成果物から読める公開識別子であり、VariableとSecretの両方へ重複登録する必要はない。client secret、access token、refresh tokenはどちらにも入れない。
+CloudflareのPreviewとProduction workflowは、同名のVariableを先に参照し、未登録または空の場合にSecretを参照する。取得した値をworkflow環境変数`VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID`へ渡し、`pnpm run build`で公開JavaScriptへ埋め込む。Client IDは最終成果物から読める公開識別子であり、VariableとSecretの両方へ重複登録する必要はない。client secret、access token、refresh tokenはどちらにも入れない。
 
-VariableとSecretがどちらも未登録または空なら、Drive UIだけが未設定状態になり、buildとWorkers配信は成功する。値を変更しても既存の配信物は変化しないため、mainへの再pushまたはActionsの`workflow_dispatch`でRelease Candidateを再buildし、自動deployを実行する。
+VariableとSecretがどちらも未登録または空なら、Drive UIだけが未設定状態になり、buildとWorkers配信は成功する。値を変更しても既存の配信物は変化しないため、mainへの再pushまたはActionsの`workflow_dispatch`でProductionを再build・deployする。
 
 Workers本番で認可エラーになった場合の診断順は次のとおりである。
 
@@ -96,6 +96,8 @@ Workers本番で認可エラーになった場合の診断順は次のとおり�
 4. 各replicaを読み、ローカルとgrow-onlyマージする。破損または未来versionのreplicaがあれば自動で上書きしない。
 5. このinstallationのreplicaがなければ作成し、あればETagを付けて更新する。競合時は全replicaを読み直して再試行する。
 6. Drive通信・認可・妥当性確認のどこかで失敗した場合、ローカル文書を置換しない。
+
+明示操作の開始後は、認可待ち、同期中、成功または失敗を画面下部のglobal toastで通知する。画面遷移後も同じ操作の状態を追跡し、成功通知は自動で閉じ、失敗通知は回復導線とともに利用者が閉じるまで残す。待機中とローカル保存だけではtoastを出さない。
 
 アクセストークン失効後は、次の同期ボタンから再度認可する。ページ再読込をまたいでGoogle接続状態を復元しない。
 

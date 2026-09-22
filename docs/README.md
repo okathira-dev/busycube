@@ -8,7 +8,6 @@
 
 - [企画・プロダクト仕様](./specifications/product-spec.md)
 - [アーキテクチャ判断](./specifications/architecture-decisions.md)
-- [決定ログ](./specifications/decision-log.md)
 - [ローカル進捗スキーマ](./specifications/progress-schema.md)
 - [問題箱の形状と再挑戦モデル](./specifications/problem-box-state-model.md)
 - [PWA・オフライン仕様](./specifications/pwa-and-offline.md)
@@ -28,11 +27,15 @@
 - [Google Drive](./environment-setup/google-drive.md)
 - [Google FedCM](./environment-setup/google-fedcm.md)
 
-## 一時的な開発メモ
+## 作業記録
 
-完了すれば削除できる作業台帳だけを置く。仕様の正本として参照しない。
+人が継続して更新する未完了作業とレビュー記録だけを置く。仕様の正本として参照せず、完了した作業記録は削除する。
 
 - [残作業](./notes/remaining-work.md)
 - [全ステージ・人手確認台帳](./notes/stage-review.md)
 
-過去の実装計画、移行手順、PoC、調査原文はGit履歴で確認する。完了した資料を現行ドキュメントとして維持しない。
+## 文書を残す基準
+
+仕様書と環境構築手順は現時点のスナップショットとして更新し、変更履歴はGitで確認する。過去の決定、実装計画、移行手順、PoC、容易に再実行できる測定、CI結果は現行ドキュメントとして維持しない。
+
+判断に至る分析証跡は、Git、Pull Request、CI、現在のコードから復元できず、再調査の負担が大きく、将来その判断を見直す際に必要な場合だけ残す。該当する証跡がない段階で、空のログ置き場やフォルダごとの`log.md`は作らない。

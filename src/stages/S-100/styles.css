@@ -1,0 +1,6 @@
+.tilt-clue {
+  color: #ffd166;
+  font-size: clamp(7rem, 28vw, 12rem);
+  line-height: 1;
+  transition: transform 80ms linear;
+}

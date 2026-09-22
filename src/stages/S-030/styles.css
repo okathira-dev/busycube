@@ -1,0 +1,10 @@
+.selection-puzzle > p {
+  font-family: Georgia, serif;
+  font-size: clamp(2.4rem, 12vw, 6rem);
+  letter-spacing: 0.05em;
+  user-select: text;
+}
+.selection-puzzle strong {
+  color: #ffd166;
+  font-weight: 400;
+}

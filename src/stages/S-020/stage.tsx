@@ -1,3 +1,4 @@
+import "./styles.css";
 import AspectRatioOutlined from "@mui/icons-material/AspectRatioOutlined";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";

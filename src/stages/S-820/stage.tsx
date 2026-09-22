@@ -1,3 +1,4 @@
+import "./styles.css";
 import MouseOutlined from "@mui/icons-material/MouseOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

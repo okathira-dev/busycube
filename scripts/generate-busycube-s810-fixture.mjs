@@ -94,15 +94,20 @@ try {
     return entry;
   });
   const packed = Buffer.concat(segments.map(({ bytes }) => bytes));
+  const webmHeader = Buffer.from([0x1a, 0x45, 0xdf, 0xa3]);
+  if (
+    manifestSegments.length !== 120 ||
+    offset !== packed.length ||
+    segments.some(({ bytes }) => !bytes.subarray(0, 4).equals(webmHeader))
+  ) {
+    throw new Error("Generated resolution sweep pack is invalid.");
+  }
   await writeFile(join(assetRoot, "resolution-sweep.pack"), packed);
   await writeFile(
-    join(assetRoot, "generation-manifest.json"),
+    join(assetRoot, "resolution-sweep-index.json"),
     `${JSON.stringify(
       {
-        schemaVersion: 1,
         frameRate: 15,
-        frameCount: segments.length,
-        asset: "resolution-sweep.pack",
         segments: manifestSegments,
       },
       null,

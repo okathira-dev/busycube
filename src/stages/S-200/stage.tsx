@@ -1,3 +1,4 @@
+import "./styles.css";
 import SportsEsportsOutlined from "@mui/icons-material/SportsEsportsOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

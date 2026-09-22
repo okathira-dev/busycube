@@ -1,3 +1,4 @@
+import "./styles.css";
 import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
 import SelectAllOutlined from "@mui/icons-material/SelectAllOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
@@ -12,19 +13,7 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 import { useCallback, useEffect, useRef, useState } from "react";
 // TODO: S-730の最小描画・raycastをThree.jsで維持するか、WebXR/WebGLの直接実装へ置き換えて依存を削除するかを設計レビューする。
-import {
-  BoxGeometry,
-  Color,
-  Mesh,
-  MeshStandardMaterial,
-  PerspectiveCamera,
-  PointLight,
-  Quaternion,
-  Raycaster,
-  Scene,
-  Vector3,
-  WebGLRenderer,
-} from "three";
+import type { Mesh, WebGLRenderer } from "three";
 import { stageText } from "../locale";
 import { locale } from "./locale";
 
@@ -41,6 +30,8 @@ import { locale } from "./locale";
  * 対応環境: secure contextでimmersive-vrまたはimmersive-arと対応AR/VR hardware、WebGLを提供するbrowser。
  */
 function S730Stage(props: Props) {
+  const [rendererModule, setRendererModule] =
+    useState<typeof import("./xrRenderer")>();
   const sessionProblem = props.boxes[manifest.box.B01];
   const selectProblem = props.boxes[manifest.box.B02];
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,6 +49,36 @@ function S730Stage(props: Props) {
   const [status, setStatus] = useState(() =>
     stageText(props.locale, locale.idle),
   );
+
+  useEffect(() => {
+    let active = true;
+    const prepare = async () => {
+      const xr = navigator.xr;
+      if (
+        !isSecureContext ||
+        !xr ||
+        (!(await xr.isSessionSupported("immersive-vr")) &&
+          !(await xr.isSessionSupported("immersive-ar")))
+      ) {
+        if (active) setStatus(stageText(props.locale, locale.unsupported));
+        return;
+      }
+      if (!active || props.signal.aborted) return;
+      setStatus(stageText(props.locale, locale.preparing));
+      const module = await import("./xrRenderer");
+      if (active && !props.signal.aborted) {
+        setRendererModule(module);
+        if (!runtimeRef.current)
+          setStatus(stageText(props.locale, locale.idle));
+      }
+    };
+    void prepare().catch(() => {
+      if (active) setStatus(stageText(props.locale, locale.cancelled));
+    });
+    return () => {
+      active = false;
+    };
+  }, [props.locale, props.signal]);
 
   const cleanup = useCallback(async () => {
     const runtime = runtimeRef.current;
@@ -91,6 +112,8 @@ function S730Stage(props: Props) {
     }
     await cleanup();
     setStatus(stageText(props.locale, locale.starting));
+    let pendingSession: XRSession | undefined;
+    let pendingRenderer: WebGLRenderer | undefined;
     try {
       const vr = await xr.isSessionSupported("immersive-vr");
       const ar = vr ? false : await xr.isSessionSupported("immersive-ar");
@@ -104,17 +127,43 @@ function S730Stage(props: Props) {
           optionalFeatures: ["local-floor"],
         },
       );
+      pendingSession = session;
+      // 機器を後から接続した場合も、明示操作のsession要求より前にimportを挟まない。
+      const rendering = rendererModule ?? (await import("./xrRenderer"));
+      if (props.signal.aborted) {
+        await session.end();
+        return;
+      }
+      const {
+        BoxGeometry,
+        Color,
+        Mesh,
+        MeshStandardMaterial,
+        PerspectiveCamera,
+        PointLight,
+        Quaternion,
+        Raycaster,
+        Scene,
+        Vector3,
+        WebGLRenderer,
+      } = rendering;
       const renderer = new WebGLRenderer({
         canvas,
         alpha: true,
         antialias: true,
       });
+      pendingRenderer = renderer;
       renderer.xr.enabled = true;
       renderer.xr.setReferenceSpaceType("local-floor");
       await renderer.xr.setSession(session);
       const referenceSpace = await session
         .requestReferenceSpace("local-floor")
         .catch(() => session.requestReferenceSpace("viewer"));
+      if (props.signal.aborted) {
+        renderer.dispose();
+        await session.end();
+        return;
+      }
       const scene = new Scene();
       scene.background = new Color(0x050816);
       const camera = new PerspectiveCamera(60, 16 / 9, 0.01, 20);
@@ -188,6 +237,8 @@ function S730Stage(props: Props) {
         onSelect,
         dispose,
       };
+      pendingSession = undefined;
+      pendingRenderer = undefined;
       renderer.setAnimationLoop((_time, frame) => {
         if (frame && !poseSeen && frame.getViewerPose(referenceSpace)) {
           poseSeen = true;
@@ -197,7 +248,10 @@ function S730Stage(props: Props) {
         renderer.render(scene, camera);
       });
     } catch {
-      setStatus(stageText(props.locale, locale.cancelled));
+      pendingRenderer?.dispose();
+      await pendingSession?.end().catch(() => undefined);
+      if (!props.signal.aborted)
+        setStatus(stageText(props.locale, locale.cancelled));
       await cleanup();
     }
   };

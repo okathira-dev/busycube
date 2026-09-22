@@ -1,3 +1,4 @@
+import "./styles.css";
 import AspectRatioOutlined from "@mui/icons-material/AspectRatioOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
@@ -49,10 +50,7 @@ function appendSegment(
 }
 
 type SweepManifest = {
-  schemaVersion: number;
   frameRate: number;
-  frameCount: number;
-  asset: string;
   segments: readonly {
     index: number;
     width: number;
@@ -63,7 +61,7 @@ type SweepManifest = {
 };
 
 const sweepManifestUrl = new URL(
-  "../../fixtures/s810/assets/generation-manifest.json",
+  "../../fixtures/s810/assets/resolution-sweep-index.json",
   import.meta.url,
 ).href;
 const sweepPackUrl = new URL(
@@ -87,11 +85,7 @@ function createSweepMediaSource(signal: AbortSignal) {
             throw new Error("fixed sweep asset unavailable");
           const manifest = (await manifestResponse.json()) as SweepManifest;
           const pack = await packResponse.arrayBuffer();
-          if (
-            manifest.schemaVersion !== 1 ||
-            manifest.frameCount !== manifest.segments.length ||
-            manifest.segments.length === 0
-          )
+          if (manifest.segments.length === 0)
             throw new Error("invalid fixed sweep manifest");
           const mime = 'video/webm; codecs="vp8"';
           if (!MediaSource.isTypeSupported(mime))

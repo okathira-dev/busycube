@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "高さの三層", en: "Three altitude layers" },
+  stageName,
   B01: { ja: "100m未満の箱", en: "Below 100 m box" },
   B02: { ja: "100〜500mの箱", en: "100–500 m box" },
   B03: { ja: "500m以上の箱", en: "500 m or more box" },

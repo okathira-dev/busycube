@@ -1,0 +1,7 @@
+.trace-canvas {
+  width: min(100%, 30rem);
+  border: 1px solid #5d5074;
+  border-radius: 1rem;
+  background: #0f0c1c;
+  touch-action: none;
+}

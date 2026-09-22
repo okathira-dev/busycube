@@ -14,7 +14,8 @@ manifestの `start_url`、`id`、`scope` とアイコンはroot-relative URLに�
 - Viteが生成する `/assets/` 配下のcontent hash付きJS、CSS、JSON、Wasmだけをcache-firstで実行時保存する。hashが変われば別URLになるため、古いchunkを新しいHTMLへ混在させない。
 - ソースコード、HMR、任意のGET、APIレスポンスはキャッシュ対象にしない。
 - 進捗はCache Storageへ置かず、IndexedDBだけを正とする。
-- キャッシュ名は用途別の `busycube-shell-v6` と `busycube-assets-v6`。版を上げたactivate時に過去の `busycube-` キャッシュだけを削除する。
+- キャッシュ名は用途別の `busycube-shell-v7` と `busycube-assets-v7`。版を上げたactivate時に過去の `busycube-` キャッシュだけを削除する。
+- 同一originのcontent hash付きassetに限り、Cache Storage照会では`ignoreVary`を使う。precacheとmodule requestのOrigin差で同じ内容のassetがoffline時にmissしないようにする。HTMLやAPIには適用しない。
 - 更新待機中は設定画面に明示操作を表示し、プレイ途中に自動再読込しない。
 
 初回訪問前の完全オフライン起動はできない。少なくとも一度オンラインでアプリ本体を読み込んだ後にオフライン確認を行う。遅延ロードするステージは、そのstage chunkを一度オンラインで読み込んだ後からオフラインで利用できる。

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "Console迷路", en: "Console maze" },
+  stageName,
   wall: {
     ja: "壁。盤面をConsoleへ再表示した。",
     en: "Wall; the board was printed again.",

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "折れ目をまたぐ", en: "Across the fold" },
+  stageName,
   segment: { ja: "面", en: "segment(s)" },
   continuous: { ja: "連続", en: "continuous" },
   folded: { ja: "折りたたみ", en: "folded" },

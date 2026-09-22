@@ -1,0 +1,7 @@
+.launch-url {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #a9a0b8;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+}

@@ -1,3 +1,4 @@
+import "./styles.css";
 import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
 import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";

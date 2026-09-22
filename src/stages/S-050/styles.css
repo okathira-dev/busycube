@@ -1,0 +1,14 @@
+.window-clue {
+  display: flex;
+  gap: 1rem;
+}
+.window-clue__pane {
+  display: grid;
+  place-items: center;
+  width: 7rem;
+  height: 5rem;
+  border: 0.4rem solid #6f5a91;
+  border-top-width: 1.1rem;
+  background: #181329;
+  font-size: 1.7rem;
+}

@@ -1,6 +1,6 @@
 # ステージ・ギミック一覧
 
-このファイルは各stageのmanifest、locale、日本語JSDocから生成される。手作業で編集せず、`pnpm run busycube:stages:generate`を実行する。個別ステージの厳密な解法、privacy、対応環境は、IDからリンクした`stage.tsx`のJSDocを正本とする。negative case、cleanup、人手確認、UI・アクセシビリティ観点は`docs/notes/stage-review.md`で管理する。
+このファイルは各stageのmanifest、locale、日本語JSDocから生成される。手作業で編集せず、ステージ追加・削除・説明変更時に`pnpm run busycube:catalog:update`を実行する。個別ステージの厳密な解法、privacy、対応環境は、IDからリンクした`stage.tsx`のJSDocを正本とする。negative case、cleanup、人手確認、UI・アクセシビリティ観点は`docs/notes/stage-review.md`で管理する。
 
 - ステージ数: 89
 - 問題箱数: 204

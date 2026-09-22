@@ -154,6 +154,26 @@ export function mergeProgressDocuments(
   };
 }
 
+export function countProgressAdditions(
+  current: ProgressDocument,
+  imported: ProgressDocument,
+): { addedBoxes: number; addedMarkers: number } {
+  let addedBoxes = 0;
+  let addedMarkers = 0;
+  for (const [stageId, importedStage] of Object.entries(imported.stages)) {
+    const currentStage = current.stages[stageId];
+    const solved = new Set(currentStage?.solvedBoxIds ?? []);
+    const markers = new Set(currentStage?.markers ?? []);
+    addedBoxes += importedStage.solvedBoxIds.filter(
+      (boxId) => !solved.has(boxId),
+    ).length;
+    addedMarkers += (importedStage.markers ?? []).filter(
+      (marker) => !markers.has(marker),
+    ).length;
+  }
+  return { addedBoxes, addedMarkers };
+}
+
 export function isBoxSolved(
   document: ProgressDocument,
   stageId: string,

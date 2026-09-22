@@ -47,16 +47,36 @@ a {
   background: #1c172de6;
 }
 
+.language-switch {
+  display: flex;
+  gap: 0.4rem;
+  width: fit-content;
+  margin: 0 0 1.5rem;
+  padding: 0.25rem;
+  border: 1px solid #554774;
+  border-radius: 999px;
+  background: #1c172de6;
+}
+
+.language-switch a {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.language-switch a[aria-current="page"] {
+  color: #171020;
+  background: #f2e8ff;
+  font-weight: 700;
+}
+
 .language-note {
   margin: 0 0 2rem;
 }
 
 .policy-section {
-  margin: 1.5rem 0;
-  padding: 1.25rem;
-  border: 1px solid #443a59;
-  border-radius: 1rem;
-  background: #1c172de6;
+  margin: 2rem 0;
 }
 
 .policy-section h2,

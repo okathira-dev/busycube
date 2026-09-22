@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "もう一度の起動", en: "Launch once more" },
+  stageName,
   relaunchHint: {
     ja: "インストールしたBusycubeへ、このURLからもう一度入る。",
     en: "Open this URL into the installed Busycube again.",

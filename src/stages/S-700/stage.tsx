@@ -1,3 +1,4 @@
+import "./styles.css";
 import DesktopWindowsOutlined from "@mui/icons-material/DesktopWindowsOutlined";
 import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
@@ -11,7 +12,7 @@ import { manifest } from "./manifest";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import assetManifest from "../../fixtures/s700/assets/generation-manifest.json";
+import assetManifest from "../../fixtures/s700/assets/remote-playback-fixtures.json";
 import { stageText } from "../locale";
 import { locale } from "./locale";
 

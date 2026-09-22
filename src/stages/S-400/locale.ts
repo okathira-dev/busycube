@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "一時間ずれた時計", en: "A clock one hour away" },
+  stageName,
   B01: { ja: "巻き戻しの箱", en: "Rewind box" },
   B02: { ja: "現在へ戻す箱", en: "Return-to-now box" },
 });

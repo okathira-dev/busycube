@@ -1,3 +1,4 @@
+import "./styles.css";
 import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
 import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";

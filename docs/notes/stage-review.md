@@ -126,7 +126,7 @@
 - 同じギミックの既存ステージがない
 - 日英の権限説明とエラー説明がある
 - 生データが進捗やDriveへ混入しない
-- 事前生成可能なmedia fixtureがsource・生成手順・codec / 寸法 / 内容などの意味検証とともにGit管理されている
+- 事前生成可能なmedia fixtureがsource・生成手順とともにGit管理され、生成スクリプトが更新時にcodec / 寸法 / 内容などを意味検証する
 - 非同期・非リアルタイム問題の合言葉が固定で、copy可能なら長いCTF形式、転記なら最大2語になっている
 - 非対応環境でアプリ全体が壊れない
 - 入場直後の過去クリア表示が、今回もクリア済みだと誤認させない
@@ -154,6 +154,7 @@
 - [ ] browser／OS所有UI、外部機器、ゲーム内UIを見分けられる。
 - [ ] 現在状態、成功、失敗、取消、非対応が画面または標準UIから分かる。
 - [ ] 日本語／英語、keyboard、200% zoom、狭いviewport、音なしでも操作と結果を理解できる。
+- [ ] 視覚的な手掛かりと同等の情報をaccessible name・説明・状態から得られ、必要な操作を識別できる。支援技術向け説明だけが正解手順を過剰に開示しない。
 - [ ] unsupported、permission denied、cancel、timeout、network failureが他の箱の成功として扱われない。
 - [ ] synthetic event、DevToolsでのDOM・保存値編集、見た目だけの変更、別箱の結果流用で開かない。
 - [ ] camera、microphone、位置、contact、credential、file内容などの生データを不要に表示・保存・同期・送信しない。
@@ -757,7 +758,7 @@ TODO: ここまで人手レビュー済み
 - [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
-- メモ:
+- メモ: AIスモークでは非対応表示まで確認済み。対応する実機でProximitySensorを使う成功経路は未確認。
 
 ### S-530 — 三方向の加速
 
@@ -782,7 +783,7 @@ TODO: ここまで人手レビュー済み
 - [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-006, H-019, H-023, H-025, H-026
-- メモ:
+- メモ: AIスモークでは非対応表示まで確認済み。対応する実機でAmbientLightSensorを使う成功経路は未確認。
 
 ### S-550 — 重さが消える瞬間
 
@@ -909,7 +910,7 @@ TODO: ここまで人手レビュー済み
 - [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-004, H-019, H-023, H-025, H-032
-- メモ:
+- メモ: AIスモークでは非対応表示まで確認済み。対応する実機と回線で4種類の成功経路は未確認。
 
 ### S-640 — 読めない文字列
 
@@ -1067,7 +1068,7 @@ TODO: ここまで人手レビュー済み
 - [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-003, H-004, H-019, H-023, H-025, H-047
-- メモ:
+- メモ: AIスモークでは非対応表示まで確認済み。Contact Picker対応環境での成功経路は未確認。
 
 ### S-770 — 身分証棚
 
@@ -1264,125 +1265,3 @@ TODO: ここまで人手レビュー済み
 
 - 関連する実環境確認: H-066
 - メモ:
-
-## AI実行済み確認ログ（第23段階）
-
-### 自動検査
-
-- [x] TypeScript `--noEmit`
-- [x] Jest 59 suites / 316 tests
-- [x] Biome check
-- [x] Markuplint
-- [x] Vite production build
-- [x] `git diff --check`
-
-### 直接URLの表示スモーク
-
-各stageを `?stage=S-xxx` で開き、500ms待って見出し・箱数・stage本体を確認した。unsupported表示は成功経路の検証とは分けて記録する。
-
-- [x] S-000 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-010 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-020 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-030 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-040 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-050 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-060 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-070 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-080 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-090 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-100 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-110 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-120 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-130 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-140 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-150 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-160 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-170 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-180 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-190 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-200 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-210 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-220 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-240 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-250 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-260 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-280 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-290 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-300 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-310 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-320 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-330 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-340 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-350 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-360 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-370 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-380 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-390 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-400 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-410 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-420 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-430 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-440 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-450 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-460 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-480 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-490 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-500 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-510 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-520 route smoke: stage見出し・箱数・unsupported表示を確認（success pathは環境非対応のため未実施）。
-- [x] S-530 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-540 route smoke: stage見出し・箱数・unsupported表示を確認（success pathは環境非対応のため未実施）。
-- [x] S-550 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-560 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-570 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-580 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-590 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-600 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-610 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-620 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-630 route smoke: stage見出し・箱数・unsupported表示を確認（success pathは環境非対応のため未実施）。
-- [x] S-640 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-650 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-660 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-670 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-690 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-700 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-710 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-720 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-730 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-740 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-750 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-760 route smoke: stage見出し・箱数・unsupported表示を確認（success pathは環境非対応のため未実施）。
-- [x] S-770 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-780 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-790 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-800 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-810 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-820 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-830 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-840 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-850 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-860 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-870 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-880 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [ ] S-890 route smoke: 非アクティブdocumentへの重複`exitFullscreen()`を抑止する修正済み。fullscreen入場後の離脱はブラウザで再確認する。
-- [x] S-900 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-910 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-- [x] S-920 route smoke: stage見出し・箱数・stage本体を確認し、該当URL由来のconsole errorなし。
-
-### 追加で実操作した項目
-
-- [x] S-010-B01 マウス箱: ブラウザの通常クリックで `1/3` になり、Mouse boxが「今回開いた」状態になった。
-- [x] S-150-B01 フォーカス箱: `Keyboard-only box`へキーボードのEnterを送り、`1/3`になった。
-- [x] S-490-B01 busycube入力: placeholder `busycube` の入力欄へ正答を入力し、`1/1`になった。
-- [x] S-690-B01 断片の道標: 正答`busycube{text_fragments_leave_trails}`を入力して送信し、`1/1`になった。
-- [x] S-620-B01〜B17 Unicode入力: 17個の正答`579, 801, 1023, 777, 781, 783, 899, 999, 1199, 909, 908, 898, 897, 905, 893, 3133, 3079`を順に入力し、`1/17`から`17/17`まで対応箱だけが開いた。
-- [x] S-640-B01〜B08 文字コード復号: 8つの正答`café français`、`русский ящик`、`український код`、`åbn æsken`、`תיבת קוד`、`กล่อง รหัส`、`český kód`、`编码 宝箱`を順に入力し、`1/8`から`8/8`まで対応箱だけが開いた。
-- [x] S-880-B01〜B03 圧縮荷物: `gzip`、`deflate`、`deflate-raw` を選び、各parcelの内容一致で `3/3` になった。
-- [x] S-840-B01 二次元scroll: 大きな平面を横1500px・縦1100px方向へ実scrollし、表示比率100.0%で `1/1` になった。
-- [ ] S-890 fullscreen離脱: 非アクティブdocumentへの重複`exitFullscreen()`を抑止する修正済み。実fullscreenでの離脱再確認待ち。
-
-### MUIアイコン置換後のスモーク（第24段階）
-
-- [x] 89ステージの直接URLを再表示し、見出し・stage本体・該当URL由来のconsole errorなしを確認した。
-- [x] 代表画面でMUIの`svg`（`MuiSvgIcon-root`、`aria-hidden="true"`、`viewBox="0 0 24 24"`）を確認した。S-010: 3個、S-020: 1個、S-350: 7個、S-620: 17個、S-720: 4個、S-810: 4個。

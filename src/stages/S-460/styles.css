@@ -1,0 +1,10 @@
+.overlay-box {
+  position: fixed;
+  left: env(titlebar-area-x, 1rem);
+  top: env(titlebar-area-y, 1rem);
+  width: env(titlebar-area-width, 5rem);
+  height: env(titlebar-area-height, 4rem);
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+  z-index: 20;
+}

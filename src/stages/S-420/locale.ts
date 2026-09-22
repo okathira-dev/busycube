@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "通知の金庫", en: "Notification vault" },
+  stageName,
   vaultBody: {
     ja: "← → で入力し、本文で提出",
     en: "Enter with ← →, submit with the body",

@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "読めない文字列", en: "Unreadable strings" },
+  stageName,
   mojibake: { ja: "文字化け", en: "Mojibake" },
   decoded: { ja: "復号した文字列", en: "Decoded text" },
   sharedAnswer: { ja: "共通の復号回答", en: "Shared decoded answer" },

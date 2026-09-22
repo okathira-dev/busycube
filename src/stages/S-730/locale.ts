@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "XRの箱", en: "The XR box" },
+  stageName,
   B01: { ja: "空間の箱", en: "Immersive-space box" },
   B02: { ja: "選択光線の箱", en: "Selection-ray box" },
   start: { ja: "XR空間を開く", en: "Enter immersive XR" },
@@ -11,6 +12,7 @@ export const locale = defineStageLocale({
     en: "Connect a supported device and enter through the browser XR prompt.",
   },
   starting: { ja: "XR機器を確認しています…", en: "Checking XR devices…" },
+  preparing: { ja: "XR描画を準備しています…", en: "Preparing XR rendering…" },
   pose: {
     ja: "空間が始まりました。正面の箱へ選択光線を向けます。",
     en: "The space is active. Aim the selection ray at the box ahead.",

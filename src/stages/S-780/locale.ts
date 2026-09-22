@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "架空の財布", en: "Fictional wallets" },
+  stageName,
   start: { ja: "財布を開く", en: "Open the wallet" },
   waiting: {
     ja: "ブラウザの決済UIを待っています。",

@@ -1,4 +1,5 @@
 import { app } from "./app";
+import { securityHeaders } from "./securityHeaders";
 
 describe("Busycube Worker routes", () => {
   it.each([
@@ -16,10 +17,9 @@ describe("Busycube Worker routes", () => {
     expect(response.headers.get("Link")).toBe(
       `<${path}>; rel="payment-method-manifest"`,
     );
-    expect(response.headers.get("Referrer-Policy")).toBe(
-      "strict-origin-when-cross-origin",
-    );
-    expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    for (const [name, value] of Object.entries(securityHeaders)) {
+      expect(response.headers.get(name)).toBe(value);
+    }
     expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull();
   });
 

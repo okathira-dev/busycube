@@ -1,5 +1,12 @@
 import { execFile } from "node:child_process";
-import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -387,43 +394,16 @@ try {
       Array.from({ length: frameCount }, () => beta),
     ),
   ]);
-  const manifest = {
-    schemaVersion: 1,
-    qrVersion,
-    frameRate,
-    frameCount,
-    size: "360x360",
-    answers: qrTexts,
-    routes: {
-      "source-t1": ["T1"],
-      "source-t2": ["T2"],
-      "source-t3": {
-        alpha: ["T3", "T2"],
-        beta: ["T1", "T3", "T2", "T1"],
-      },
-    },
-    assets: [],
-  };
   for (const generatedPath of generated) {
     const file = generatedPath
       .slice(temporaryRoot.length + 1)
       .replaceAll("\\", "/");
     const destination = join(assetRoot, file);
+    const bytes = await readFile(generatedPath);
+    if (!bytes.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])))
+      throw new Error(`Generated ${file} is not a WebM file.`);
     await copyFile(generatedPath, destination);
-    manifest.assets.push({ file });
   }
-  await writeFile(
-    join(assetRoot, "generation-manifest.json"),
-    `${JSON.stringify(manifest, null, 2)
-      .replaceAll('[\n      "T1"\n    ]', '["T1"]')
-      .replaceAll('[\n      "T2"\n    ]', '["T2"]')
-      .replaceAll('[\n        "T3",\n        "T2"\n      ]', '["T3", "T2"]')
-      .replaceAll(
-        '[\n        "T1",\n        "T3",\n        "T2",\n        "T1"\n      ]',
-        '["T1", "T3", "T2", "T1"]',
-      )}\n`,
-    "utf8",
-  );
 } finally {
   try {
     await rm(temporaryRoot, {

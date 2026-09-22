@@ -17,26 +17,26 @@ function createWorker(scriptUrl: string) {
     <link rel="manifest" href="./manifest.webmanifest">
   `;
   const shellCache = {
-    addAll: jest.fn(async () => undefined),
-    match: jest.fn(async () => new Response(shellHtml)),
-    put: jest.fn(async () => undefined),
+    addAll: vi.fn(async () => undefined),
+    match: vi.fn(async () => new Response(shellHtml)),
+    put: vi.fn(async () => undefined),
   };
   const assetCache = {
-    addAll: jest.fn(async () => undefined),
-    match: jest.fn(async () => undefined),
-    put: jest.fn(async () => undefined),
+    addAll: vi.fn(async () => undefined),
+    match: vi.fn(async () => undefined),
+    put: vi.fn(async () => undefined),
   };
   const caches = {
-    open: jest.fn(async (name: string) =>
+    open: vi.fn(async (name: string) =>
       name.includes("shell") ? shellCache : assetCache,
     ),
-    keys: jest.fn(async () => ["busycube-shell-v1"]),
-    delete: jest.fn(async () => true),
+    keys: vi.fn(async () => ["busycube-shell-v1"]),
+    delete: vi.fn(async () => true),
   };
-  const skipWaiting = jest.fn(async () => undefined);
-  const claim = jest.fn(async () => undefined);
-  const fetcher = jest.fn(async () => new Response("network"));
-  const showNotification = jest.fn(async () => undefined);
+  const skipWaiting = vi.fn(async () => undefined);
+  const claim = vi.fn(async () => undefined);
+  const fetcher = vi.fn(async () => new Response("network"));
+  const showNotification = vi.fn(async () => undefined);
   const self = {
     location: new URL(scriptUrl),
     registration: {
@@ -45,8 +45,8 @@ function createWorker(scriptUrl: string) {
     },
     clients: {
       claim,
-      matchAll: jest.fn(async () => []),
-      openWindow: jest.fn(async () => undefined),
+      matchAll: vi.fn(async () => []),
+      openWindow: vi.fn(async () => undefined),
     },
     skipWaiting,
     addEventListener: (type: string, handler: WorkerEventHandler) => {
@@ -82,7 +82,7 @@ describe("Busycube service worker strategy", () => {
     const worker = createWorker(
       "https://example.test/service-worker.js?mode=development",
     );
-    const respondWith = jest.fn();
+    const respondWith = vi.fn();
 
     worker.listeners.get("fetch")?.({
       request: {
@@ -128,7 +128,13 @@ describe("Busycube service worker strategy", () => {
       "./",
       "./manifest.webmanifest",
       "./icon.svg",
+      "./icon-192.png",
+      "./icon-512.png",
+      "./icon-maskable-192.png",
+      "./icon-maskable-512.png",
+      "./apple-touch-icon.png",
       "./licenses/index.html",
+      "./licenses/localize.js",
       "./licenses/jsqr-Apache-2.0.txt",
       "./licenses/mediabunny-MPL-2.0.txt",
       "./licenses/unifont-OFL-1.1.txt",
@@ -142,9 +148,9 @@ describe("Busycube service worker strategy", () => {
 
   it("handles mutable navigation and hashed assets but ignores Vite source", () => {
     const worker = createWorker("https://example.test/service-worker.js");
-    const navigationResponse = jest.fn();
-    const assetResponse = jest.fn();
-    const sourceResponse = jest.fn();
+    const navigationResponse = vi.fn();
+    const assetResponse = vi.fn();
+    const sourceResponse = vi.fn();
     const fetchHandler = worker.listeners.get("fetch");
 
     fetchHandler?.({
@@ -184,7 +190,7 @@ describe("Busycube service worker strategy", () => {
       action: "left",
       notification: {
         body: "arrows",
-        close: jest.fn(),
+        close: vi.fn(),
         data: { stage: "S-410", sequence: "", target: "LRRL" },
         tag: "busycube-S-410",
         title: "Busycube",

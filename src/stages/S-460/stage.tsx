@@ -1,3 +1,4 @@
+import "./styles.css";
 import WindowOutlined from "@mui/icons-material/WindowOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {

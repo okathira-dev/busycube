@@ -1,7 +1,8 @@
 import { defineStageLocale } from "../locale";
+import { stageName } from "./name";
 
 export const locale = defineStageLocale({
-  stageName: { ja: "断片の道標", en: "Fragment Trail" },
+  stageName,
   intro: {
     ja: "矢印を辿って、ブラウザが示す一節のそばにある4つの語を集めてください。",
     en: "Follow the arrows and collect the four words beside the passages your browser indicates.",

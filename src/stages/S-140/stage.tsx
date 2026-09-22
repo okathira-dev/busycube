@@ -1,3 +1,4 @@
+import "./styles.css";
 import CloudUploadOutlined from "@mui/icons-material/CloudUploadOutlined";
 import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
 import {

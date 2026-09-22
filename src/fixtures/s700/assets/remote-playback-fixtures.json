@@ -1,0 +1,24 @@
+{
+  "assets": [
+    {
+      "id": "a",
+      "key": "silver orbit",
+      "token": "bcu-rp-a-7k3m2q"
+    },
+    {
+      "id": "b",
+      "key": "quiet prism",
+      "token": "bcu-rp-b-9x4v6n"
+    },
+    {
+      "id": "c",
+      "key": "amber signal",
+      "token": "bcu-rp-c-2h8w5r"
+    },
+    {
+      "id": "d",
+      "key": "violet harbor",
+      "token": "bcu-rp-d-6p3y9t"
+    }
+  ]
+}
