@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 const mocks = vi.hoisted(() => ({
   progress: {
@@ -46,6 +46,12 @@ vi.mock("./hooks/useDriveBackup", () => ({
 vi.mock("./hooks/useServiceWorker", () => ({
   useServiceWorker: () => ({ state: "development", applyUpdate: vi.fn() }),
 }));
+// 画面遷移の検証を、実SettingsViewチャンクの変換・評価時間から分離する。
+vi.mock(import("./ui/SettingsView"), () => ({
+  SettingsView: ({ headingId }: { headingId: string }) => (
+    <h2 id={headingId}>Settings</h2>
+  ),
+}));
 
 import { App } from "./App";
 
@@ -62,11 +68,9 @@ describe("App shell", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "Settings" }));
 
-    await waitFor(
-      () =>
-        expect(screen.getByRole("heading", { name: "Settings" })).toBeTruthy(),
-      { timeout: 3000 },
-    );
+    expect(
+      await screen.findByRole("heading", { name: "Settings" }),
+    ).toBeTruthy();
     expect(new URL(window.location.href).searchParams.get("view")).toBe(
       "settings",
     );
