@@ -335,3 +335,29 @@ that could be justified without a tuning experiment:
   transferred bytes. Changing the catalogue mounting strategy or CSS delivery
   would require a measured comparison and behavior review, which is outside
   this pass.
+
+### Cloudflare PR Preview verification
+
+PR #62 triggered the normal CI and Cloudflare Preview workflow for commit
+`c4c9732`; both jobs passed. Wrangler uploaded 127 new assets and reported
+version `ed153f9f-cb23-4ec7-b840-fb9c6811c3b8` at the Access-protected alias
+`https://pr-62-busycube.okathira.workers.dev/`.
+
+An authenticated Chrome session loaded the actual Cloudflare Preview:
+
+- The catalogue rendered all 89 cards. Its accessibility tree named the first
+  card `D-001 0/1 最初の箱`.
+- DOM inspection found zero explicit `aria-label` attributes and zero redundant
+  `.sr-only` action spans across the 89 card actions.
+- Settings and About both loaded their intended headings. The browser's
+  captured warning/error log was empty across the three routes.
+- The document contained only the application entry script. Cloudflare Web
+  Analytics was not injected on this `workers.dev` Preview hostname, so the
+  Preview cannot establish that the production beacon loads or reports data.
+
+Unauthenticated HTTP clients receive a Cloudflare Access `302` redirect on the
+Preview alias. Consequently, a fresh-process Lighthouse audit of this remote
+URL would measure the Access login page, not Busycube. The Lighthouse results
+above are for the changed build in local Cloudflare preview; final analytics
+and console verification remains pending on the public production hostname
+after the PR is merged and deployed.
