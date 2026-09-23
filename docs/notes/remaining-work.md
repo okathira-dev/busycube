@@ -6,12 +6,12 @@
 
 ## 公開前に必須の作業
 
-- [ ] [全ステージ・人手確認台帳](./stage-review.md)の必須実環境ケースへ実施環境、期待結果、実結果を記録し、ステージ別の未確認項目を実機で確認する。必須ケースはH-001、H-002、H-005〜H-007、H-013〜H-022、H-025、H-033、H-043、H-048、H-050、H-053〜H-055、H-058、H-062、H-063、H-065であり、特にS-890の実fullscreenから別ステージへ離脱する経路を再確認する。
+- [ ] [実環境・公開判定台帳](./stage-review-environments.md)の必須ケースへ実施環境、期待結果、実結果を記録し、[D](./stage-review-d.md)、[P](./stage-review-p.md)、[L](./stage-review-l.md)の未確認項目を実機で確認する。必須ケースはH-001、H-002、H-005〜H-007、H-013〜H-022、H-025、H-033、H-043、H-048、H-050、H-053〜H-055、H-058、H-062、H-063、H-065であり、特にS-890の実fullscreenから別ステージへ離脱する経路を再確認する。
 - [ ] 生成済みのSVG、192px／512px PNG、maskable PNG、Apple Touch Iconが対象ブラウザのinstall UIとhome画面で欠けずに表示されることを実機で確認する。
 
 ## 対象環境を用意できる場合の作業
 
-[全ステージ・人手確認台帳](./stage-review.md)で「条件付き必須」としたケースは、対応ステージをその環境向けに公開する場合だけ合格を必要とする。macOS／iOS Safari、Android Chrome、外部機器、XR、Periodic Background Sync、実SMS、Contact Picker、外部display、Local Font Accessなど、用意できない環境を推測で合格にしない。
+[実環境・公開判定台帳](./stage-review-environments.md)で「条件付き必須」としたケースは、対応ステージをその環境向けに公開する場合だけ合格を必要とする。macOS／iOS Safari、Android Chrome、外部機器、XR、Periodic Background Sync、実SMS、Contact Picker、外部display、Local Font Accessなど、用意できない環境を推測で合格にしない。
 
 条件付きケースに失敗した場合は、アプリ全体の成功へ読み替えず、該当ステージを未検証として扱うか公開対象から外す。
 
