@@ -10,7 +10,7 @@ export const locale = defineStageLocale({
   focusButton: { ja: "キーボードでたどる箱", en: "Keyboard-only box" },
   selectLabel: { ja: "メニューを検索", en: "Search the menu" },
   selectPlaceholder: { ja: "項目を入力して探す", en: "Type to search" },
-  B01: { ja: "フォーカスの箱", en: "Focus box" },
-  B02: { ja: "検索選択の箱", en: "Typeahead-select box" },
-  B03: { ja: "排他開示の箱", en: "Exclusive-disclosure box" },
+  B01: { ja: "斜線入りの目", en: "Crossed-out eye" },
+  B02: { ja: "点線の四角", en: "Dotted square" },
+  B03: { ja: "枝分かれした線", en: "Branching lines" },
 });

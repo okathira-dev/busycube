@@ -21,7 +21,7 @@ const key = "busycube:S-450:round";
  * 目的: installed Busycubeへ登録したcustom protocolをOS/browser経由で起動し、送出時と受信時のrandom roundを照合する。
  * 最初の一手: Busycubeをinstallして「専用の合図を送る」を押し、OS/browserの確認UIで`web+busycube:` linkをBusycubeに開かせる。
  * 箱ごとの解法:
- * - B01「プロトコルの箱」: 初期URLまたはLaunchQueue target URLの`protocol`をdecodeし、`web+busycube:open?round=`に続く値が送出直前にlocalStorageへ保存したroundと完全一致すると開く。
+ * - B01「枠から出る矢印」: `web+busycube:` linkをOSまたはbrowserの確認UIからBusycubeへ渡す。初期URLまたはLaunchQueue target URLの`protocol`をdecodeし、`web+busycube:open?round=`に続く値が送出直前にlocalStorageへ保存したroundと完全一致すると開く。
  * 使用API: Web App Manifest `protocol_handlers`、custom protocol navigation、Launch Handler API、URL API、Web Crypto UUID、localStorage。
  * 権限・privacy: protocol URLには一時random roundだけを載せ、受信後の一致判定以外に使用しない。外部app情報やlaunch履歴を保存・送信しない。
  * 対応環境: Busycubeをinstallでき、`web+busycube` protocol handler登録とLaunchQueue target URLを実装するbrowser/OS。

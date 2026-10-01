@@ -27,7 +27,7 @@ interface PermissionAwareOrientationEvent {
  * 目的: 端末の実姿勢を傾斜角として読み、指定角度へ傾けたまま静止できたことを確認する。
  * 最初の一手: 「姿勢を読み取る」を押して必要ならmotion/orientation権限を許可し、端末を前後方向へ約45°傾ける。
  * 箱ごとの解法:
- * - B01「端末姿勢の箱」: `beta`が45°±12°かつ`gamma`が0°±12°の範囲を連続1,000 ms以上保つと開く。範囲外へ出るたび保持時間は0から測り直す。
+ * - B01「回る端末」: 「姿勢を読み取る」を押し、端末を前後方向へ約45°傾けて保つ。`beta`が45°±12°かつ`gamma`が0°±12°の範囲を連続1,000 ms以上保つと開く。範囲外へ出るたび保持時間は0から測り直す。
  * 使用API: Device Orientation Eventsの`deviceorientation`、`beta` / `gamma`、iOS系の`DeviceOrientationEvent.requestPermission()`、`performance.now()`。
  * 権限・privacy: sensor権限はbutton操作時だけ要求し、二つの角度は現在表示と保持判定にだけ使って保存・送信しない。
  * 対応環境: Device Orientation Eventsを実装し、実端末の姿勢sensor値をpageへ公開するmobile browser等。

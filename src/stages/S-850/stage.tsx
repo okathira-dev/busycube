@@ -29,7 +29,7 @@ function copyDocumentStyles(target: Document) {
  * 目的: browser所有Document Picture-in-Picture windowの別documentへ実GiftBoxをReact portalで移し、そのwindow内で操作する。
  * 最初の一手: 「浮かぶ画面を開く」を押し、常時手前のPiP windowへ移った箱を探してclickする。
  * 箱ごとの解法:
- * - B01「浮かぶ文書の箱」: `requestWindow()`が返したdocumentへportalした箱をtrusted clickし、ownerDocumentがPiP document、native event viewが保持中PiP windowと一致すると開く。
+ * - B01「小さな窓が重なる画面」: 「浮かぶ画面を開く」を押し、PiP windowへ移った箱を直接クリックする。箱のownerDocumentが`requestWindow()`で得たPiP documentで、native event viewが保持中PiP windowと一致するtrusted clickなら開く。
  * 使用API: Document Picture-in-Picture API、React `createPortal()`、cross-document stylesheet clone、Window pagehide。
  * 権限・privacy: camera・screen capture・window内容を取得せず、browserが返したPiP Window/Document参照だけを表示中に保持する。dataを保存・送信しない。
  * 対応環境: Document Picture-in-Pictureを提供するdesktop Chromium系browser。

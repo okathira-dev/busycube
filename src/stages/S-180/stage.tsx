@@ -26,7 +26,7 @@ type ClipboardStatus =
  * 目的: browser clipboardへ渡した逆順文字列をpage外で正順に直し、再読取した内容とattempt内の手順を確認する。
  * 最初の一手: 「逆さで渡す」で`ebucysub`をclipboardへ書き、外部editor等で`busycube`へ直してcopyし、「戻りを調べる」を押す。
  * 箱ごとの解法:
- * - B01「コピーの箱」: このattemptで`ebucysub`のclipboard書込が成功してarmedになった後、明示buttonで読み取ったclipboard textが厳密に`busycube`なら開く。
+ * - B01「重なった紙」: 「逆さで渡す」の後に文字列を直してcopyし、「戻りを調べる」を押す。このattemptで`ebucysub`のclipboard書込が成功してarmedになった後、明示buttonで読み取ったclipboard textが厳密に`busycube`なら開く。
  * 使用API: Async Clipboard APIの`navigator.clipboard.writeText()` / `readText()`。
  * 権限・privacy: clipboard read/write権限はbutton操作時だけ利用する。固定challenge文字列だけを扱い、それ以外のclipboard内容を保存・表示・送信しない。
  * 対応環境: secure contextでAsync Clipboardのtext読書きを許可できるbrowser。

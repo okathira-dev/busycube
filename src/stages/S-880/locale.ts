@@ -19,7 +19,16 @@ export const locale = defineStageLocale({
     ja: "このブラウザはDecompressionStreamを提供していません。",
     en: "This browser has no DecompressionStream.",
   },
-  B01: { ja: "青い荷物", en: "Blue parcel" },
-  B02: { ja: "紫の荷物", en: "Purple parcel" },
-  B03: { ja: "赤い荷物", en: "Red parcel" },
+  B01: {
+    ja: "紙と下向き矢印",
+    en: "File with downward arrow",
+  },
+  B02: {
+    ja: "紙と下向き矢印",
+    en: "File with downward arrow",
+  },
+  B03: {
+    ja: "紙と下向き矢印",
+    en: "File with downward arrow",
+  },
 });

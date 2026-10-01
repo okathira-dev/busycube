@@ -3,5 +3,5 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "低加速度の箱", en: "Low-acceleration box" },
+  B01: { ja: "砂時計", en: "Hourglass" },
 });

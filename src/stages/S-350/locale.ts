@@ -4,11 +4,11 @@ import { stageName } from "./name";
 export const locale = defineStageLocale({
   stageName,
   videoToOperate: { ja: "操作する映像", en: "Video to operate" },
-  B01: { ja: "シークの箱", en: "Seek box" },
-  B02: { ja: "ミュートの箱", en: "Mute box" },
-  B03: { ja: "再生と停止の箱", en: "Play-pause box" },
-  B04: { ja: "再生速度の箱", en: "Playback-rate box" },
-  B05: { ja: "字幕trackの箱", en: "Caption-track box" },
-  B06: { ja: "小窓の箱", en: "Picture-in-picture box" },
-  B08: { ja: "全画面の箱", en: "Fullscreen box" },
+  B01: { ja: "時計", en: "Clock" },
+  B02: { ja: "音波の出るスピーカー", en: "Speaker with sound waves" },
+  B03: { ja: "二本の縦線", en: "Two vertical bars" },
+  B04: { ja: "速度計", en: "Speedometer" },
+  B05: { ja: "字幕線", en: "Caption lines" },
+  B06: { ja: "小さな窓が重なる画面", en: "Screen with inset window" },
+  B08: { ja: "外向きの四隅", en: "Outward corners" },
 });

@@ -29,8 +29,8 @@ type AudioSessionLike = EventTarget & {
  * 目的: OS/browser所有のmedia controlから届くpause actionと、別音声によるAudio Session interruption後の再生復帰を観測する。
  * 最初の一手: 「音を始める」後にmedia key・headset・system media UIでpauseする。B02は「復帰を待つ音を始める」後、別appの音でinterruptしてからBusycube音声へ戻す。
  * 箱ごとの解法:
- * - B01「外側停止の箱」: 生成tone再生中にMedia Sessionへ登録した実`pause` action handlerが呼ばれると、toneを止めて開く。
- * - B02「音声復帰の箱」: 同じattemptのAudio Session `statechange`で一度`interrupted`を観測し、その後stateが`active`な時に対象audioの`playing` eventを受けると開く。
+ * - B01「音波の出るスピーカー」: tone再生中にmedia keyやsystem media UIからpauseする。生成tone再生中にMedia Sessionへ登録した実`pause` action handlerが呼ばれると、toneを止めて開く。
+ * - B02「音波の出るスピーカー」: 別appの音でBusycubeの音声をinterruptし、その後Busycube音声へ戻る。同じattemptのAudio Session `statechange`で一度`interrupted`を観測し、その後stateが`active`な時に対象audioの`playing` eventを受けると開く。
  * 使用API: Media Session API/MediaMetadata、Web Audio oscillator、HTMLAudioElement、Audio Session APIのtype/state/statechange。
  * 権限・privacy: 権限や音声入力を使わず、生成toneとGit管理済みfixtureだけを再生する。media keyやinterruption元の情報は取得・保存・送信しない。
  * 対応環境: B01はMedia SessionとWeb Audio、B02はAudio Session APIとOS audio focus復帰を実装するbrowser/OS。

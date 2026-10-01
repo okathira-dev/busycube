@@ -42,8 +42,8 @@ function iconUrl(): string {
  * 目的: OS Contact Pickerで架空contactの5 propertyを共有した結果と、contactを一件選びながら全propertyを伏せた結果を対比する。
  * 最初の一手: 画面の名刺どおりに`Busycube Courier`を端末連絡先へ登録し、iconも保存・設定して「5項目を共有」を押す。
  * 箱ごとの解法:
- * - B01「全項目の箱」: pickerが一件を返し、name、case-insensitive email、正規化tel `+81300000000`、address内4 token、size 0超icon Blobがすべて名刺と一致すると開く。
- * - B02「非共有の箱」: 同じname/email/tel/address/iconを要求するpickerで一件を選び、返却contactの五propertyがすべて欠損または空配列なら開く。
+ * - B01「画面と携帯端末」: 名刺どおりの連絡先を登録し、pickerからその一件を共有する。pickerが一件を返し、name、case-insensitive email、正規化tel `+81300000000`、address内4 token、size 0超icon Blobがすべて名刺と一致すると開く。
+ * - B02「斜線入りの目」: 「項目を伏せて選ぶ」を押し、pickerで一件を選んで五項目を渡さない。同じname/email/tel/address/iconを要求するpickerの返却contactで、五propertyがすべて欠損または空配列なら開く。
  * 使用API: Contact Picker APIの`navigator.contacts.select()`、ContactInfo arrays、structured address、Blob icon。
  * 権限・privacy: 返却contactは一回のboolean照合後に破棄し、名前・email・電話・住所・画像をDOM/console/storage/serverへ残さない。作成contactの削除はOS連絡先側で行う。
  * 対応環境: secure contextでContact Pickerとproperty単位の共有制御を提供するAndroid等のbrowser/OS。

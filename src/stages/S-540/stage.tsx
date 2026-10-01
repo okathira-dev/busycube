@@ -17,8 +17,8 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 目的: ambient light sensorが報告するilluminanceの暗所側と強光側という離れた二つの閾値を実環境で観測する。
  * 最初の一手: 「センサーを開始」を押し、sensorを完全に覆って暗くする。B02は十分に明るい屋外光などへsensorを向ける。
  * 箱ごとの解法:
- * - B01「暗闇の箱」: AmbientLightSensor readingの`illuminance`がnullでなく5 lux以下なら開く。
- * - B02「眩光の箱」: 同じsensorの`illuminance`がnullでなく10,000 lux以上なら開く。別訪問で得た両端も通常進捗へ累積できる。
+ * - B01「太陽」: sensorを覆って暗くする。AmbientLightSensor readingの`illuminance`がnullでなく5 lux以下なら開く。
+ * - B02「太陽」: sensorを十分に明るい屋外光へ向ける。同じsensorの`illuminance`がnullでなく10,000 lux以上なら開く。別訪問で得た両端も通常進捗へ累積できる。
  * 使用API: Generic Sensor APIの`AmbientLightSensor({frequency:5})`とilluminance reading。
  * 権限・privacy: light sensor accessは明示buttonから開始し、lux値は閾値判定にだけ使う。照度値・時刻・場所を保存・送信しない。
  * 対応環境: AmbientLightSensorと実照度readingをpageへ公開するbrowser/端末、および各閾値を作れる照明環境。

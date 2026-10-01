@@ -21,7 +21,7 @@ import { locale } from "./locale";
  * 目的: 三つのshapeの並び替えをView Transitionとして完了させ、単なるstate変更ではなくtransitionの終了を待つ。
  * 最初の一手: 「形をつなぐ」を押し、◆・●・▲の並び替えanimationが終わるたびにもう一度押して計3回進める。
  * 箱ごとの解法:
- * - B01「画面遷移の箱」: `document.startViewTransition()`内でstepを1ずつ進め、各`finished` promiseがresolveした後のstepが3以上になると開く。
+ * - B01「左右の矢印」: 「形をつなぐ」を3回押す。`document.startViewTransition()`内でstepを1ずつ進め、各`finished` promiseがresolveした後のstepが3以上になると開く。
  * 使用API: View Transitions APIの`document.startViewTransition()` / `ViewTransition.finished`とReact `flushSync()`。
  * 権限・privacy: 権限・外部入力を使用せず、attempt内stepだけを表示・判定し、操作履歴を保存・送信しない。
  * 対応環境: same-document View Transitions APIを実装し、transitionの完了promiseを提供するbrowser。

@@ -55,7 +55,7 @@ function loadGoogleIdentityServices(): Promise<void> {
  * 目的: 通常OAuthではなく、Google managed IdPとbrowserが仲介するFedCM account chooserで利用者が一度だけ手動Continueする。
  * 最初の一手: 公開origin用Google FedCM client IDを設定し、「Googleの身分証を提示」を押してbrowser所有account UIから手動で続行する。
  * 箱ごとの解法:
- * - B01「手動FedCMの箱」: current generationのGoogle Identity Services callbackが非空`credential`と厳密な`select_by === "fedcm"`を返すと開く。
+ * - B01「点線の四角」: 「Googleの身分証を提示」を押し、browser所有account UIから手動で続行する。current generationのGoogle Identity Services callbackが非空`credential`と厳密な`select_by === "fedcm"`を返すと開く。
  * 使用API: FedCM/IdentityCredential、公式Google Identity Services JavaScript APIのinitialize/prompt/cancel、外部GIS script load。
  * 権限・privacy: callback tokenは非空判定だけ行い、decode・表示・console・storage・Drive・analytics・backendへ渡さない。account属性を取得しない。
  * 対応環境: secureな公開origin、登録済み専用Google Web client ID、online Google account、FedCM/IdentityCredential対応browser。

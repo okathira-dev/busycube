@@ -19,5 +19,5 @@ export const locale = defineStageLocale({
     ja: "Consoleを開いて盤面を見る。",
     en: "Open Console to see the board.",
   },
-  B01: { ja: "診断盤面の箱", en: "Diagnostic-board box" },
+  B01: { ja: "斜線入りの目", en: "Crossed-out eye" },
 });

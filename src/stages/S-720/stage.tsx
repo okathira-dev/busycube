@@ -278,10 +278,10 @@ function routeDetails(path: readonly NodeId[]) {
  * 目的: 三つのsourceとswap/merge/odd-even transform nodeをpatch cableで配線し、実変換videoに復元されたQR flagを読む。
  * 最初の一手: sourceのoutをtransformのinへ、同transformのoutを次のnodeまたはOUTPUTのinへ順番にclickして一筆のrouteを作る。
  * 箱ごとの解法:
- * - B01「左右交換の箱」: `source1 → T1(swap halves) → output`を再生してQRを読み、`busycube{swap_halves}`を完全一致で入力すると開く。
- * - B02「フレーム合成の箱」: `source2 → T2(merge frames) → output`を再生してQRを読み、`busycube{merge_frames}`を完全一致で入力すると開く。
- * - B03「奇偶片側の箱」: `source3 → T3(select half) → T2(merge) → output`から`busycube{odd_even_alpha}`を得て完全一致で入力すると開く。
- * - B04「複合経路の箱」: `source3 → T1 → T3 → T2 → T1 → output`から`busycube{swap_route_beta}`を得て完全一致で入力すると開く。
+ * - B01「左右の矢印」: `source1 → T1(swap halves) → output`を再生してQRを読み、`busycube{swap_halves}`を完全一致で入力すると開く。
+ * - B02「左右の矢印」: `source2 → T2(merge frames) → output`を再生してQRを読み、`busycube{merge_frames}`を完全一致で入力すると開く。
+ * - B03「左右の矢印」: `source3 → T3(select half) → T2(merge) → output`から`busycube{odd_even_alpha}`を得て完全一致で入力すると開く。
+ * - B04「画面と携帯端末」: `source3 → T1 → T3 → T2 → T1 → output`から`busycube{swap_route_beta}`を得て完全一致で入力すると開く。
  * 使用API: Canvas 2D cable描画/frame変換、MediaBunny decode/CanvasSink/VP8 encode、HTMLVideoElement、Blob URL、AbortSignal。
  * 権限・privacy: Git管理済みfixtureだけをclient内でdecode・変換・再encodeし、mediaや回答を保存・送信しない。
  * 対応環境: Canvas 2D、WebM/VP8 decode・encodeとMediaBunnyが動作するbrowser。

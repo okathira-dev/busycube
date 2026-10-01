@@ -9,5 +9,5 @@ export const locale = defineStageLocale({
     ja: "2ボタンを押しながらスティックを倒す。",
     en: "Hold two buttons while moving a stick.",
   },
-  B01: { ja: "同時入力の箱", en: "Simultaneous-input box" },
+  B01: { ja: "ゲームパッド", en: "Gamepad" },
 });

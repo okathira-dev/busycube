@@ -28,8 +28,8 @@ export const locale = defineStageLocale({
     en: "Navigation API branch route",
   },
   browserBack: { ja: "← ブラウザの戻る →", en: "← browser Back →" },
-  B01: { ja: "履歴の箱", en: "History box" },
-  B02: { ja: "戻る・進むの箱", en: "Back-forward box" },
-  B03: { ja: "再読込の箱", en: "Reload box" },
-  B04: { ja: "分岐破棄の箱", en: "Branch-disposal box" },
+  B01: { ja: "時計と戻る矢印", en: "Clock with return arrow" },
+  B02: { ja: "折り返す矢印", en: "Bent arrow" },
+  B03: { ja: "左右の矢印", en: "Opposing arrows" },
+  B04: { ja: "左右の矢印", en: "Opposing arrows" },
 });

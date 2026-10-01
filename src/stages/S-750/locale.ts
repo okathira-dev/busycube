@@ -3,7 +3,7 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "自動受取の箱", en: "Automatic-receipt box" },
+  B01: { ja: "ベル", en: "Bell" },
   request: { ja: "SMSを待つ", en: "Wait for SMS" },
   copy: { ja: "SMS本文をコピー", en: "Copy SMS body" },
   reset: { ja: "新しい封書", en: "New letter" },

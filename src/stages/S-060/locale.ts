@@ -1,8 +1,8 @@
 import { defineStageLocale } from "../locale";
 
 export const locale = defineStageLocale({
-  B01: { ja: "戻る箱", en: "Return box" },
-  B02: { ja: "留守番箱", en: "Offline box" },
+  B01: { ja: "折り返す矢印", en: "Bent arrow" },
+  B02: { ja: "斜線入りWi-Fi", en: "Crossed-out Wi-Fi" },
   revisitClue: {
     ja: "一度この箱を離れて、もう一度戻ってきてください。",
     en: "Leave this box once, then return to it.",

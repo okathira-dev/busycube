@@ -30,8 +30,8 @@ type SignalMessage = {
  * 目的: 同一端末の二つのwindow間で生成音trackとRTCDataChannelを持つpeer connectionを確立し、利用者操作でchannelを閉じる。
  * 最初の一手: 「受信窓を開く」を押し、同じroundのoffer/answer接続が完了してから「接続を閉じる」を押す。
  * 箱ごとの解法:
- * - B01「接続の箱」: answer窓とのWebRTC signalingが完了し、`busycube` RTCDataChannelの`open` eventを受けると両窓側で開く。
- * - B02「切断の箱」: data channelの`readyState`が`open`な間に「接続を閉じる」を押し、箱を開いてから`RTCDataChannel.close()`を実行する。
+ * - B01「音波の出るスピーカー」: 「受信窓を開く」でanswer窓との接続を確立する。answer窓とのWebRTC signalingが完了し、`busycube` RTCDataChannelの`open` eventを受けると両窓側で開く。
+ * - B02「窓」: data channelが`open`な間に「接続を閉じる」を押す。その時`readyState`が`open`なら箱が開き、その後`RTCDataChannel.close()`を実行する。
  * 使用API: RTCPeerConnection/RTCDataChannel、Web Audio oscillatorとMediaStreamDestination、BroadcastChannelによるlocal signaling、`window.open()`、Web Crypto UUID。
  * 権限・privacy: microphoneは使わず生成した小音量toneだけを同一端末window間でrelayする。SDP/ICEと一時IDは同一origin channel内だけで扱い、保存・server送信しない。
  * 対応環境: WebRTC、Web Audio、BroadcastChannelと複数window/tabを利用できるbrowser。

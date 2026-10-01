@@ -30,10 +30,10 @@ function currentTrail() {
  * 目的: same-document historyの深さ、実back/forward・reload navigation、forward枝を新しいnavigationで破棄する動作を別々に観測する。
  * 最初の一手: 「3段の足跡を作る」を押してbrowser Backを3回使う。続いてreloadとback/forwardを行い、枝分かれはA→B→Back→Cの順で作る。
  * 箱ごとの解法:
- * - B01「三歩戻る箱」: ready付きdepth 0〜3のhistoryを作り、browser Backでready付きdepth 0 entryへ戻ると開く。
- * - B02「往復の箱」: document navigation timingのtypeが`back_forward`、またはBFCache復帰の`pageshow.persisted`が`true`なら開く。
- * - B03「再読込の箱」: browser reload後、先頭の`PerformanceNavigationTiming.type`が厳密に`reload`なら開く。
- * - B04「消える枝の箱」: Navigation APIでentry Bを作った後browser BackでAへ戻り、そこからCをnavigateして監視中entryの`dispose` eventを受けると開く。
+ * - B01「時計と戻る矢印」: ready付きdepth 0〜3のhistoryを作り、browser Backでready付きdepth 0 entryへ戻ると開く。
+ * - B02「折り返す矢印」: browserのBackまたはForwardでこのstageへ戻る。document navigation timingのtypeが`back_forward`、またはBFCache復帰の`pageshow.persisted`が`true`なら開く。
+ * - B03「左右の矢印」: このpageを再読込する。browser reload後、先頭の`PerformanceNavigationTiming.type`が厳密に`reload`なら開く。
+ * - B04「左右の矢印」: AからBへ進み、browser BackでAへ戻ってからCへ進む。Navigation APIで監視中のentry Bに`dispose` eventが届くと開く。
  * 使用API: History API、Performance Navigation Timing、PageTransitionEvent、Navigation APIのnavigate/currententrychange/dispose、sessionStorage、Web Crypto UUID。
  * 権限・privacy: 権限を要求せず、history stateにはdepth/ready、sessionには枝操作回数、URLにはrandom branch IDだけを置き、閲覧履歴や個人情報を送信しない。
  * 対応環境: B01〜B03はHistory/Performance APIsを持つ一般的なbrowser、B04はNavigation APIのentry disposalを実装するbrowser。

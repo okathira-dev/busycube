@@ -48,8 +48,8 @@ export const locale = defineStageLocale({
   outputLabel: { ja: "出力", en: "OUTPUT" },
   flagLabel: { ja: "flag", en: "flag" },
   unknownError: { ja: "不明なエラー", en: "unknown error" },
-  B01: { ja: "T1の箱", en: "T1 box" },
-  B02: { ja: "T2の箱", en: "T2 box" },
-  B03: { ja: "T3の箱", en: "T3 box" },
-  B04: { ja: "QR復元の箱", en: "QR-recovery box" },
+  B01: { ja: "左右の矢印", en: "Opposing arrows" },
+  B02: { ja: "左右の矢印", en: "Opposing arrows" },
+  B03: { ja: "左右の矢印", en: "Opposing arrows" },
+  B04: { ja: "画面と携帯端末", en: "Screen and phone" },
 });

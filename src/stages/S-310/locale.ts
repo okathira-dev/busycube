@@ -8,7 +8,16 @@ export const locale = defineStageLocale({
     en: "Open this URL into the installed Busycube again.",
   },
   launchUrl: { ja: "起動用URL", en: "Launch URL" },
-  B01: { ja: "再起動の箱", en: "Launch-handler box" },
-  B02: { ja: "ショートカットの箱", en: "Shortcut box" },
-  B03: { ja: "新しいメモの箱", en: "New-note box" },
+  B01: {
+    ja: "枠から出る矢印",
+    en: "Arrow leaving a square",
+  },
+  B02: {
+    ja: "枠から出る矢印",
+    en: "Arrow leaving a square",
+  },
+  B03: {
+    ja: "枠から出る矢印",
+    en: "Arrow leaving a square",
+  },
 });

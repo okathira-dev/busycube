@@ -19,8 +19,8 @@ import { useEffect, useRef, useState } from "react";
  * 目的: このpageがhiddenになってからvisibleへ戻るまでの実経過時間を測り、短い不在と長い不在を区別する。
  * 最初の一手: 別tabまたは別appへ切り替えてこのpageを見えない状態にし、まず2秒以上待ってから戻る。
  * 箱ごとの解法:
- * - B01「見ない時間の箱」: `visibilityState`が`hidden`になった後、2,000 ms以上経過して`visible`へ戻ると開く。
- * - B02「長い不在の箱」: 同じhidden期間を25分以上保ってから`visible`へ戻ると開く。25分の復帰ではB01の条件も同時に満たす。
+ * - B01「斜線入りの目」: 別tabまたは別appへ移って2秒以上待ち、このpageへ戻る。`visibilityState`が`hidden`になった後、2,000 ms以上経過して`visible`へ戻ると開く。
+ * - B02「斜線入りの目」: 別tabまたは別appへ移って25分以上待ち、このpageへ戻る。同じhidden期間を25分以上保ってから`visible`へ戻ると開く。25分の復帰ではB01の条件も同時に満たす。
  * 使用API: Page Visibility APIの`document.visibilityState`と`visibilitychange`、単調増加時計`performance.now()`。
  * 権限・privacy: 権限を要求せず、直近のhidden開始時刻と復帰までの秒数だけをmemory上で扱い、時刻・閲覧先・滞在履歴は保存・送信しない。
  * 対応環境: Page Visibility APIとHigh Resolution Time APIを実装し、tab/app切替でpageがhiddenになるbrowser。

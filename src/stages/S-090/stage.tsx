@@ -21,7 +21,7 @@ import { locale } from "./locale";
  * 目的: page内buttonだけで完結せず、OS/browserの通知面からBusycubeへ戻ってきたnavigationを確認する。
  * 最初の一手: 「外から呼ぶ」を押して通知を許可し、表示されたBusycube通知を標準の通知UIから開く。
  * 箱ごとの解法:
- * - B01「通知の箱」: Service Workerが表示した通知をclickして`?stage=S-090&notification=1`へ戻り、入場時URLの`notification` parameterが厳密に`1`なら開く。判定後はparameterをURLから除く。
+ * - B01「ベル」: 「外から呼ぶ」で通知を表示し、標準の通知UIからその通知を開く。Service Workerが表示した通知をclickして`?stage=S-090&notification=1`へ戻り、入場時URLの`notification` parameterが厳密に`1`なら開く。判定後はparameterをURLから除く。
  * 使用API: Notifications APIのpermissionと`showNotification()`、Service Workerのnotification click処理、URL API、History API。
  * 権限・privacy: 通知権限だけを明示操作後に要求し、通知には固定title・stage説明・iconだけを載せる。通知内容やpermission結果を外部送信しない。
  * 対応環境: Notification APIとService Worker通知を実装し、OS/browserの通知clickからclientを開けるsecure context。

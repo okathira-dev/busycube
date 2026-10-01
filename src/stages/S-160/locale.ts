@@ -7,5 +7,5 @@ export const locale = defineStageLocale({
     ja: "ゆっくりと速く動かす軌跡",
     en: "A trace drawn both slowly and quickly",
   },
-  B01: { ja: "入力軌跡の箱", en: "Pointer-trace box" },
+  B01: { ja: "点を結ぶ道", en: "Path connecting dots" },
 });

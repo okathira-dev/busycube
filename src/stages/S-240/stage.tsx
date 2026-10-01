@@ -24,8 +24,8 @@ type InteractionState = "idle" | "active" | "cancelled" | "unavailable";
  * 目的: BusycubeからOS共有sheetへ短い印を渡す向きと、installed BusycubeをOS共有先として起動する逆向きを確認する。
  * 最初の一手: 「共有する」を押して表示中の6文字markを任意の共有先へ渡す。B02はBusycubeをinstallし、別app/browserの共有sheetからBusycubeを選ぶ。
  * 箱ごとの解法:
- * - B01「共有の箱」: titleとrandom 6文字markを含むtextで`navigator.share()`を呼び、OS共有flowがcancelされずpromise resolveすると開く。
- * - B02「共有先の箱」: Web App Manifestのshare targetから`?stage=S-240&share-target=1`で起動され、入場URLの`share-target`が厳密に`1`なら開く。判定後parameterを除く。
+ * - B01「点を結ぶ線」: 「共有する」から表示中のmarkを共有先へ渡す。titleとrandom 6文字markを含むtextで`navigator.share()`を呼び、OS共有flowがcancelされずpromise resolveすると開く。
+ * - B02「画面と下向き矢印」: 別appの共有sheetからBusycubeを共有先に選ぶ。Web App Manifestのshare targetから`?stage=S-240&share-target=1`で起動され、入場URLの`share-target`が厳密に`1`なら開く。判定後parameterを除く。
  * 使用API: Web Share API、Web App Manifestの`share_target`、URL API、History API、Web Crypto UUID。
  * 権限・privacy: 外へ渡すのは固定titleと一時markだけで、共有先はOS UIで利用者が選ぶ。受信data本文は判定せず保存・再送信しない。
  * 対応環境: B01はWeb Share APIとOS共有sheet、B02はshare target対応browser/OSへBusycubeをinstallできる環境。

@@ -293,7 +293,8 @@ TODO: ここまで人手レビュー済み
 - [ ] UI・アクセシビリティ
 
 - 関連する実環境確認: H-063
-- メモ: fullscreen入場後に別stageへ移動する実ブラウザ確認だけが残る。非アクティブdocumentでの重複`exitFullscreen()`はコードで抑止済み。
+- 対応済み: 非アクティブdocumentでの重複`exitFullscreen()`はコードで抑止済み。
+- メモ: fullscreen入場後に別stageへ移動する実ブラウザ確認だけが残る。
 
 ### L-025 / S-900 — 映像の継ぎ目
 

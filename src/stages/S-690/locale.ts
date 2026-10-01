@@ -23,5 +23,5 @@ export const locale = defineStageLocale({
     en: "It looks like a signpost is still missing.",
   },
   answerCorrect: { ja: "道がつながりました。", en: "The trail is complete." },
-  B01: { ja: "断片の道標", en: "Fragment trail" },
+  B01: { ja: "点を結ぶ道", en: "Path connecting dots" },
 });

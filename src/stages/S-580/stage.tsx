@@ -23,8 +23,8 @@ function normalizeSpeech(value: string) {
  * 目的: 英語音声のspeech recognitionと、一文字ずつ連続するspeech synthesisを文字入力なしで完了させる。
  * 最初の一手: 「聞き取る」を押してmicrophoneへ`busycube`と発話する。次に「ずれた音を聞く」で8文字の読み上げを最後まで聞く。
  * 箱ごとの解法:
- * - B01「聞き取りの箱」: en-US SpeechRecognitionの全alternative transcriptを小文字化し、空白・句読点・記号を除いたどれかが厳密に`busycube`なら開く。
- * - B02「読み上げの箱」: en-USの一文字utteranceで`aspuxouw`を先頭から順に読み、少なくとも一つがstartし、errorなしで全8個の`end`を連鎖完了すると開く。
+ * - B01「音波の出るスピーカー」: 「聞き取る」を押して`busycube`と発話する。en-US SpeechRecognitionの全alternative transcriptを小文字化し、空白・句読点・記号を除いたどれかが厳密に`busycube`なら開く。
+ * - B02「音波の出るスピーカー」: 「ずれた音を聞く」を押し、読み上げを最後まで聞く。en-USの一文字utteranceで`aspuxouw`を先頭から順に読み、少なくとも一つがstartし、errorなしで全8個の`end`を連鎖完了すると開く。
  * 使用API: Web Speech APIのSpeechRecognition/webkitSpeechRecognition、SpeechSynthesis、SpeechSynthesisUtterance events。
  * 権限・privacy: microphone accessはB01のbutton操作時だけ利用し、音声とtranscriptを保存・送信しない。B02は固定文字だけを端末の音声engineへ渡す。
  * 対応環境: en-USのspeech recognitionとspeech synthesis voiceを提供し、Web Speech API eventsを実装するbrowser/OS。

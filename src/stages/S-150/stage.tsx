@@ -34,9 +34,9 @@ const selectOptions = [
  * 目的: native HTML controlsのfocus、select選択、同名detailsの排他toggleという三種類の標準UI挙動を使う。
  * 最初の一手: Tabで最初のbuttonへfocusを移し、次にselectで`open busycube`を選び、最後にA/B/Cのdetailsを二つ以上順番に開く。
  * 箱ごとの解法:
- * - B01「フォーカスの箱」: 「見えない入口」buttonがfocusを受けるか、button自身がclickされると開く。
- * - B02「選択の箱」: 49項目のnative selectで中央の`open busycube`を選び、change時のvalueが完全一致すると開く。
- * - B03「排他表示の箱」: 同じ`name`を持つA/B/Cのdetailsでtoggleを2回以上発生させ、その時点でopenなdetailsがちょうど1個なら開く。
+ * - B01「斜線入りの目」: Tabで「キーボードでたどる箱」buttonへfocusを移す。buttonがfocusを受けるか、keyboard操作でbutton自身がclickされると開く。pointer操作はCSSで無効になっている。
+ * - B02「点線の四角」: 49項目のnative selectで中央の`open busycube`を選び、change時のvalueが完全一致すると開く。
+ * - B03「枝分かれした線」: A/B/Cのdetailsを二つ以上順に開く。同じ`name`を持つA/B/Cのdetailsでtoggleを2回以上発生させ、その時点でopenなdetailsがちょうど1個なら開く。
  * 使用API: HTMLButtonElementのfocus/click、HTMLSelectElementのchangeとnative typeahead、`details` / `summary` / `name`の排他accordion挙動。
  * 権限・privacy: 権限を要求せず、選択値とtoggle回数はこのattemptの判定にだけ使って保存・送信しない。
  * 対応環境: keyboard focus、native select、details toggleを実装するbrowser。capability判定では`MutationObserver`も必要とする。

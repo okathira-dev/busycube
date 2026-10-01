@@ -27,7 +27,7 @@ const start = { row: 1, column: 1 };
  * 目的: page上には座標だけを出し、DevTools Consoleへ描いたread-only mazeを読んで通常buttonから出口へ移動する。
  * 最初の一手: Consoleで`Busycube S-670 maze`の5×7盤面を見つけ、SからEへの道順`↓↓→→↑↑→→↓↓`をpageの方向buttonで押す。
  * 箱ごとの解法:
- * - B01「出口の箱」: 現在座標から壁`#`を避けて上下左右へ1cellずつ移動し、固定mazeの`E` cell（row 3, column 5）へ到達すると開く。
+ * - B01「斜線入りの目」: 現在座標から壁`#`を避けて上下左右へ1cellずつ移動し、固定mazeの`E` cell（row 3, column 5）へ到達すると開く。
  * 使用API: Console APIの`console.info()`、HTML buttons、React stateによる固定maze座標更新。
  * 権限・privacy: 権限・利用者dataを使用せず、固定mazeと現在座標だけをConsoleへ表示する。操作履歴を保存・送信しない。
  * 対応環境: DevTools Consoleを参照でき、page上のHTML buttonを操作できるdesktop browser。

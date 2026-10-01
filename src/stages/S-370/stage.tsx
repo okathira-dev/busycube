@@ -19,10 +19,10 @@ import { useEffect, useState } from "react";
  * 目的: 端末batteryの充電接続変化と残量75%の境界をBattery Status APIの別状態として収集する。
  * 最初の一手: 入場後の残量でB03/B04を確認し、chargerを一度接続してから取り外してB01/B02を開く。
  * 箱ごとの解法:
- * - B01「接続の箱」: `chargingchange` event発生時に`battery.charging === true`なら開く。
- * - B02「取り外しの箱」: `chargingchange` event発生時に`battery.charging === false`なら開く。
- * - B03「75%以上の箱」: `getBattery()`取得直後または`levelchange`時に`battery.level >= 0.75`なら開く。
- * - B04「75%未満の箱」: 同じ残量観測で`battery.level < 0.75`なら開く。訪問をまたいで両側の残量を通常進捗へ累積できる。
+ * - B01「日差し」: chargerを接続する。`chargingchange` event発生時に`battery.charging === true`なら開く。
+ * - B02「日差し」: chargerを外す。`chargingchange` event発生時に`battery.charging === false`なら開く。
+ * - B03「名札」: 端末を充電して残量を75%以上にする。`getBattery()`取得直後または`levelchange`時に`battery.level >= 0.75`なら開く。
+ * - B04「名札」: 端末の残量を75%未満にする。同じ残量観測で`battery.level < 0.75`なら開く。訪問をまたいで両側の残量を通常進捗へ累積できる。
  * 使用API: Battery Status APIの`navigator.getBattery()`、BatteryManager `charging` / `level`とchange events。
  * 権限・privacy: 権限を要求せず、充電booleanと丸めた残量だけを判定・表示し、battery履歴や端末情報を保存・送信しない。
  * 対応環境: Battery Status APIをpageへ公開し、charger接続とlevel変化をeventとして報告するbrowser/端末。

@@ -9,8 +9,8 @@ export const locale = defineStageLocale({
   captureScreen: { ja: "画面を映す", en: "Capture a screen" },
   openObserver: { ja: "観測窓を開く", en: "Open observer" },
   openMap: { ja: "地図を開く", en: "Open the map" },
-  B01: { ja: "再帰画面の箱", en: "Recursive-screen box" },
-  B02: { ja: "録画の箱", en: "Recording box" },
-  B03: { ja: "中継の箱", en: "Relay box" },
-  B04: { ja: "外縁の印の箱", en: "Edge-marker box" },
+  B01: { ja: "二つの画面", en: "Two screens" },
+  B02: { ja: "二つの画面", en: "Two screens" },
+  B03: { ja: "窓", en: "Window" },
+  B04: { ja: "スポイト", en: "Eyedropper" },
 });

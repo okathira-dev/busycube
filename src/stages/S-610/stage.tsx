@@ -21,9 +21,9 @@ import { locale } from "./locale";
  * 目的: modal dialogを内側button、backdrop light dismiss、Escape cancelという三つのnative経路で閉じ分ける。
  * 最初の一手: 「ダイアログを開く」を押し、まずdialog内の閉じるbuttonを使う。再び開いて外側、もう一度開いてEscapeを試す。
  * 箱ごとの解法:
- * - B01「内側ボタンの箱」: dialog内buttonがclose kindを`button`にして`dialog.close()`し、その後の`close` eventで開く。
- * - B02「外側クリックの箱」: `closedby="any"`のmodal backdrop自身をclickしてkindを`dismiss`にし、native light dismiss後の`close` eventで開く。
- * - B03「Escapeの箱」: dialog上のEscape keydownまたはnative`cancel` eventでkindが`cancel`になり、その後の`close` eventで開く。
+ * - B01「窓」: dialog内の閉じるbuttonを押す。dialog内buttonがclose kindを`button`にして`dialog.close()`し、その後の`close` eventで開く。
+ * - B02「指先」: dialogを開き、外側のbackdropをクリックする。`closedby="any"`のmodal backdrop自身をclickしてkindを`dismiss`にし、native light dismiss後の`close` eventで開く。
+ * - B03「折り返す矢印」: dialogを開いてEscapeを押す。dialog上のEscape keydownまたはnative`cancel` eventでkindが`cancel`になり、その後の`close` eventで開く。
  * 使用API: HTMLDialogElementの`showModal()` / `close()`、`closedby`、cancel/close events、backdrop clickとkeyboard event。
  * 権限・privacy: 権限・入力dataを使用せず、直近のclose kindだけをmemoryで判定し、操作履歴を保存・送信しない。
  * 対応環境: modal dialogと`closedby="any"`によるnative light dismiss、cancel/close eventsを実装するbrowser。
