@@ -1,0 +1,130 @@
+name: Preview Dependabot Cloudflare Worker
+
+on:
+  workflow_run:
+    workflows: ["Node.js CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  resolve:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      deploy: ${{ steps.context.outputs.deploy }}
+      pr: ${{ steps.context.outputs.pr }}
+      sha: ${{ steps.context.outputs.sha }}
+      artifact: ${{ steps.context.outputs.artifact }}
+    steps:
+      # workflow_run uses trusted default-branch code, never the PR checkout.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate CI run and current PR
+        id: context
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { resolvePreview } = await import(
+              `${process.env.GITHUB_WORKSPACE}/scripts/ci/previewContext.mjs`
+            );
+            await resolvePreview({ github, context, core });
+
+  preview:
+    needs: resolve
+    if: needs.resolve.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: cloudflare-workers-preview-pr-${{ needs.resolve.outputs.pr }}
+      cancel-in-progress: false
+    environment:
+      name: cloudflare-workers-preview
+      # Record the deployment against the PR SHA, not workflow_run's main SHA.
+      deployment: false
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      deployments: write
+    env:
+      PR_NUMBER: ${{ needs.resolve.outputs.pr }}
+      PR_SHA: ${{ needs.resolve.outputs.sha }}
+    steps:
+      - name: Checkout trusted deployment tooling
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      # No PR dependencies, lifecycle scripts or caches in this privileged job.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version-file: package.json
+      - name: Install trusted deployment tooling
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Download the validated CI artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ needs.resolve.outputs.artifact }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: preview-artifact
+          merge-multiple: true
+      - name: Validate bundle and create trusted upload configuration
+        run: node scripts/ci/preparePreview.mjs preview-artifact
+      - name: Start deployment for the current PR commit
+        id: deployment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { startDeployment } = await import(
+              `${process.env.GITHUB_WORKSPACE}/scripts/ci/previewContext.mjs`
+            );
+            await startDeployment({ github, context, core });
+      - name: Upload preview version without changing production traffic
+        if: steps.deployment.outputs.id != ''
+        run: >-
+          pnpm exec wrangler versions upload
+          --config preview-artifact/wrangler.json
+          --preview-alias "pr-$PR_NUMBER"
+          --message "PR #$PR_NUMBER at $PR_SHA"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/preview-upload.ndjson
+      - name: Verify the uploaded version URL
+        if: steps.deployment.outputs.id != ''
+        id: smoke
+        run: node scripts/ci/checkPreview.mjs "$WRANGLER_OUTPUT_FILE_PATH"
+        env:
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/preview-upload.ndjson
+      - name: Record deployment result on the PR commit
+        if: always() && steps.deployment.outputs.id != ''
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          DEPLOYMENT_ID: ${{ steps.deployment.outputs.id }}
+          DEPLOYMENT_RESULT: ${{ job.status }}
+          PREVIEW_URL: ${{ steps.smoke.outputs.url }}
+          SMOKE_RESULT: ${{ steps.smoke.outputs.result }}
+        with:
+          script: |
+            const { finishDeployment } = await import(
+              `${process.env.GITHUB_WORKSPACE}/scripts/ci/previewContext.mjs`
+            );
+            await finishDeployment({ github, context, core });

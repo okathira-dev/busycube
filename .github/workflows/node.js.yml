@@ -25,11 +25,32 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
       - name: Check
         run: pnpm run check
+      - name: Verify preview security boundaries
+        run: node --test scripts/ci/*.test.mjs
       - name: Test
         run: pnpm run test:ci
       - name: Build
         run: pnpm run build
+        env:
+          VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID }}
+          VITE_BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID: ${{ vars.BUSYCUBE_FEDCM_GOOGLE_CLIENT_ID }}
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Browser smoke test
         run: pnpm run test:e2e
+      - name: Save preview bundle after all CI checks pass
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cloudflare-preview
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+          include-hidden-files: true
+          path: |
+            dist/client/
+            dist/busycube/
+            !dist/busycube/wrangler.json
+            !dist/busycube/.vite/
+            !dist/**/.dev.vars*
+            !dist/**/.env*
