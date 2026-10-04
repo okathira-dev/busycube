@@ -123,4 +123,55 @@ export async function finishDeployment({ github, context, core }) {
       : "Upload/check failed or the PR changed; see workflow logs",
   });
   if (!current) core.setFailed("PR changed before the deployment completed.");
+  if (success) await dispatchMergedProduction({ github, context, core });
+}
+
+export async function dispatchMergedProduction({
+  github,
+  context,
+  core,
+  pause = (milliseconds) =>
+    new Promise((done) => setTimeout(done, milliseconds)),
+  attempts = 60,
+}) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const { data: pr } = await github.rest.pulls.get({
+      ...context.repo,
+      pull_number: Number(process.env.PR_NUMBER),
+    });
+    if (
+      pr.head.sha !== process.env.PR_SHA ||
+      pr.user?.login !== "dependabot[bot]" ||
+      pr.base.ref !== "main" ||
+      pr.head.repo?.full_name !== `${context.repo.owner}/${context.repo.repo}`
+    ) {
+      core.notice("PR identity changed; production dispatch skipped.");
+      return;
+    }
+    if (pr.merged) {
+      // GITHUB_TOKEN merges do not trigger push workflows. workflow_dispatch
+      // is an explicit exception and uses the existing main-only deploy job.
+      await github.rest.actions.createWorkflowDispatch({
+        ...context.repo,
+        workflow_id: "deploy-cloudflare-workers.yml",
+        ref: "main",
+      });
+      core.notice(
+        `Production deployment dispatched after PR #${pr.number} merged.`,
+      );
+      return;
+    }
+    if (
+      pr.state !== "open" ||
+      !pr.auto_merge ||
+      pr.mergeable_state === "behind"
+    ) {
+      core.notice(
+        "PR is not ready to auto-merge; production dispatch skipped.",
+      );
+      return;
+    }
+    if (attempt + 1 < attempts) await pause(5000);
+  }
+  core.warning("Auto-merge is still pending; production dispatch has not run.");
 }

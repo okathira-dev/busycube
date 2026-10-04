@@ -76,6 +76,8 @@ mainのRulesetでは、GitHub Actionsの`build`成功と、`cloudflare-workers-p
 6. Wranglerが返した不変のVersion URLで、HTML、Static Assets、HonoのPayment Manifestとnetwork probeをHTTP検査する。Access保護時の扱いは次節を参照する。
 7. 開始時と終了時にもPRが最新か確認し、GitHub DeploymentをPRのhead SHAに記録する。`workflow_run`のmain SHAを誤って成功扱いにせず、他PRのPreviewをinactiveにも変更しない。uploadや検査が失敗した場合はfailureを記録する。
 
+自動マージが実際に完了した場合は、既存のProduction Workflowをmainへのworkflow_dispatchで起動する。GITHUB_TOKENによるマージではpush Workflowが抑止されるためであり、Preview成功だけでは本番をdeployしない。メジャー更新、古いSHA、behind、未マージのPRからは起動しない。後段jobのActions write権限は、この明示的な起動にだけ必要である。
+
 後段jobはEnvironment Secretsを読むが、`deployment: false`でGitHubによるmain SHAへの自動Deployment作成を抑止する。DeploymentはAPIからPR SHAを指定して作成する。Environmentにcustom deployment protection ruleを追加する場合は、この設定との互換性を再確認する。
 
 この構成は、現状のWorkerがStatic Assetsの`ASSETS`だけをbindingとして使うことに合わせている。新しいbindingやWorker名、複数Workerを追加する場合は、`scripts/ci/preparePreview.mjs`もレビューする。Version URLは本番Workerのresourceを使うため、DBや外部serviceを追加するときは分離されたPreview resourceへの移行を検討する。
@@ -84,7 +86,7 @@ mainのRulesetでは、GitHub Actionsの`build`成功と、`cloudflare-workers-p
 
 専用の`workflow_run` Workflowはmainへのマージ後に有効になる。導入PR自身は従来の通常PR Previewを使うので、必須デプロイを外す必要はない。
 
-導入後は、滞留しているDependabot PRを最新mainへ更新し、新しいCIを走らせる。古いrunの再実行だけでは、そのPRの古いWorkflowにartifact保存stepがないため復旧できない。CI成功、専用Preview upload成功、PR SHAのDeployment成功を確認する。メジャー更新は既存の自動マージ対象外のまま、CI失敗も個別修正が必要である。
+導入後は、滞留しているDependabot PRを最新mainへ更新し、新しいCIを走らせる。署名を保持するため、GitHubでのbranch更新はmerge方式を使う。rebase方式はDependabotの署名を失うので使わない。古いrunの再実行だけでは、そのPRの古いWorkflowにartifact保存stepがないため復旧できない。CI成功、専用Preview upload成功、PR SHAのDeployment成功を確認する。メジャー更新は既存の自動マージ対象外のまま、CI失敗も個別修正が必要である。
 
 ### 参考資料
 
@@ -92,6 +94,7 @@ mainのRulesetでは、GitHub Actionsの`build`成功と、`cloudflare-workers-p
 - [GitHub: workflow_runの権限と制約](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run)
 - [GitHub: EnvironmentへのDeployment作成を抑止する設定](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/deploy-to-environment)
 - [GitHub: DeploymentとDeployment Status](https://docs.github.com/en/rest/deployments/deployments)
+- [GitHub: GITHUB_TOKENによるイベント抑止とworkflow_dispatchの例外](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)
 - [Cloudflare: Version URLs](https://developers.cloudflare.com/workers/versions-and-deployments/version-urls/)
 
 ## Cloudflare Access
