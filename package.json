@@ -48,7 +48,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.4.0",
     "@mui/material": "^9.4.0",
-    "hono": "^4.13.7",
+    "hono": "^4.13.12",
     "jsqr": "^1.4.0",
     "mediabunny": "1.56.2",
     "react": "^19.3.0",
