@@ -57,7 +57,7 @@ jobs:
       deployment: false
     permissions:
       contents: read
-      actions: read
+      actions: write
       pull-requests: read
       deployments: write
     env:
