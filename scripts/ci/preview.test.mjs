@@ -10,6 +10,7 @@ import {
 } from "./checkPreview.mjs";
 import { preparePreview } from "./preparePreview.mjs";
 import {
+  dispatchMergedProduction,
   finishDeployment,
   isCurrentPullRequest,
   resolvePreview,
@@ -303,4 +304,68 @@ test("public preview smoke verifies static assets and Hono runtime responses", a
     ),
     /content type/,
   );
+});
+
+test("production dispatch waits for an actual merge and targets only main", async () => {
+  const saved = { ...process.env };
+  try {
+    process.env.PR_NUMBER = "80";
+    process.env.PR_SHA = sha;
+    const h = harness();
+    const replies = [
+      { ...pr, auto_merge: {} },
+      { ...pr, state: "closed", merged: true },
+    ];
+    const dispatches = [];
+    h.github.rest.pulls.get = async () => ({ data: replies.shift() });
+    h.github.rest.actions.createWorkflowDispatch = async (input) =>
+      dispatches.push(input);
+    await dispatchMergedProduction({
+      ...h,
+      pause: async () => {},
+      attempts: 2,
+    });
+    assert.deepEqual(dispatches, [
+      {
+        owner: "okathira-dev",
+        repo: "busycube",
+        workflow_id: "deploy-cloudflare-workers.yml",
+        ref: "main",
+      },
+    ]);
+  } finally {
+    for (const key of Object.keys(process.env))
+      if (!(key in saved)) delete process.env[key];
+    Object.assign(process.env, saved);
+  }
+});
+
+test("major, closed, obsolete, behind and pending PRs cannot dispatch production", async () => {
+  const saved = { ...process.env };
+  try {
+    process.env.PR_NUMBER = "80";
+    process.env.PR_SHA = sha;
+    for (const pending of [
+      pr,
+      { ...pr, state: "closed" },
+      { ...pr, auto_merge: {}, mergeable_state: "behind" },
+      { ...pr, merged: true, head: { ...pr.head, sha: "b".repeat(40) } },
+      { ...pr, merged: true, user: { login: "someone" } },
+      { ...pr, auto_merge: {} },
+    ]) {
+      const h = harness({ pr: pending });
+      h.core.warning = () => {};
+      h.github.rest.actions.createWorkflowDispatch = async () =>
+        assert.fail("must not deploy");
+      await dispatchMergedProduction({
+        ...h,
+        pause: async () => {},
+        attempts: 2,
+      });
+    }
+  } finally {
+    for (const key of Object.keys(process.env))
+      if (!(key in saved)) delete process.env[key];
+    Object.assign(process.env, saved);
+  }
 });
