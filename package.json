@@ -59,7 +59,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "2.5.15",
     "@cloudflare/vite-plugin": "^1.62.3",
-    "@cloudflare/workers-types": "^5.20261003.1",
+    "@cloudflare/workers-types": "^5.20261005.1",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.2",
     "@commitlint/types": "^21.2.3",
