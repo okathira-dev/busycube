@@ -12,6 +12,6 @@ export const locale = defineStageLocale({
   reacquired: { ja: "再取得済み", en: "Reacquired" },
   released: { ja: "解放済み", en: "Released" },
   unavailable: { ja: "Wake Lockを利用できません", en: "Wake Lock unavailable" },
-  B01: { ja: "灯りを保つ箱", en: "Wake-lock box" },
-  B02: { ja: "灯りを戻す箱", en: "Wake-lock return box" },
+  B01: { ja: "日差し", en: "Sun rays" },
+  B02: { ja: "折り返す矢印", en: "Bent arrow" },
 });

@@ -60,9 +60,9 @@ const remoteSlots = assetManifest.assets as [RemoteSlot, ...RemoteSlot[]];
  * 目的: mediaを外部再生先へ送るRemote Playbackの文字・QR経路と、独立receiver documentを開くPresentation APIを対比する。
  * 最初の一手: 「再生先を選ぶ」で外部displayへ接続し、「文字を映す」で外部画面の二語を手元へ転記する。QRとPresentationは各専用buttonで続ける。
  * 箱ごとの解法:
- * - B01「外部文字の箱」: connected中にrandom slotの0〜3.8秒を再生済みにし、外部画面の鍵（`silver orbit` / `quiet prism` / `amber signal` / `violet harbor`のcurrent一つ）をtrim・小文字化一致で入力すると開く。
- * - B02「外部QRの箱」: connected中に同じslotの4〜7.8秒を再生済みにし、背面cameraのnative BarcodeDetectorが15秒以内にcurrent slot固有QR tokenを読み、接続も維持中なら開く。
- * - B03「プレゼンテーションの箱」: random round付きreceiver URLを`PresentationRequest.start()`で外部displayへ開き、そのPresentationConnection messageが厳密に`ready:{round}`なら開く。
+ * - B01「二つの画面」: 外部displayへ接続して文字の映像を再生し、外部画面の二語を入力する。connected中にrandom slotの0〜3.8秒を再生済みにし、外部画面の鍵（`silver orbit` / `quiet prism` / `amber signal` / `violet harbor`のcurrent一つ）をtrim・小文字化一致で入力すると開く。
+ * - B02「画面と携帯端末」: 外部displayでQRの区間を再生し、背面cameraをQRへ向ける。connected中に同じslotの4〜7.8秒を再生済みにし、背面cameraのnative BarcodeDetectorが15秒以内にcurrent slot固有QR tokenを読み、接続も維持中なら開く。
+ * - B03「二つの画面」: Presentation用buttonから外部displayを選ぶ。random round付きreceiver URLを`PresentationRequest.start()`で外部displayへ開き、そのPresentationConnection messageが厳密に`ready:{round}`なら開く。
  * 使用API: Remote Playback/HTMLMediaElement、Barcode Detection API、`getUserMedia()`、Presentation API、Web Crypto random/UUID。
  * 権限・privacy: cameraはQR scan中だけ使用し、frameをnative detectorへ一時的に渡す。display/device名、frame、token、鍵、connection IDを保存・送信しない。
  * 対応環境: secure contextでRemote Playback receiverとnative QR BarcodeDetector付きcamera、またはPresentation対応displayを利用できるbrowser/OS。

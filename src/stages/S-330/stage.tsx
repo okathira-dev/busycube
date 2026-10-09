@@ -21,8 +21,8 @@ import { locale } from "./locale";
  * 目的: screen wake lockを取得し、page非表示等によるbrowser側releaseの後、visible復帰時に新しいlockを再取得する。
  * 最初の一手: pageがvisibleな状態で「灯りを保つ」を押し、取得後に別tab/appへ移ってlockをreleaseさせてから戻る。
  * 箱ごとの解法:
- * - B01「灯りを保つ箱」: buttonから`navigator.wakeLock.request("screen")`が成功し、sentinelを保持できると開く。
- * - B02「灯りを戻す箱」: 取得済みsentinelの`release` eventを一度受けた後、pageがvisibleへ戻った時のscreen wake lock再要求が成功すると開く。
+ * - B01「日差し」: pageをvisibleにして「灯りを保つ」を押す。buttonから`navigator.wakeLock.request("screen")`が成功し、sentinelを保持できると開く。
+ * - B02「折り返す矢印」: wake lock取得後に別tabへ移り、このpageへ戻る。取得済みsentinelの`release` eventを一度受けた後、pageがvisibleへ戻った時のscreen wake lock再要求が成功すると開く。
  * 使用API: Screen Wake Lock APIのrequest/WakeLockSentinel release event、Page Visibility API。
  * 権限・privacy: screen wake lock以外の権限・dataを使用せず、取得/release状態はmemory内でだけ保持して保存・送信しない。
  * 対応環境: secure contextでScreen Wake Lock APIを実装し、visibility変化時にlockをrelease・復帰時に再取得できるbrowser/OS。

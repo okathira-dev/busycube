@@ -20,7 +20,7 @@ import { locale } from "./locale";
  * 目的: notification actionで4桁の左右codeを入力し、最後に通知bodyを開いてService Workerからattempt列を返す。
  * 最初の一手: 「金庫を通知へ送る」を押し、通知actionを右→左→左→右（RLLR）の順に押した後、actionではなく通知本体を押す。
  * 箱ごとの解法:
- * - B01「金庫の箱」: Service WorkerがL/R action列を通知dataへ引き継ぎ、body clickで`vault-attempt=RLLR`へ戻した時だけ✓を表示し、600 ms後に開く。
+ * - B01「錠前」: 通知actionを右→左→左→右の順に押し、最後に通知本体を押す。Service WorkerがL/R action列を通知dataへ引き継ぎ、body clickで`vault-attempt=RLLR`へ戻した時だけ✓を表示し、600 ms後に開く。
  * 使用API: Notifications APIのactions/data、Service Worker `notificationclick` / `showNotification()`、Clients API、URL/History API、timer。
  * 権限・privacy: 通知権限はbutton操作後だけ要求し、通知dataとURLにはL/R列だけを載せる。入力列を成功判定後にURLから除き、外部送信しない。
  * 対応環境: notification actionと通知body clickを区別し、Service Workerからclientをopen/focusできるbrowser/OS。

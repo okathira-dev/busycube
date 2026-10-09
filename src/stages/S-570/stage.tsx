@@ -26,7 +26,7 @@ function quaternionDistance(a: readonly number[], b: readonly number[]) {
  * 目的: 開始姿勢から三つのquaternion vector成分をそれぞれ大きく変化させた後、開始姿勢へ一巡して戻る。
  * 最初の一手: 「センサーを開始」を押して開始姿勢を記録し、端末を三軸方向へ十分大きく向け替えてから元の向きへ戻す。
  * 箱ごとの解法:
- * - B01「巡回の箱」: relative orientation quaternionの|x|・|y|・|z|が各一度0.65超になり、三gate成立後に現在quaternionと開始quaternionの符号同値を考慮した距離が0.25未満になると開く。
+ * - B01「回る端末」: 開始姿勢を記録し、端末を三軸方向へ向け替えてから元へ戻す。relative orientation quaternionの|x|・|y|・|z|が各一度0.65超になり、三gate成立後に現在quaternionと開始quaternionの符号同値を考慮した距離が0.25未満になると開く。
  * 使用API: Generic Sensor APIの`RelativeOrientationSensor({frequency:30})`とquaternion readings、Euclidean distance計算。
  * 権限・privacy: orientation sensor accessは明示buttonから開始し、開始quaternionと三gateだけをmemoryに持つ。姿勢系列を保存・送信しない。
  * 対応環境: RelativeOrientationSensorと安定したquaternion readingsを提供するbrowser/端末。

@@ -15,11 +15,11 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * S-010
  *
  * 目的: 同じpointer操作を、端末が報告する`pointerType`ごとにmouse・touch・penへ識別する。
- * 最初の一手: mouseで「マウスの箱」を押し、残りはtouchscreenとpenを使って対応する箱を直接押す。
+ * 最初の一手: mouseでマウスアイコンが付いた箱を押し、残りはtouchscreenとpenを使って対応する箱を直接押す。
  * 箱ごとの解法:
- * - B01「マウスの箱」: mouseで箱を押し、`pointerdown`の`pointerType`が厳密に`mouse`なら開く。
- * - B02「タッチの箱」: 指で箱を押し、`pointerdown`の`pointerType`が厳密に`touch`なら開く。
- * - B03「ペンの箱」: stylusで箱を押し、`pointerdown`の`pointerType`が厳密に`pen`なら開く。
+ * - B01「マウス」: mouseで箱を押し、`pointerdown`の`pointerType`が厳密に`mouse`なら開く。
+ * - B02「触れる指先」: 指で箱を押し、`pointerdown`の`pointerType`が厳密に`touch`なら開く。
+ * - B03「鉛筆」: stylusで箱を押し、`pointerdown`の`pointerType`が厳密に`pen`なら開く。
  * 使用API: Pointer Eventsの`pointerdown` eventと`PointerEvent.pointerType`。
  * 権限・privacy: 権限を要求せず、座標や筆圧は取得・保存せず、該当したpointer種別の開箱だけを進捗に残す。
  * 対応環境: Pointer Eventsを実装し、各箱に必要なmouse・touchscreen・stylusを接続できるbrowserと端末。

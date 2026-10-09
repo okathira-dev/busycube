@@ -23,8 +23,8 @@ import { locale } from "./locale";
  * 目的: immersive WebXR sessionを開始し、XR空間の正面1.5 mに置いたboxへ実input sourceのtarget rayを当てる。
  * 最初の一手: AR/VR機器を接続し「XR空間を開く」からbrowser開始UIを完了する。正面の紫boxへcontrollerを向けてselectする。
  * 箱ごとの解法:
- * - B01「XR姿勢の箱」: `immersive-vr`優先、非対応なら`immersive-ar` sessionを開始し、animation frameで最初の非null viewer poseを得ると開く。
- * - B02「XR選択の箱」: B01後の実`select` eventからtargetRaySpace poseを得てraycastし、0.4 m角・正面z=-1.5 mのbox meshと交差すると開く。
+ * - B01「画面と携帯端末」: AR/VR機器を接続して「XR空間を開く」を押す。`immersive-vr`優先、非対応なら`immersive-ar` sessionを開始し、animation frameで最初の非null viewer poseを得ると開く。
+ * - B02「点線の四角」: XR空間で正面の箱へcontrollerを向けてselectする。B01後の実`select` eventからtargetRaySpace poseを得てraycastし、0.4 m角・正面z=-1.5 mのbox meshと交差すると開く。
  * 使用API: WebXR Device APIのsupport/requestSession/reference space/viewer pose/input select、WebGLとThree.js renderer/raycast。
  * 権限・privacy: XR sessionは明示buttonから開始し、pose/rayは現在frameの交差判定だけに使う。部屋映像・座標履歴・device情報を保存・送信しない。
  * 対応環境: secure contextでimmersive-vrまたはimmersive-arと対応AR/VR hardware、WebGLを提供するbrowser。

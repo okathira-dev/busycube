@@ -8,5 +8,5 @@ export const locale = defineStageLocale({
     ja: "箱が外で待っています。",
     en: "A box is waiting outside.",
   },
-  B01: { ja: "通知の箱", en: "Notification box" },
+  B01: { ja: "ベル", en: "Bell" },
 });

@@ -44,7 +44,7 @@ export const locale = defineStageLocale({
     en: "When finished, you may delete this disposable folder manually in your OS. This page never deletes your existing files.",
   },
   checking: { ja: "外の書庫を確認中。", en: "Checking the outside archive." },
-  B01: { ja: "書き換える箱", en: "Rewrite box" },
-  B02: { ja: "消す箱", en: "Delete box" },
-  B03: { ja: "作る箱", en: "Create box" },
+  B01: { ja: "鉛筆", en: "Pencil" },
+  B02: { ja: "斜線入りの目", en: "Crossed-out eye" },
+  B03: { ja: "紙と上向き矢印", en: "File with upward arrow" },
 });

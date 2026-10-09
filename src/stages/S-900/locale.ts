@@ -29,5 +29,5 @@ export const locale = defineStageLocale({
     ja: "このブラウザはVP8 MediaSourceを提供していません。",
     en: "This browser has no VP8 MediaSource support.",
   },
-  B01: { ja: "つながった箱", en: "Spliced box" },
+  B01: { ja: "左右の矢印", en: "Opposing arrows" },
 });

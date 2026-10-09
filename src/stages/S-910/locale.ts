@@ -27,5 +27,5 @@ export const locale = defineStageLocale({
     ja: "このブラウザはruntime TextTrackを提供していません。",
     en: "This browser cannot create runtime TextTracks.",
   },
-  B01: { ja: "重なった字幕の箱", en: "Overlapped caption box" },
+  B01: { ja: "字幕線", en: "Caption lines" },
 });

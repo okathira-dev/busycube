@@ -120,10 +120,10 @@ function createSweepMediaSource(signal: AbortSignal) {
  * 目的: MSEで連結した固定VP8 segmentをnative controlsでseekし、停止中に提示されたframeのnative width/heightから四つのaspect ratioを読む。
  * 最初の一手: 初期停止frameでB01を確認し、native timelineを別segmentへseekしてpauseしたまま4:3、16:9、縦長9:20を探す。
  * 箱ごとの解法:
- * - B01「1:1の箱」: pausedかつ非seeking frameの`videoWidth/videoHeight`が1:1から相対5%以内なら開く。初期frameがこの比率になる。
- * - B02「4:3の箱」: 停止中frameのnative aspect ratioが4:3から相対5%以内なら開く。
- * - B03「16:9の箱」: 停止中frameのnative aspect ratioが16:9から相対5%以内なら開く。
- * - B04「9:20の箱」: 停止中frameのnative aspect ratioが9:20から相対5%以内なら開く。寸法未確定時は次のvideo frame callbackで判定する。
+ * - B01「四隅の枠」: 動画の初期停止frameを表示する。pausedかつ非seeking frameの`videoWidth/videoHeight`が1:1から相対5%以内なら開く。初期frameがこの比率になる。
+ * - B02「四隅の枠」: 動画を4:3のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが4:3から相対5%以内なら開く。
+ * - B03「四隅の枠」: 動画を16:9のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが16:9から相対5%以内なら開く。
+ * - B04「四隅の枠」: 動画を9:20のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが9:20から相対5%以内なら開く。寸法未確定時は次のvideo frame callbackで判定する。
  * 使用API: Media Source Extensions/SourceBuffer segments、HTMLVideoElement native dimensions/events、`requestVideoFrameCallback()`、Blob URL、AbortSignal。
  * 権限・privacy: 権限・外部mediaを使わず、Git管理済み固定assetと現在frame寸法だけを扱う。視聴操作を保存・送信しない。
  * 対応環境: MSE WebM VP8と提示frameのnative寸法、video frame callbackを提供するbrowser。

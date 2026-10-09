@@ -10,7 +10,7 @@ export const locale = defineStageLocale({
     en: "Try the button, outside, and Escape separately.",
   },
   close: { ja: "閉じる", en: "Close" },
-  B01: { ja: "ボタン閉じの箱", en: "Button-close box" },
-  B02: { ja: "外側閉じの箱", en: "Light-dismiss box" },
-  B03: { ja: "Escape閉じの箱", en: "Escape-close box" },
+  B01: { ja: "窓", en: "Window" },
+  B02: { ja: "指先", en: "Pointing hand" },
+  B03: { ja: "折り返す矢印", en: "Bent arrow" },
 });

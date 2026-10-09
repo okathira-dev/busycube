@@ -3,7 +3,7 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "OS活字の箱", en: "Installed-type box" },
+  B01: { ja: "画面と下向き矢印", en: "Screen with downward arrow" },
   download: { ja: "専用活字をダウンロード", en: "Download the dedicated font" },
   scan: { ja: "OSの活字を探す", en: "Find the OS font" },
   clear: { ja: "読み込んだ活字を破棄", en: "Release loaded font" },

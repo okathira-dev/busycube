@@ -7,5 +7,5 @@ export const locale = defineStageLocale({
     ja: "ブラウザの「アプリをインストール」または「ホーム画面に追加」でBusycubeを入れ、そのアイコンから開く。後の起動問題でもこのPWAを使う。",
     en: "Install Busycube with your browser's Install app or Add to Home Screen command, then open its icon. Later launch puzzles use this PWA too.",
   },
-  B01: { ja: "別の入口の箱", en: "Installed-app box" },
+  B01: { ja: "画面と下向き矢印", en: "Screen with downward arrow" },
 });

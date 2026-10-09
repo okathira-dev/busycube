@@ -19,9 +19,9 @@ import { useRef } from "react";
  * 目的: 重力を除いたlinear accelerationを三軸別に読み、各軸で正負両方向の強い加速を集める。
  * 最初の一手: 「センサーを開始」を押し、端末をX軸の正方向と負方向へ素早く動かして止め、Y・Z軸でも同様に往復させる。
  * 箱ごとの解法:
- * - B01「X軸の箱」: X readingで-8 m/s²以下と+8 m/s²以上を同じattempt中に両方観測すると開く。
- * - B02「Y軸の箱」: Y readingで-8 m/s²以下と+8 m/s²以上を同じattempt中に両方観測すると開く。
- * - B03「Z軸の箱」: Z readingで-8 m/s²以下と+8 m/s²以上を同じattempt中に両方観測すると開く。
+ * - B01「点を結ぶ道」: 端末をX軸の正負両方向へ素早く動かす。X readingで-8 m/s²以下と+8 m/s²以上を同じattempt中に両方観測すると開く。
+ * - B02「点を結ぶ道」: 端末をY軸の正負両方向へ素早く動かす。Y readingで-8 m/s²以下と+8 m/s²以上を同じattempt中に両方観測すると開く。
+ * - B03「点を結ぶ道」: 端末をZ軸の正負両方向へ素早く動かす。Z readingで-8 m/s²以下と+8 m/s²以上を同じattempt中に両方観測すると開く。
  * 使用API: Generic Sensor APIの`LinearAccelerationSensor({frequency:60})`とx/y/z readings。
  * 権限・privacy: motion sensor accessは明示buttonから開始し、各軸の閾値通過signだけをmemoryに残す。生加速度・動作履歴を保存・送信しない。
  * 対応環境: LinearAccelerationSensorと実三軸motion readingsを60 Hz程度で提供するbrowser/端末。

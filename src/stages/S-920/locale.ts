@@ -27,7 +27,7 @@ export const locale = defineStageLocale({
     ja: "この迷路にはPopoverとAnchor Positioningが必要です。",
     en: "This maze needs Popover and Anchor Positioning.",
   },
-  B01: { ja: "琥珀の終点", en: "Amber finish" },
-  B02: { ja: "青緑の終点", en: "Cyan finish" },
-  B03: { ja: "紫の終点", en: "Violet finish" },
+  B01: { ja: "点を結ぶ道", en: "Path connecting dots" },
+  B02: { ja: "点を結ぶ道", en: "Path connecting dots" },
+  B03: { ja: "点を結ぶ道", en: "Path connecting dots" },
 });

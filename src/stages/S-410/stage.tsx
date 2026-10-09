@@ -20,7 +20,7 @@ import { locale } from "./locale";
  * 目的: page外のnotification actionだけで左右のsequenceを入力し、Service Workerが正解prefixを保ちながらclientへ戻す。
  * 最初の一手: 「通知迷路を始める」を押して通知を許可し、通知上のactionを左→右→右→左（LRRL）の順に押す。
  * 箱ごとの解法:
- * - B01「通知操作の箱」: Service Workerが通知actionをL/Rへ変換し、prefixを外す入力では列をreset、`LRRL`完成時に開く`?stage=S-410&notification-sequence=S-410-ok`を入場URLで確認すると開く。
+ * - B01「ベル」: 通知を許可し、標準の通知UIでactionを左→右→右→左の順に押す。Service Workerが通知actionをL/Rへ変換し、prefixを外す入力では列をreset、`LRRL`完成時に開く`?stage=S-410&notification-sequence=S-410-ok`を入場URLで確認すると開く。
  * 使用API: Notifications APIのactions/data、Service Worker `notificationclick`、`showNotification()`による更新、Clients API、URL/History API。
  * 権限・privacy: 通知権限はbutton操作後だけ要求し、通知dataにはstage ID・L/R列・固定targetだけを持つ。入力列を永続保存・外部送信しない。
  * 対応環境: notification action buttonとService Worker notification clickを実装し、actionごとの通知再表示を許すbrowser/OS。

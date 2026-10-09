@@ -19,7 +19,7 @@ import { useRef } from "react";
  * 目的: 重力を含むaccelerometer三軸の合成値が短時間ほぼ0になる低加速度区間を複数readingで確認する。
  * 最初の一手: 「センサーを開始」を押し、端末を安全に保持したまま短い自由落下相当の低加速度を作る。端末を投げず、安全な方法・検証機器を使う。
  * 箱ごとの解法:
- * - B01「低加速度の箱」: `hypot(x,y,z)`が2 m/s²以下のreadingを3回以上かつ最初から80 ms以上連続して観測すると開く。2を超えるとcountと開始時刻をresetする。
+ * - B01「砂時計」: 安全な方法で端末の低加速度状態を作る。`hypot(x,y,z)`が2 m/s²以下のreadingを3回以上かつ最初から80 ms以上連続して観測すると開く。2を超えるとcountと開始時刻をresetする。
  * 使用API: Generic Sensor APIの`Accelerometer({frequency:60})`、三軸reading、`performance.now()`。
  * 権限・privacy: motion sensor accessは明示buttonから開始し、合成値の連続countと開始時刻だけをmemoryに持つ。生reading・動作履歴を保存・送信しない。
  * 対応環境: 重力込みAccelerometer readingsを十分な頻度で公開するbrowser/端末と、安全に低加速度を再現できる検証環境。

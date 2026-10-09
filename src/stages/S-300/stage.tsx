@@ -69,7 +69,7 @@ interface UsbNavigator extends Navigator {
  * 目的: 利用者が選んだUSB deviceのIN endpointを発見・claimし、実際のbulk/interrupt転送からdataを受信する。
  * 最初の一手: 「USBから受け取る」を押してdata送信可能なUSB deviceを選び、必要ならdevice側を操作してIN dataを送る。
  * 箱ごとの解法:
- * - B01「USB転送の箱」: deviceをopenしconfiguration 1を選択、最初のbulkまたはinterrupt IN endpointのinterfaceをclaimし、64 byteの`transferIn()`結果が1 byte以上なら開く。
+ * - B01「USB」: dataを送るUSB deviceを選んでIN転送を行う。deviceをopenしconfiguration 1を選択、最初のbulkまたはinterrupt IN endpointのinterfaceをclaimし、64 byteの`transferIn()`結果が1 byte以上なら開く。
  * 使用API: WebUSBの`requestDevice()`、USBDevice open/configuration/interface claim、endpoint情報、`transferIn()`、close。
  * 権限・privacy: device accessはbutton操作とbrowser pickerで要求し、受信dataはbyte長だけを判定する。payload・device descriptorを保存・表示・送信しない。
  * 対応環境: secure contextでWebUSBを実装し、browser access可能なbulk/interrupt IN endpoint付きUSB deviceを接続できる環境。

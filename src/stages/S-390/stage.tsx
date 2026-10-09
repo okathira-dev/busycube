@@ -21,8 +21,8 @@ import { locale } from "./locale";
  * 目的: WebAuthn要求が一致credentialなしで拒否される結果と、待機中conditional要求をAbortSignalで中断する結果を観測する。
  * 最初の一手: 「一致しない鍵」でauthenticator UIを完了または終了し、次に「待ち始める」を押してから「中断する」を押す。
  * 箱ごとの解法:
- * - B01「一致なしの箱」: random 32 byte IDだけをallowCredentialsに指定した`credentials.get()`が`NotAllowedError`でrejectされると開く。
- * - B02「中断の箱」: conditional mediationの`credentials.get()`を専用AbortControllerで待機させ、stage自体は離脱せずそのcontrollerをabortし、`AbortError`を受けると開く。
+ * - B01「砂時計」: 「一致しない鍵」を押して認証UIを完了または終了する。random 32 byte IDだけをallowCredentialsに指定した`credentials.get()`が`NotAllowedError`でrejectされると開く。
+ * - B02「砂時計」: 「待ち始める」を押してから、stageを離れず「中断する」を押す。conditional mediationの`credentials.get()`を専用AbortControllerで待機させ、stage自体は離脱せずそのcontrollerをabortし、`AbortError`を受けると開く。
  * 使用API: WebAuthn/Credential Management API、conditional mediation、AbortController/AbortSignal、Web Crypto random。
  * 権限・privacy: authenticator標準UI以外から資格情報を取得せず、challengeと不一致IDはattemptごとにrandom生成する。credential・失敗内容を保存・送信しない。
  * 対応環境: secure contextでPublicKeyCredential、conditional WebAuthn要求とAbortSignal中断を実装するbrowser/OS。

@@ -47,7 +47,7 @@ interface HidNavigator extends Navigator {
  * 目的: 利用者が選んだHID deviceを開き、抽象化済みkey eventではなくdeviceの生input report到着を観測する。
  * 最初の一手: 「入力レポートを待つ」を押してHID deviceを選択し、deviceのbutton・key・sensor等を一度操作する。
  * 箱ごとの解法:
- * - B01「入力レポートの箱」: 選択したdeviceのopen後、`inputreport` eventで`DataView.byteLength`が1以上の最初のreportを受けると開く。
+ * - B01「キーボード」: HID deviceを選んでbuttonやkeyを操作する。選択したdeviceのopen後、`inputreport` eventで`DataView.byteLength`が1以上の最初のreportを受けると開く。
  * 使用API: WebHIDの`navigator.hid.requestDevice()`、HIDDevice `open()` / `inputreport` / `close()`。
  * 権限・privacy: device accessはbutton操作とbrowser pickerで要求し、report payloadは空でないことだけを判定する。内容・device情報を保存・表示・送信しない。
  * 対応環境: secure contextでWebHIDを実装し、browserが許可するHID peripheralを接続できるdesktop browser/OS。

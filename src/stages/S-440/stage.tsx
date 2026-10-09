@@ -21,7 +21,7 @@ const key = "busycube:S-440:round";
  * 目的: このattemptで作った`.busycube` fileをOSへ保存し、installed appのfile handlerとして開き直して同じroundを照合する。
  * 最初の一手: Busycubeをinstallした環境で「.busycubeを保存」を押し、downloadされたfileをfile manager等からBusycubeで開く。
  * 箱ごとの解法:
- * - B01「ファイル起動の箱」: LaunchQueueの先頭FileSystemFileHandleを読み、JSON payloadの`round`がdownload時にlocalStorageへ保存したroundと完全一致すると開く。
+ * - B01「紙と下向き矢印」: 保存した`.busycube` fileをfile managerからBusycubeで開く。LaunchQueueの先頭FileSystemFileHandleを読み、JSON payloadの`round`がdownload時にlocalStorageへ保存したroundと完全一致すると開く。
  * 使用API: Web App Manifest `file_handlers`、Launch Handler APIのLaunchQueue files、File System Access handle、File/Blob/Blob URL、download anchor、Web Crypto UUID、localStorage。
  * 権限・privacy: fileにはkindと一時random roundだけを含め、handlerは利用者が開いた先頭fileだけを読む。file本文やfile名を永続保存・外部送信しない。
  * 対応環境: Busycubeをinstallでき、`.busycube` MIME/extensionのPWA file handlingとLaunchQueue filesを提供するbrowser/OS。

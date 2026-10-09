@@ -19,7 +19,7 @@ import { useRef } from "react";
  * 目的: 端末のproximity sensorで対象が遠い状態から近い状態へ変化した順序を観測する。
  * 最初の一手: 「センサーを開始」を押し、sensorから物を離してfarを読ませた後、手や物をsensorのすぐ近くへ寄せる。
  * 箱ごとの解法:
- * - B01「近接の箱」: 10 HzのProximitySensor readingで一度`near === false`を観測した後、同じattemptで`near === true`を観測すると開く。
+ * - B01「画面と携帯端末」: sensorから物を離してから、手や物を近づける。10 HzのProximitySensor readingで一度`near === false`を観測した後、同じattemptで`near === true`を観測すると開く。
  * 使用API: Generic Sensor APIのProximitySensor、reading/error events、start/stop。
  * 権限・privacy: sensor権限は明示buttonから利用し、near booleanだけを順序判定する。距離・物体情報・reading履歴を保存・送信しない。
  * 対応環境: ProximitySensorを公開し、近接sensor権限と実readingを提供するbrowser/端末。
