@@ -78,17 +78,17 @@ const preferenceDefinitions = [
  * S-480
  *
  * 目的: browser既定文字sizeの四つの実測帯と、User Preferences APIで明示overrideした五種類の`prefers-*`状態を個別に観測する。
- * 最初の一手: browser設定の既定font sizeを変えて上段4箱を集め、下段は各「〜にする」buttonから対応preference overrideを要求する。
+ * 最初の一手: browser設定の既定font sizeを変えて上段4箱を集め、下段は各設定要求buttonから対応preference overrideを要求する。
  * 箱ごとの解法:
- * - B01「小さい文字の箱」: bodyへ置いた`font-size:1rem` probeのcomputed font sizeが15 px未満なら開く。
- * - B02「標準文字の箱」: 同じcomputed font sizeが15 px以上18 px未満なら開く。
- * - B03「大きい文字の箱」: 同じcomputed font sizeが18 px以上22 px未満なら開く。
- * - B04「最大文字の箱」: 同じcomputed font sizeが22 px以上なら開く。既定font sizeを変えながら4帯を訪問間で累積できる。
- * - B05「暗い配色の箱」: `colorScheme.requestOverride("dark")`成功後、objectのoverride/valueがdarkで`prefers-color-scheme: dark`もmatchすると開く。
- * - B06「高コントラストの箱」: `contrast.requestOverride("more")`成功後、報告値がmoreで`prefers-contrast: more`もmatchすると開く。
- * - B07「動きを減らす箱」: `reducedMotion.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-motion: reduce`もmatchすると開く。
- * - B08「透明度を減らす箱」: `reducedTransparency.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-transparency: reduce`もmatchすると開く。
- * - B09「通信量を減らす箱」: `reducedData.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-data: reduce`もmatchすると開く。
+ * - B01「四隅の枠」: browser設定で既定font sizeを小さくする。bodyへ置いた`font-size:1rem` probeのcomputed font sizeが15 px未満なら開く。
+ * - B02「四隅の枠」: browser設定で既定font sizeを標準にする。同じcomputed font sizeが15 px以上18 px未満なら開く。
+ * - B03「四隅の枠」: browser設定で既定font sizeを大きくする。同じcomputed font sizeが18 px以上22 px未満なら開く。
+ * - B04「四隅の枠」: browser設定で既定font sizeをさらに大きくする。同じcomputed font sizeが22 px以上なら開く。既定font sizeを変えながら4帯を訪問間で累積できる。
+ * - B05「太陽」: 「暗色へ」で配色のoverrideを要求する。`colorScheme.requestOverride("dark")`成功後、objectのoverride/valueがdarkで`prefers-color-scheme: dark`もmatchすると開く。
+ * - B06「点線の四角」: 「輪郭を強く」でcontrastのoverrideを要求する。`contrast.requestOverride("more")`成功後、報告値がmoreで`prefers-contrast: more`もmatchすると開く。
+ * - B07「二本の縦線」: 「動きを止める」でmotionのoverrideを要求する。`reducedMotion.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-motion: reduce`もmatchすると開く。
+ * - B08「斜線入りの目」: 「透明を減らす」でtransparencyのoverrideを要求する。`reducedTransparency.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-transparency: reduce`もmatchすると開く。
+ * - B09「斜線入りWi-Fi」: 「通信を軽く」でdataのoverrideを要求する。`reducedData.requestOverride("reduce")`成功後、報告値がreduceで`prefers-reduced-data: reduce`もmatchすると開く。
  * 使用API: `getComputedStyle()`、ResizeObserver、User Preferences APIのvalidValues/requestOverride/clearOverride、`matchMedia()`。
  * 権限・privacy: overrideは各button操作時だけ要求し、font size/preference値は現在判定にだけ使って保存・送信しない。このstageが設定したoverrideはclear操作または離脱時に解除する。
  * 対応環境: B01〜B04はcomputed styleとResizeObserver、B05〜B09は`navigator.preferences`の対応PreferenceObjectと各media featureを実装するbrowser。

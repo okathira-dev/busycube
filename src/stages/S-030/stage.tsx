@@ -20,7 +20,7 @@ import { locale } from "./locale";
  * 目的: 入力欄へ回答する代わりに、文章内の指定語そのものをnative text selectionとして観測する。
  * 最初の一手: 角括弧内の太字の一語だけを、mouse dragまたはkeyboardの選択操作で反転選択する。
  * 箱ごとの解法:
- * - B01「選択の箱」: 選択範囲を文字列化し、前後空白を除いて小文字化した結果が、現在localeの回答語（日本語「あいだ」／英語`between`）と完全一致すると開く。
+ * - B01「点線の四角」: 角括弧内の一語だけを反転選択する。選択範囲を文字列化し、前後空白を除いて小文字化した結果が、現在localeの回答語（日本語「あいだ」／英語`between`）と完全一致すると開く。
  * 使用API: Selection APIの`document.getSelection()`とDocumentの`selectionchange` event。
  * 権限・privacy: 権限を要求せず、現在の選択文字列は一致判定にだけ使用し、保存・同期・送信しない。
  * 対応環境: page本文をnative selectionでき、Selection APIと`selectionchange`を実装するbrowser。

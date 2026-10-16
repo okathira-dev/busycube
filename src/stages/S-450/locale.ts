@@ -4,5 +4,5 @@ import { stageName } from "./name";
 export const locale = defineStageLocale({
   stageName,
   sendPrivateSignal: { ja: "専用の合図を送る", en: "Send the private signal" },
-  B01: { ja: "プロトコルの箱", en: "Protocol box" },
+  B01: { ja: "枠から出る矢印", en: "Arrow leaving a square" },
 });

@@ -37,9 +37,9 @@ function distance(a: Anchor, b: GeolocationCoordinates) {
  * 目的: 最初の高精度geolocationを出発点としてsessionに保持し、測位誤差を差し引いて確実に移動した距離を三段階で集める。
  * 最初の一手: 位置情報を許可して最初の測位を待ち、端末を持って出発点からまず5 m以上、続いて25 m、100 m以上離れる。
  * 箱ごとの解法:
- * - B01「5mの箱」: 球面距離から出発点accuracyと現在accuracyを引いた保守的距離が5 m以上なら開く。
- * - B02「25mの箱」: 同じ保守的距離が25 m以上なら開く。この時B01も同時に条件を満たす。
- * - B03「100mの箱」: 同じ保守的距離が100 m以上なら開き、sessionStorageの出発点を削除する。
+ * - B01「点を結ぶ道」: 測位後、端末を持って出発点から5 m以上離れる。球面距離から出発点accuracyと現在accuracyを引いた保守的距離が5 m以上なら開く。
+ * - B02「点を結ぶ道」: 端末を持って出発点から25 m以上離れる。同じ保守的距離が25 m以上なら開く。この時B01も同時に条件を満たす。
+ * - B03「点を結ぶ道」: 端末を持って出発点から100 m以上離れる。同じ保守的距離が100 m以上なら開き、sessionStorageの出発点を削除する。
  * 使用API: Geolocation APIのhigh-accuracy `watchPosition()`、Haversine距離、GeolocationCoordinates accuracy、sessionStorage、`Date.now()`。
  * 権限・privacy: 位置権限を使用し、出発点の緯度・経度・accuracy・時刻を同一tab sessionに最大24時間だけ保存する。serverへ位置・移動距離を送信しない。
  * 対応環境: secure contextで高精度Geolocationとaccuracy値を提供し、実際に100 m以上移動できるmobile browser/端末。

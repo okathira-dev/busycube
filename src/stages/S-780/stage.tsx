@@ -120,10 +120,10 @@ async function registerWallets(wallets: readonly Wallet[]): Promise<void> {
  * 目的: browser所有Payment Handler chooserで架空BCU walletを選び、approved・declined・retry・特定wallet eventを四つのlifecycle結果へ分ける。
  * 最初の一手: 「財布を開く」を押して○または◇walletを選び、handler windowの✓・×・↻を目的の箱に合わせて操作する。
  * 箱ごとの解法:
- * - B01「承認の箱」: response methodが登録methodと一致し、最初のdetailsが`outcome:"approved", accepted:true`で、`complete("success")`まで成功すると開く。
- * - B02「拒否の箱」: 最初のdetailsが`outcome:"declined", accepted:false`で、`complete("fail")`まで成功すると開く。
- * - B03「再試行の箱」: 最初が`needs-retry`で同じPaymentResponseの`retry()`を実行し、二回目がapproved/accepted trueで`complete("success")`すると開く。
- * - B04「◇財布の箱」: chooserで◇walletを選び、そのexact worker scriptからcurrent request ID・trusted true・wallet diamondを持つ実handler-event messageを受けると開く。
+ * - B01「紙と上向き矢印」: handler windowの✓を選んで承認する。response methodが登録methodと一致し、最初のdetailsが`outcome:"approved", accepted:true`で、`complete("success")`まで成功すると開く。
+ * - B02「紙と下向き矢印」: handler windowの×を選んで拒否する。最初のdetailsが`outcome:"declined", accepted:false`で、`complete("fail")`まで成功すると開く。
+ * - B03「左右の矢印」: handler windowの↻を選んで再試行し、次に承認する。最初が`needs-retry`で同じPaymentResponseの`retry()`を実行し、二回目がapproved/accepted trueで`complete("success")`すると開く。
+ * - B04「点線の四角」: chooserで◇walletを選び、そのexact worker scriptからcurrent request ID・trusted true・wallet diamondを持つ実handler-event messageを受けると開く。
  * 使用API: Payment Request/PaymentResponse complete/retry、Payment Handler Service Worker/PaymentRequestEvent、PaymentManager.userHint、payment method manifest、Service Worker messaging。
  * 権限・privacy: currency BCUの架空1.00だけを使い、実決済・payer情報・credentialを要求しない。wallet IDとrequest IDはattempt判定だけに使い、保存・送信しない。
  * 対応環境: secure contextでPaymentRequest、Payment Handler、Service Worker、method manifest response headerと複数wallet chooserを提供するbrowser。

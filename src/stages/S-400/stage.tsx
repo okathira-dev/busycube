@@ -19,8 +19,8 @@ import { useEffect, useRef, useState } from "react";
  * 目的: system wall clockと単調増加clockの差から、端末時計を約1時間戻した後に現在時刻へ戻した一連の変化を検出する。
  * 最初の一手: stageを開いたままOSの日付と時刻設定で自動設定を切り、system時刻をちょうど約1時間前へ変更する。
  * 箱ごとの解法:
- * - B01「巻き戻しの箱」: 入場時の`Date.now()`へ`performance.now()`経過を足した期待時刻に対し、現在wall clockが55〜65分遅れると開く。
- * - B02「現在へ戻す箱」: 同じattemptでB01の時刻差を一度観測した後、wall clockを期待時刻の±5分以内へ戻すと開く。
+ * - B01「時計」: OS設定でsystem時刻を約1時間戻す。入場時の`Date.now()`へ`performance.now()`経過を足した期待時刻に対し、現在wall clockが55〜65分遅れると開く。
+ * - B02「折り返す矢印」: OS設定でsystem時刻を現在へ戻す。同じattemptでB01の時刻差を一度観測した後、wall clockを期待時刻の±5分以内へ戻すと開く。
  * 使用API: `Date.now()`、`performance.now()`、1秒interval。変更操作はOS標準の日付と時刻設定を使う。
  * 権限・privacy: 権限を要求せず、入場時wall/monotonic値と現在offsetだけをmemory内で比較する。絶対時刻や変更履歴を保存・送信しない。
  * 対応環境: OS時刻を利用者が変更でき、wall clock変更中もmonotonic `performance.now()`が連続するbrowser/端末。

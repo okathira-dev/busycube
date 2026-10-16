@@ -13,5 +13,5 @@ export const locale = defineStageLocale({
     en: "Focus the plane to move it with the arrow keys too.",
   },
   aligned: { ja: "ほぼ完全に重なりました。", en: "Almost perfectly aligned." },
-  B01: { ja: "重なった箱", en: "Aligned box" },
+  B01: { ja: "点線の四角", en: "Dotted square" },
 });

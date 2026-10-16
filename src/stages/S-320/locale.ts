@@ -10,5 +10,5 @@ export const locale = defineStageLocale({
     ja: "折りたたみ端末で折れ目を作る。",
     en: "Create a fold on a foldable device.",
   },
-  B01: { ja: "折れ目の箱", en: "Fold box" },
+  B01: { ja: "折りたたみ画面", en: "Folded screen" },
 });

@@ -17,7 +17,7 @@ export const locale = defineStageLocale({
     en: "Observation starts on entry; the game creates no load",
   },
   cpuPrefix: { ja: "CPU状態", en: "CPU state" },
-  B01: { ja: "nominalの箱", en: "Nominal box" },
-  B02: { ja: "中間状態の箱", en: "Middle-state box" },
-  B03: { ja: "criticalの箱", en: "Critical box" },
+  B01: { ja: "チップ", en: "Chip" },
+  B02: { ja: "チップ", en: "Chip" },
+  B03: { ja: "チップ", en: "Chip" },
 });

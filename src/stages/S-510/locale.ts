@@ -81,7 +81,7 @@ export const locale = defineStageLocale({
     ja: "画像の取得に失敗しました",
     en: "Could not fetch the image",
   },
-  B01: { ja: "ページ内画像の箱", en: "In-page image box" },
-  B02: { ja: "OSファイルの箱", en: "OS file box" },
-  B03: { ja: "別window画像の箱", en: "Separate-window image box" },
+  B01: { ja: "紙と上向き矢印", en: "File with upward arrow" },
+  B02: { ja: "紙と下向き矢印", en: "File with downward arrow" },
+  B03: { ja: "窓", en: "Window" },
 });

@@ -9,5 +9,5 @@ export const locale = defineStageLocale({
   copyUnavailable: { ja: "コピーできない", en: "Copy unavailable" },
   returnedUpright: { ja: "正しい向きで戻った", en: "It returned upright" },
   clipboardUnreadable: { ja: "読み取れない", en: "Clipboard unreadable" },
-  B01: { ja: "コピーの箱", en: "Copy box" },
+  B01: { ja: "重なった紙", en: "Overlapping sheets" },
 });

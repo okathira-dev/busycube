@@ -44,7 +44,7 @@ function publicUrl(path: string): string {
  * 目的: installed PWAのwindowが0件でもbrowser schedulerがService Workerを起動するPeriodic Background Syncを、二回の植物成長として確認する。
  * 最初の一手: 「温室を預ける」でtagを登録し、「水を預ける」を押してBusycubeの全windowを閉じ、browserによる実periodic syncを待つ。
  * 箱ごとの解法:
- * - B01「開花の箱」: client 0件のperiodicsyncでpending waterをphase 1へ進め、再訪してpending lightを預け、別のclientless eventでphase 2へ進める。再訪時にclientlessEventsが2以上かつCache Storageに`bloom.svg`があれば開く。
+ * - B01「砂時計」: 水を預けて全windowを閉じ、実periodic sync後に再訪して光を預け、再び全windowを閉じて待つ。client 0件のperiodicsyncでpending waterをphase 1へ進め、再訪してpending lightを預け、別のclientless eventでphase 2へ進める。再訪時にclientlessEventsが2以上かつCache Storageに`bloom.svg`があれば開く。
  * 使用API: Periodic Background Sync、Service Worker/Clients API、IndexedDB、Cache Storage、PWA installation。
  * 権限・privacy: 保存するのはphase、pending care種別、event countだけで、時刻・account・network・通知情報を保持しない。stage離脱後も長期ギミック用にlocal registration/stateを維持する。
  * 対応環境: 公開HTTPSでinstall済みPWAへPeriodic Background Syncを許可し、window 0件でもworkerを二回起動できるbrowser/OS。

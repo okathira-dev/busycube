@@ -38,7 +38,7 @@ export function readGamepadGesture(
  * 目的: 接続済みgamepadの複数buttonとanalog axisを同じpoll frameで組み合わせた同時入力を観測する。
  * 最初の一手: gamepadを接続して任意のbuttonを2個以上押したまま、stickまたはtrigger相当のaxisを大きく倒す。
  * 箱ごとの解法:
- * - B01「同時入力の箱」: 最初に見つかったconnected gamepadで、pressedまたはvalue 0.75超のbuttonが2個以上かつ最大絶対axis値が0.65以上の同時状態になると開く。
+ * - B01「ゲームパッド」: gamepadのbuttonを二つ以上押しながらaxisを倒す。最初に見つかったconnected gamepadで、pressedまたはvalue 0.75超のbuttonが2個以上かつ最大絶対axis値が0.65以上の同時状態になると開く。
  * 使用API: Gamepad APIの`navigator.getGamepads()`、GamepadButton状態、axis値、`requestAnimationFrame()` polling。
  * 権限・privacy: 権限を要求せず、button数と最大axis絶対値だけを現在表示に使い、device ID・mapping・入力履歴を保存・送信しない。
  * 対応環境: Gamepad APIを実装し、利用者操作後の接続gamepadとanalog axisをpageへ公開するbrowser。

@@ -24,7 +24,7 @@ type InteractionState = "idle" | "active" | "denied" | "unavailable";
  * 目的: camera映像の内容を認識せず、frame全体から導出した明るさの暗→明という順序だけを観測する。
  * 最初の一手: 「光だけを見る」を押してcameraを許可し、背面cameraを手などで暗く覆ってから明るい方向へ向ける。
  * 箱ごとの解法:
- * - B01「光の箱」: 200 ms間隔の平均RGB輝度で一度55未満を観測した後、同じcapture中に165超を観測すると開く。
+ * - B01「太陽」: cameraを許可し、背面cameraを暗く覆ってから明るい方向へ向ける。200 ms間隔の平均RGB輝度で一度55未満を観測した後、同じcapture中に165超を観測すると開く。
  * 使用API: Media Capture and Streamsの`getUserMedia()`、HTMLVideoElement、Canvas 2Dの`drawImage()` / `getImageData()`、timer。
  * 権限・privacy: video権限だけを明示操作後に要求する。32×24 frameはmemory内で平均値へ変換し、pixel・画像・映像を保存・送信しない。
  * 対応環境: secure contextでcameraとMediaDevices、video再生、Canvas 2D pixel読取を利用できるbrowserと端末。

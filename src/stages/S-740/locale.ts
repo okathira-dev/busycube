@@ -3,7 +3,7 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "開花の箱", en: "Bloom box" },
+  B01: { ja: "砂時計", en: "Hourglass" },
   register: { ja: "温室を預ける", en: "Register greenhouse" },
   water: { ja: "水を預ける", en: "Leave water" },
   light: { ja: "光を預ける", en: "Leave light" },

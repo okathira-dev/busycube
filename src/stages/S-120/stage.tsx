@@ -24,7 +24,7 @@ type InteractionState = "idle" | "active" | "denied" | "unavailable";
  * 目的: microphone入力を録音せず音量の時間波形へ変換し、静か→大きい音→静かという三段階を検出する。
  * 最初の一手: 「音を見る」を押してmicrophoneを許可し、静かな状態を作ってから一度大きな音を出し、再び静かにする。
  * 箱ごとの解法:
- * - B01「音の箱」: time-domain sampleのRMSが0.05未満、続いて0.2超、最後に0.06未満の順で同じcapture中に観測されると開く。
+ * - B01「音波の出るスピーカー」: microphoneを許可し、静かな状態から大きな音を出して再び静かにする。time-domain sampleのRMSが0.05未満、続いて0.2超、最後に0.06未満の順で同じcapture中に観測されると開く。
  * 使用API: `getUserMedia({audio:true})`、Web Audio APIの`AudioContext` / `AnalyserNode.getByteTimeDomainData()`、`requestAnimationFrame()`。
  * 権限・privacy: microphone権限だけを明示操作後に要求し、生sampleはRMS計算にだけ使う。音声を録音・保存・再生・送信しない。
  * 対応環境: secure contextでMediaDevicesとWeb Audio APIを利用でき、microphone入力を提供できるbrowserと端末。

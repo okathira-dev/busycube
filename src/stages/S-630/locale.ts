@@ -3,10 +3,10 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "Wi-Fiの箱", en: "Wi-Fi box" },
-  B02: { ja: "携帯回線の箱", en: "Cellular box" },
-  B03: { ja: "有線の箱", en: "Ethernet box" },
-  B04: { ja: "Bluetoothの箱", en: "Bluetooth box" },
+  B01: { ja: "画面と携帯端末", en: "Screen and phone" },
+  B02: { ja: "画面と携帯端末", en: "Screen and phone" },
+  B03: { ja: "画面と携帯端末", en: "Screen and phone" },
+  B04: { ja: "Bluetooth", en: "Bluetooth" },
   inspect: { ja: "現在の回線を見る", en: "Inspect current route" },
   idle: {
     ja: "端末側で回線を切り替えてから、その都度観測します。",

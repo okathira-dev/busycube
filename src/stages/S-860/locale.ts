@@ -15,7 +15,7 @@ export const locale = defineStageLocale({
     ja: "このブラウザでは通常文章への直接編集を提供できません。",
     en: "This browser cannot provide direct editing on ordinary text.",
   },
-  B01: { ja: "題名の誤字", en: "Title typo" },
-  B02: { ja: "説明の脱字", en: "Subtitle omission" },
-  B03: { ja: "コピーの余分な語", en: "Tagline extra word" },
+  B01: { ja: "鉛筆", en: "Pencil" },
+  B02: { ja: "鉛筆", en: "Pencil" },
+  B03: { ja: "鉛筆", en: "Pencil" },
 });

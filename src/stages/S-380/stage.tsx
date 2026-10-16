@@ -26,9 +26,9 @@ import { locale } from "./locale";
  * 目的: discoverable passkeyの作成、conditional mediationでの利用成功、意図的に壊したcredential IDによる利用失敗を分けて観測する。
  * 最初の一手: 🔑でpasskeyを作成し、username欄から🔒のconditional UIでそのpasskeyを選ぶ。最後に⊘で不正IDの認証を試す。
  * 箱ごとの解法:
- * - B01「保存の箱」: resident key必須・user verification preferredで`navigator.credentials.create()`がPublicKeyCredentialを返し、そのrawIdをlocal保存すると開く。
- * - B02「利用成功の箱」: `mediation: "conditional"`の`credentials.get()`で任意のcredentialが正常に返ると開く。
- * - B03「利用失敗の箱」: 保存rawIdの先頭byteを反転したallowCredentials IDで認証し、`NotAllowedError`または`InvalidStateError`になれば開く。
+ * - B01「紙と上向き矢印」: 🔑からpasskeyを作成する。resident key必須・user verification preferredで`navigator.credentials.create()`がPublicKeyCredentialを返し、そのrawIdをlocal保存すると開く。
+ * - B02「錠前」: username欄から🔒のconditional UIを開き、passkeyを選ぶ。`mediation: "conditional"`の`credentials.get()`で任意のcredentialが正常に返ると開く。
+ * - B03「錠前」: ⊘から不正IDの認証を試す。保存rawIdの先頭byteを反転したallowCredentials IDで認証し、`NotAllowedError`または`InvalidStateError`になれば開く。
  * 使用API: WebAuthn/Credential Management API、PublicKeyCredential、conditional mediation、Web Crypto random、localStorage。
  * 権限・privacy: authenticator UIで利用者確認を行い、attestationは`none`。localStorageにはcredential rawIdだけを保持し、秘密鍵・biometric・assertionを取得・送信しない。
  * 対応環境: secure contextでresident passkey作成とconditional WebAuthn認証を提供するbrowser、OS、authenticator。

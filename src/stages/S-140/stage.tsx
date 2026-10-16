@@ -21,8 +21,8 @@ import { locale } from "./locale";
  * 目的: 設定済みGoogle Drive同期をこのattemptで実行し、backup成功と別端末由来のremote data検出を分けて確認する。
  * 最初の一手: Google Drive連携を設定した状態で「端末をつなぐ」を押す。B02には同じDrive dataを先に別端末から同期しておく。
  * 箱ごとの解法:
- * - B01「バックアップの箱」: buttonから`drive.sync()`を新たに実行し、返却結果の`synced`が`true`なら開く。
- * - B02「別端末の箱」: 同じ成功した同期結果で`remoteDevice`も`true`、つまり別device ID由来の記録が見つかれば開く。
+ * - B01「雲と上向き矢印」: Google Drive連携後に「端末をつなぐ」を押す。buttonから`drive.sync()`を新たに実行し、返却結果の`synced`が`true`なら開く。
+ * - B02「画面と携帯端末」: 別端末の進捗を同じDrive dataへ同期してから「端末をつなぐ」を押す。同じ成功した同期結果で`remoteDevice`も`true`、つまり別device ID由来の記録が見つかれば開く。
  * 使用API: runtimeが注入するGoogle Drive同期serviceの`configured`状態と`sync()`結果。
  * 権限・privacy: Google認証とDrive app dataへのaccessは利用者操作に基づく。stageは同期結果のbooleanだけを受け取り、account情報やremote data本文を保持しない。
  * 対応環境: Google Drive clientが設定済みで、認証・network通信・同一accountによる複数端末同期を実行できるbrowser。

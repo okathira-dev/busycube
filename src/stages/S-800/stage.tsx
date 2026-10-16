@@ -47,8 +47,8 @@ function WordCanvas({ word }: { word: string }) {
  * 目的: address barでText Fragmentを組み立て、`hidden="until-found"`の二つの文章をbrowser自身のmatch処理でrevealする。
  * 最初の一手: 現在URL末尾へ表示済み`#:~:text=%20%63%6f%62%61%6c%74,-.`を貼って移動し、hiddenな`cobalt.`の文を開く。
  * 箱ごとの解法:
- * - B01「符号片の箱」: encoded fragmentが`cobalt.`を含むhidden containerへmatchし、そのelementで実`beforematch` eventを受けると開く。
- * - B02「描画語の箱」: canvasに描かれた`ember`を読み、URL末尾へ`#:~:text=%20ember,-.`を作って移動し、別hidden containerの`beforematch`を受けると開く。
+ * - B01「点線の四角」: 表示済みのencoded fragmentをURL末尾に貼って移動する。encoded fragmentが`cobalt.`を含むhidden containerへmatchし、そのelementで実`beforematch` eventを受けると開く。
+ * - B02「点線の四角」: canvasに描かれた`ember`を読み、URL末尾へ`#:~:text=%20ember,-.`を作って移動し、別hidden containerの`beforematch`を受けると開く。
  * 使用API: URL Fragment Text Directives、Hidden Until Found、`beforematch` event、Canvas 2Dによる検索DOM外のclue描画。
  * 権限・privacy: 権限・network送信を使わず、browserのfragment matchによるreveal eventだけを観測する。検索語やURL履歴をstage側へ保存しない。
  * 対応環境: Text Fragmentと`hidden="until-found"` / beforematchを実装するChromium系browser。

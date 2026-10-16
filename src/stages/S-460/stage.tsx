@@ -20,7 +20,7 @@ import { locale } from "./locale";
  * 目的: installed appのclient areaがOS title barへ拡張された実Window Controls Overlay領域内で箱をclickする。
  * 最初の一手: Busycubeをinstall済みapp windowで開き、title barのoverlay表示を有効にして、title bar内へ配置された箱をclickする。
  * 箱ごとの解法:
- * - B01「オーバーレイの箱」: click時に`windowControlsOverlay.visible`がtrueで、eventのclient座標が`getTitlebarAreaRect()`のleft/right/top/bottom内なら開く。
+ * - B01「窓」: install済みappのtitle bar overlay内にある箱をクリックする。click時に`windowControlsOverlay.visible`がtrueで、eventのclient座標が`getTitlebarAreaRect()`のleft/right/top/bottom内なら開く。
  * 使用API: Window Controls Overlay APIの`visible` / `getTitlebarAreaRect()` / `geometrychange`とpointer click座標。
  * 権限・privacy: 権限を要求せず、overlay可視状態とclick座標はその場の範囲判定にだけ使い、保存・送信しない。
  * 対応環境: Window Controls Overlay付きでinstallでき、manifestの`display_override`を反映するdesktop browser/OS。

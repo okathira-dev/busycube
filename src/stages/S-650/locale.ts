@@ -10,8 +10,8 @@ export const locale = defineStageLocale({
   requested: { ja: "要求済み", en: "requested" },
   denied: { ja: "拒否または利用不可", en: "denied or unavailable" },
   unknown: { ja: "不明", en: "unknown" },
-  B01: { ja: "位置情報の箱", en: "Geolocation box" },
-  B02: { ja: "通知の箱", en: "Notification box" },
-  B03: { ja: "カメラの箱", en: "Camera box" },
-  B04: { ja: "マイクの箱", en: "Microphone box" },
+  B01: { ja: "点を結ぶ道", en: "Path connecting dots" },
+  B02: { ja: "ベル", en: "Bell" },
+  B03: { ja: "二つの画面", en: "Two screens" },
+  B04: { ja: "音波の出るスピーカー", en: "Speaker with sound waves" },
 });

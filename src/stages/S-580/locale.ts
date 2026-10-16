@@ -12,6 +12,12 @@ export const locale = defineStageLocale({
   },
   listen: { ja: "聞き取る", en: "Listen" },
   shifted: { ja: "ずれた声を聞く", en: "Hear the shifted voice" },
-  B01: { ja: "発話の箱", en: "Speech box" },
-  B02: { ja: "ずれた声の箱", en: "Shifted-voice box" },
+  B01: {
+    ja: "音波の出るスピーカー",
+    en: "Speaker with sound waves",
+  },
+  B02: {
+    ja: "音波の出るスピーカー",
+    en: "Speaker with sound waves",
+  },
 });

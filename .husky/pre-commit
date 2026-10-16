@@ -1,1 +1,2 @@
-pnpm exec lint-staged
+# Windows の上限 8191 文字に収まるよう、引用・エスケープで増える分を見込んで早めに分割する。
+pnpm exec lint-staged --max-arg-length 6000

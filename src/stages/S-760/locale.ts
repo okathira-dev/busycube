@@ -3,8 +3,8 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "五項目の箱", en: "Five-property box" },
-  B02: { ja: "伏せた名刺の箱", en: "Withheld-card box" },
+  B01: { ja: "画面と携帯端末", en: "Screen and phone" },
+  B02: { ja: "斜線入りの目", en: "Crossed-out eye" },
   full: { ja: "名刺を選ぶ", en: "Pick the full card" },
   empty: { ja: "項目を伏せて選ぶ", en: "Pick while withholding fields" },
   idle: {

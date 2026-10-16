@@ -24,7 +24,7 @@ function isStandalone() {
  * 目的: 通常のbrowser tabではなく、install済みWeb Appのstandalone表示modeから開かれていることを検出する。
  * 最初の一手: browserのinstall機能でBusycubeを端末へ追加し、作成されたapp iconまたはlauncherから起動してこのstageへ入る。
  * 箱ごとの解法:
- * - B01「別の入口の箱」: `(display-mode: standalone)`のmedia queryが入場時またはmode変更時に`matches === true`なら開く。
+ * - B01「画面と下向き矢印」: Busycubeをinstallし、作成されたapp iconから起動して入場する。`(display-mode: standalone)`のmedia queryが入場時またはmode変更時に`matches === true`なら開く。
  * 使用API: CSS Display Mode media featureと`window.matchMedia()`、`MediaQueryList`のchange event。
  * 権限・privacy: install permission以外の権限を要求せず、standaloneか否かのbooleanだけを判定し、install情報を保存・送信しない。
  * 対応環境: Web App ManifestからPWAをinstallでき、`display-mode: standalone`を`matchMedia`へ公開するbrowser。

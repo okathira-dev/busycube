@@ -3,7 +3,7 @@
   --gift-height: 3.5rem;
   --gift-lid-height: 0.8rem;
   --gift-left-space: 1rem;
-  --gift-right-space: 0.25rem;
+  --gift-right-space: var(--gift-left-space);
   --gift-top-space: 3rem;
   position: relative;
   width: calc(

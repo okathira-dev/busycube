@@ -20,7 +20,7 @@ import { locale } from "./locale";
  * 目的: browser全体ではなく、`requestFullscreen()`を呼んだ特定HTML要素だけが実fullscreen要素になる状態を作る。
  * 最初の一手: 額縁の下にある「額縁を全画面にする」を押し、browserの許可に従って額縁をfullscreenにする。
  * 箱ごとの解法:
- * - B01: 額縁が画面全体を占め、箱を覆っていたveilが消えた状態で箱を直接クリックする。trusted click時にも`document.fullscreenElement`がその額縁要素なら開く。
+ * - B01: 「額縁を全画面にする」を押し、veilが消えた箱を直接クリックする。trusted click時にも`document.fullscreenElement`がその額縁要素なら開く。
  * 使用API: Fullscreen APIの`Element.requestFullscreen()`、`document.fullscreenElement`、`fullscreenchange`、`document.exitFullscreen()`。
  * 権限・privacy: fullscreenへの遷移以外の権限を要求せず、画面内容・操作履歴・端末情報を保存または送信しない。
  * 対応環境: user activationからのFullscreen APIに対応し、任意のHTML要素をfullscreenにできるbrowser。

@@ -3,8 +3,8 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "空間の箱", en: "Immersive-space box" },
-  B02: { ja: "選択光線の箱", en: "Selection-ray box" },
+  B01: { ja: "画面と携帯端末", en: "Screen and phone" },
+  B02: { ja: "点線の四角", en: "Dotted square" },
   start: { ja: "XR空間を開く", en: "Enter immersive XR" },
   end: { ja: "XRを終了", en: "End XR" },
   idle: {

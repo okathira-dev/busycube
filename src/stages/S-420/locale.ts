@@ -8,5 +8,5 @@ export const locale = defineStageLocale({
     en: "Enter with ← →, submit with the body",
   },
   sendVault: { ja: "金庫を外へ出す", en: "Send the vault outside" },
-  B01: { ja: "金庫の箱", en: "Vault box" },
+  B01: { ja: "錠前", en: "Padlock" },
 });

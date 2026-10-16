@@ -29,10 +29,10 @@ const boxIdByType = {
  * 目的: Network Information APIが報告する実network routeの種類を、端末外側で切り替えて4箱へ収集する。
  * 最初の一手: Wi-Fi、携帯回線、有線、Bluetooth tetheringのいずれかへ端末側で接続し、「現在の回線を見る」を押す。
  * 箱ごとの解法:
- * - B01「Wi-Fiの箱」: 明示buttonを押した瞬間の`navigator.connection.type`が厳密に`wifi`なら開く。
- * - B02「携帯回線の箱」: 同じ読取値が厳密に`cellular`なら開く。
- * - B03「有線の箱」: 同じ読取値が厳密に`ethernet`なら開く。
- * - B04「Bluetoothの箱」: 同じ読取値が厳密に`bluetooth`なら開く。訪問をまたいだ4接続の開箱は通常進捗へ累積する。
+ * - B01「画面と携帯端末」: 端末をWi-Fiへ接続し、「現在の回線を見る」を押す。明示buttonを押した瞬間の`navigator.connection.type`が厳密に`wifi`なら開く。
+ * - B02「画面と携帯端末」: 端末を携帯回線へ接続し、「現在の回線を見る」を押す。同じ読取値が厳密に`cellular`なら開く。
+ * - B03「画面と携帯端末」: 端末を有線回線へ接続し、「現在の回線を見る」を押す。同じ読取値が厳密に`ethernet`なら開く。
+ * - B04「Bluetooth」: 端末をBluetooth tetheringへ接続し、「現在の回線を見る」を押す。同じ読取値が厳密に`bluetooth`なら開く。訪問をまたいだ4接続の開箱は通常進捗へ累積する。
  * 使用API: Network Information APIの`Navigator.connection`と`NetworkInformation.type`。
  * 権限・privacy: 接続名、SSID、IP address、速度、時刻は取得せず、4値に一致したproblem ID以外を保存・同期・送信しない。
  * 対応環境: `navigator.connection.type`を具体値として公開するAndroid / ChromeOS等のbrowser。欠損環境で推定fallbackを出さない。

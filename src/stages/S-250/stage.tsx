@@ -24,8 +24,8 @@ type Message = { type: "alive" | "closing"; color: Color; sender: string };
  * 目的: R/G/Bそれぞれのwindowが生存している同時状態と、三つを指定順に閉じたpage lifecycle messageを親windowで観測する。
  * 最初の一手: 「次の色を開く」を3回押してR・G・B windowを全部残し、白になった後にB→G→Rの順で閉じる。
  * 箱ごとの解法:
- * - B01「白になる箱」: R/G/B windowが500 msごとに送る`alive`を親が受け、直近1,800 ms以内の三色が同時に揃うと開く。
- * - B02「閉じる順番の箱」: 各色windowの`pagehide`による`closing` messageを連続してB・G・Rの順に受けると開く。prefixが崩れた時点で列をresetする。
+ * - B01「錠前」: R/G/Bの三つのwindowを開いたままにする。R/G/B windowが500 msごとに送る`alive`を親が受け、直近1,800 ms以内の三色が同時に揃うと開く。
+ * - B02「砂時計」: B、G、Rの順に各windowを閉じる。各色windowの`pagehide`による`closing` messageを連続してB・G・Rの順に受けると開く。prefixが崩れた時点で列をresetする。
  * 使用API: `window.open()`、Broadcast Channel API、`pagehide`、interval、sessionStorage、`Date.now()`、Web Crypto UUID。
  * 権限・privacy: 権限を要求せず、channelには色・生存/終了種別・一時sender IDだけを流す。window内容や時刻履歴を保存・外部送信しない。
  * 対応環境: secure contextでBroadcastChannelと複数window/tabを利用できるbrowser。capability判定ではWeb Locks APIも必要とする。

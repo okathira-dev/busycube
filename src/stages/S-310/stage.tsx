@@ -29,9 +29,9 @@ interface LaunchQueueLike {
  * 目的: install済みWeb Appが通常URL、manifest shortcut、OSのnew-note actionという三種類の外部launch入口を受け取る。
  * 最初の一手: 表示されたlaunch URLでappをもう一度起動する。続いてapp iconのcontext menuからshortcut、OSのnote作成入口からBusycubeを起動する。
  * 箱ごとの解法:
- * - B01「再起動の箱」: 初期URLまたはLaunchQueueの`targetURL`で`stage=S-310`かつ`launch=busycube`が完全一致すると開く。
- * - B02「ショートカットの箱」: manifest shortcut専用URLが初期URLまたはLaunchQueueへ入り、`source=shortcut`なら開く。
- * - B03「新しいメモの箱」: manifest `note_taking.new_note_url`が初期URLまたはLaunchQueueへ入り、`source=note`なら開く。
+ * - B01「枠から出る矢印」: 表示されたlaunch URLからappをもう一度起動する。初期URLまたはLaunchQueueの`targetURL`で`stage=S-310`かつ`launch=busycube`が完全一致すると開く。
+ * - B02「枠から出る矢印」: app iconのcontext menuからshortcutで起動する。manifest shortcut専用URLが初期URLまたはLaunchQueueへ入り、`source=shortcut`なら開く。
+ * - B03「枠から出る矢印」: OSのnote作成入口からBusycubeを起動する。manifest `note_taking.new_note_url`が初期URLまたはLaunchQueueへ入り、`source=note`なら開く。
  * 使用API: Web App Manifestの`launch_handler` / `shortcuts` / `note_taking`、Launch Handler APIの`window.launchQueue.setConsumer()`、URL API。
  * 権限・privacy: 権限を要求せず、launch URLの固定parameterだけを判定する。外部app情報やnote内容を取得・保存・送信しない。
  * 対応環境: Busycubeをinstallでき、Launch Handler APIと各manifest起動surfaceを実装するbrowser/OS。
