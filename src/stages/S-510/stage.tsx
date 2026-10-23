@@ -110,9 +110,9 @@ function uriFromTransfer(transfer: DataTransfer) {
  * 目的: page内URI、OS file、別window URIという三つのnative drag sourceをDataTransferの形式と固定fixture hashで識別する。
  * 最初の一手: 左列の画像を同じ列へdragする。次に中央画像をdownloadしてfile managerからdropし、最後に別windowを開いてその画像を右列へdragする。
  * 箱ごとの解法:
- * - B01「ページ画像の箱」: trusted dropがFilesを含まず`text/uri-list`を持ち、URIのorigin/pathが`drag-page.png`、fetchしたbytesのSHA-256が固定digestと一致すると開く。
- * - B02「ファイルの箱」: 中央fixtureをOSへdownloadし、file managerからFiles付きtrusted dropを行い、先頭File bytesのSHA-256が`drag-file.png`の固定digestと一致すると開く。
- * - B03「別窓画像の箱」: 同一origin別windowのdrag開始messageで5秒間armし、FilesなしURI・`busycube-round:{round}:window` marker・`drag-window.png`のorigin/path/hashが全て一致すると開く。
+ * - B01「紙と上向き矢印」: 左列の画像を左列の箱へdrag/dropする。trusted dropがFilesを含まず`text/uri-list`を持ち、URIのorigin/pathが`drag-page.png`、fetchしたbytesのSHA-256が固定digestと一致すると開く。
+ * - B02「紙と下向き矢印」: 中央fixtureをOSへdownloadし、file managerからFiles付きtrusted dropを行い、先頭File bytesのSHA-256が`drag-file.png`の固定digestと一致すると開く。
+ * - B03「窓」: 別windowの画像を右列の箱へdrag/dropする。同一origin別windowのdrag開始messageで5秒間armし、FilesなしURI・`busycube-round:{round}:window` marker・`drag-window.png`のorigin/path/hashが全て一致すると開く。
  * 使用API: HTML Drag and Drop/DataTransfer/File、`text/uri-list`、fetch、Web Crypto SHA-256、`window.open()`、cross-window `postMessage()`、Web Crypto UUID。
  * 権限・privacy: Git管理済み3画像だけを照合し、OSからdropされた先頭fileはmemory上でhash化するだけでuploadしない。file名・画像bytes・drag履歴を保存・送信しない。
  * 対応環境: native desktop drag-and-drop、OS file drop、複数windowとDataTransfer URIを提供するbrowser。touch-only環境は対象外。

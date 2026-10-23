@@ -43,8 +43,8 @@ function isKeyFile(
  * 目的: このattemptで生成した鍵fileをbrowser外へdownloadし、同じfileをfile pickerから戻して往復を確認する。
  * 最初の一手: 「鍵を外へ出す」で`.busykey` fileをdownloadし、続けて「鍵を戻す」からそのfileを選ぶ。
  * 箱ごとの解法:
- * - B01「鍵を外へ出す箱」: 18 random byteのtokenを生成してSHA-256 hashをattempt内に保持し、`busycube-key.busykey`のdownloadを開始すると開く。
- * - B02「鍵を戻す箱」: 4,096 byte以下で`format === "busycube-key-v1"`とstring tokenを持つJSON fileを選び、そのtokenのSHA-256が直前に生成したattempt内hashと一致すると開く。
+ * - B01「紙と上向き矢印」: 「鍵を外へ出す」を押す。18 random byteのtokenを生成してSHA-256 hashをattempt内に保持し、`busycube-key.busykey`のdownloadを開始すると開く。
+ * - B02「紙と下向き矢印」: downloadした`.busykey` fileを「鍵を戻す」から選ぶ。4,096 byte以下で`format === "busycube-key-v1"`とstring tokenを持つJSON fileを選び、そのtokenのSHA-256が直前に生成したattempt内hashと一致すると開く。
  * 使用API: Web Cryptoの`getRandomValues()` / `subtle.digest()`、Blob URL、download属性付きanchor、File APIとnative file picker。
  * 権限・privacy: file選択は利用者操作に限定し、選んだfileは形式とtoken一致の判定にだけ使う。token/hash/file内容を永続保存・外部送信しない。
  * 対応環境: secure contextでWeb Crypto、Blob URL、file downloadとfile input uploadを利用できるbrowser。

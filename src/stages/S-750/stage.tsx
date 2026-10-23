@@ -27,7 +27,7 @@ function makeCode(): string {
  * 目的: origin-bound実SMSからWebOTP credentialまたはOS Security Code AutoFillがcurrent 6桁codeを渡した事実を観測する。
  * 最初の一手: 表示SMS全文を別端末・協力者からこの端末へ実送信してもらい、受信前に「SMSを待つ」を押してbrowser/OSの確認UIを完了する。
  * 箱ごとの解法:
- * - B01「SMSコードの箱」: `OTPCredential.code`がcurrent codeと一致するか、最初は空でpaste/drop/composition汚染のないone-time-code欄へtrusted inputされ、`:autofill`かつvalue一致なら開く。
+ * - B01「ベル」: 実SMSを端末へ送ってもらい、「SMSを待つ」を押してbrowser/OSの確認UIを完了する。`OTPCredential.code`がcurrent codeと一致するか、最初は空でpaste/drop/composition汚染のないone-time-code欄へtrusted inputされ、`:autofill`かつvalue一致なら開く。
  * 使用API: WebOTP/Credentials Management API、OTPCredential SMS transport、`autocomplete="one-time-code"`、CSS `:autofill`、trusted input events、Web Crypto random。
  * 権限・privacy: 6桁codeはattempt memoryだけに置き、電話番号・送信者・SMS本文・到着時刻・入力履歴を保存・送信しない。SMS送信自体の料金・連絡先共有は利用者側で確認する。
  * 対応環境: secure contextのWebOTP対応mobile browser、または実`:autofill`状態を公開するSecurity Code AutoFill対応browser/OS。

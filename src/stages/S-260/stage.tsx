@@ -37,7 +37,7 @@ const EYEDROPPER_TARGET = "#a78bfa";
  * 目的: browser標準のeyedropperで画面上の実pixelを選び、stageが示す紫色と完全一致するsRGB値を得る。
  * 最初の一手: 紫色の丸または「一滴を採る」を押してeyedropperを起動し、画面内の紫色target中央を選ぶ。
  * 箱ごとの解法:
- * - B01「色を採る箱」: EyeDropperが返した`sRGBHex`を小文字化した値がtarget色`#a78bfa`と完全一致すると開く。
+ * - B01「スポイト」: EyeDropperで画面内の紫色target中央を選ぶ。EyeDropperが返した`sRGBHex`を小文字化した値がtarget色`#a78bfa`と完全一致すると開く。
  * 使用API: EyeDropper APIの`new EyeDropper().open()`とAbortSignal。
  * 権限・privacy: eyedropperは利用者操作時だけ起動し、選択した1 pixelのsRGB hexだけを現在表示する。screen画像や選択位置を保存・送信しない。
  * 対応環境: secure contextでEyeDropper APIとbrowser所有のcolor picker UIを提供するbrowser。

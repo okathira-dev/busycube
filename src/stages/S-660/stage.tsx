@@ -25,9 +25,9 @@ function boxIndexFor(state: PressureState) {
  * 目的: browserがprivacy保護済みhintとして公開するCPU pressureを、nominal・中間・criticalの三帯で観測する。
  * 最初の一手: stageをvisibleのまま1秒間隔の自動観測を待つ。別app等の通常作業負荷を変えて異なるpressure stateを作る。
  * 箱ごとの解法:
- * - B01「nominalの箱」: CPU sourceの最新PressureRecord `state`が厳密に`nominal`なら開く。
- * - B02「中間負荷の箱」: 最新stateが`fair`または`serious`のどちらかなら開く。
- * - B03「criticalの箱」: 最新stateが厳密に`critical`なら開く。訪問をまたいだ三状態は通常進捗へ累積できる。
+ * - B01「チップ」: pageをvisibleに保ち、低負荷状態で自動観測を待つ。CPU sourceの最新PressureRecord `state`が厳密に`nominal`なら開く。
+ * - B02「チップ」: 通常作業でCPU負荷を変え、自動観測を待つ。最新stateが`fair`または`serious`のどちらかなら開く。
+ * - B03「チップ」: CPUの負荷を高め、自動観測を待つ。最新stateが厳密に`critical`なら開く。訪問をまたいだ三状態は通常進捗へ累積できる。
  * 使用API: Compute Pressure APIの`PressureObserver.knownSources`、CPU `observe()`、PressureRecord state、Page Visibility API。
  * 権限・privacy: Busycube自身は意図的なCPU負荷を生成せず、coarse stateだけを表示・判定する。利用率・process・状態履歴を保存・送信しない。
  * 対応環境: CPU sourceのCompute Pressure APIを公開し、必要なPermissions Policyを満たすbrowser。hidden中は観測せずvisible復帰時に再購読する。

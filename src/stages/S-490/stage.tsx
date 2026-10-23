@@ -18,7 +18,7 @@ import { locale } from "./locale";
  * 目的: 自由入力欄へstage名の正規形を置き、caseや空白を補正しない完全一致を確認する。
  * 最初の一手: 箱の下のtext inputへ半角小文字で`busycube`と入力する。
  * 箱ごとの解法:
- * - B01「busycubeの箱」: inputのchangeごとに現在valueを読み、値が厳密に8文字の`busycube`と一致した時点で開く。
+ * - B01「枝分かれした線」: 箱の下のinputへ`busycube`と入力する。inputのchangeごとに現在valueを読み、値が厳密に8文字の`busycube`と一致した時点で開く。
  * 使用API: HTML text inputとReactのcontrolled `onChange` event。
  * 権限・privacy: 権限を要求せず、入力値はこのcomponentのmemory内表示・一致判定にだけ使い、保存・送信しない。
  * 対応環境: 標準HTML text inputへkeyboard、IME、paste等で文字列を入力できる一般的なbrowser。

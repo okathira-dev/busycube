@@ -26,7 +26,7 @@ export const locale = defineStageLocale({
     ja: "中心にはまだ箱がありません。",
     en: "There is no box at the center yet.",
   },
-  B01: { ja: "1000px先の箱", en: "1000px box" },
-  B02: { ja: "5000px先の箱", en: "5000px box" },
-  B03: { ja: "10000px先の箱", en: "10000px box" },
+  B01: { ja: "マウス", en: "Mouse" },
+  B02: { ja: "マウス", en: "Mouse" },
+  B03: { ja: "マウス", en: "Mouse" },
 });

@@ -29,6 +29,6 @@ export const locale = defineStageLocale({
     ja: "画面ロックを観測しました。",
     en: "Observed screen locked.",
   },
-  B01: { ja: "離席した箱", en: "Idle box" },
-  B02: { ja: "画面を閉じた箱", en: "Locked-screen box" },
+  B01: { ja: "砂時計", en: "Hourglass" },
+  B02: { ja: "錠前", en: "Padlock" },
 });

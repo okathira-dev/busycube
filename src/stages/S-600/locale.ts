@@ -3,7 +3,7 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "100m未満の箱", en: "Below 100 m box" },
-  B02: { ja: "100〜500mの箱", en: "100–500 m box" },
-  B03: { ja: "500m以上の箱", en: "500 m or more box" },
+  B01: { ja: "点を結ぶ道", en: "Path connecting dots" },
+  B02: { ja: "点を結ぶ道", en: "Path connecting dots" },
+  B03: { ja: "点を結ぶ道", en: "Path connecting dots" },
 });

@@ -21,5 +21,5 @@ export const locale = defineStageLocale({
     en: "Could not open the floating document.",
   },
   floatingTitle: { ja: "浮かぶ箱", en: "Floating box" },
-  B01: { ja: "浮かぶ箱", en: "Floating box" },
+  B01: { ja: "小さな窓が重なる画面", en: "Screen with inset window" },
 });

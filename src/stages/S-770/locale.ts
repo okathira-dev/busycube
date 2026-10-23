@@ -3,7 +3,7 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "Google FedCMの箱", en: "Google FedCM box" },
+  B01: { ja: "点線の四角", en: "Dotted square" },
   startGoogle: { ja: "Googleの身分証を提示", en: "Present Google identity" },
   idle: {
     ja: "browserが仲介するGoogleのaccount chooserを手動で完了します。",

@@ -5,5 +5,5 @@ export const locale = defineStageLocale({
   stageName,
   answer: { ja: "あいだ", en: "between" },
   sentence: { ja: "ひかりの[あいだ]にしるし。", en: "amber [between] signal" },
-  B01: { ja: "選択範囲の箱", en: "Selection box" },
+  B01: { ja: "点線の四角", en: "Dotted square" },
 });

@@ -20,6 +20,12 @@ export const locale = defineStageLocale({
     ja: "この環境はAudio Sessionの復帰を報告しません。",
     en: "This environment does not report Audio Session recovery.",
   },
-  B01: { ja: "外部停止の箱", en: "External-pause box" },
-  B02: { ja: "音声復帰の箱", en: "Audio-recovery box" },
+  B01: {
+    ja: "音波の出るスピーカー",
+    en: "Speaker with sound waves",
+  },
+  B02: {
+    ja: "音波の出るスピーカー",
+    en: "Speaker with sound waves",
+  },
 });

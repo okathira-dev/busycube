@@ -16,5 +16,5 @@ export const locale = defineStageLocale({
     en: "Make the frame fullscreen.",
   },
   ready: { ja: "箱に触れられます。", en: "The box is now reachable." },
-  B01: { ja: "画面いっぱいの箱", en: "Fullscreen box" },
+  B01: { ja: "外向きの四隅", en: "Outward corners" },
 });

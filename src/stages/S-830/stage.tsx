@@ -21,8 +21,8 @@ import { locale } from "./locale";
  * 目的: OSとbrowserが共同で判断するidle/unlocked状態とscreen locked状態をIdleDetectorから別々に観測する。
  * 最初の一手: 「見守りを始める」を押してIdle Detectionを許可し、端末へ触れず60秒待つ。もう一方はOSの実screen lockを行う。
  * 箱ごとの解法:
- * - B01「離席の箱」: threshold 60,000 msのdetectorで`userState === "idle"`かつ`screenState === "unlocked"`をchange後またはstart直後に観測すると開く。
- * - B02「画面ロックの箱」: 同じdetectorの`screenState`が厳密に`locked`なら開く。二状態の観測順序は問わない。
+ * - B01「砂時計」: Idle Detectionを許可し、端末へ触れず60秒待つ。threshold 60,000 msのdetectorで`userState === "idle"`かつ`screenState === "unlocked"`をchange後またはstart直後に観測すると開く。
+ * - B02「錠前」: Idle Detectionを許可したままOSの実screen lockを行う。同じdetectorの`screenState`が厳密に`locked`なら開く。二状態の観測順序は問わない。
  * 使用API: Idle Detection APIの`requestPermission()`、IdleDetector start/state/change、AbortController。
  * 権限・privacy: Idle Detection permissionは明示button後に要求し、現在のcoarse stateだけを判定する。離席時刻・入力内容・端末IDを保存・送信しない。
  * 対応環境: secure contextでIdleDetectorとOS screen lock stateを公開し、permission policyを満たすbrowser/OS。

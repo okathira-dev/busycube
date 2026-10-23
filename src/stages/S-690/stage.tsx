@@ -46,7 +46,7 @@ function textFragmentHref(sentence: string) {
  * 目的: 同一pageのText Fragment linkでbrowserに四つの英文を順番にhighlightさせ、各文の横にあるtokenからflagを組み立てる。
  * 最初の一手: 「最初の一節へ」を押し、UA highlightされた`Copper moths...`の横にある`text`を読み、隣の「次の一節」を辿る。
  * 箱ごとの解法:
- * - B01「文章の道の箱」: 四つのlinkを辿って`text`、`fragments`、`leave`、`trails`を得て、formへ`busycube{text_fragments_leave_trails}`を入力する。trim・小文字化後の完全一致で開く。
+ * - B01「点を結ぶ道」: 四つのlinkを辿って`text`、`fragments`、`leave`、`trails`を得て、formへ`busycube{text_fragments_leave_trails}`を入力する。trim・小文字化後の完全一致で開く。
  * 使用API: URL Fragment Text Directivesの`#:~:text=`、URL API、native browser text highlight/navigation、HTML form。
  * 権限・privacy: 権限・network通信を使用せず、固定英文と入力中の回答だけをpage内で扱う。回答途中の文字列を保存・送信しない。
  * 対応環境: Text Fragmentに対応するbrowserでは四つのUA highlightを順に追える。未対応browserでも固定記事と回答formは表示される。

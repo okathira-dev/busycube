@@ -8,6 +8,6 @@ export const locale = defineStageLocale({
     ja: "Google Drive未設定",
     en: "Google Drive is not configured",
   },
-  B01: { ja: "バックアップの箱", en: "Backup box" },
-  B02: { ja: "別端末の箱", en: "Remote-device box" },
+  B01: { ja: "雲と上向き矢印", en: "Cloud with upward arrow" },
+  B02: { ja: "画面と携帯端末", en: "Screen and phone" },
 });

@@ -18,9 +18,9 @@ import { useEffect, useRef, useState } from "react";
  * 目的: geolocationのaltitude±altitudeAccuracyが境界をまたがない時だけ、高度を100 m未満・100〜500 m・500 m以上へ分類する。
  * 最初の一手: 位置情報を許可し、高度とaltitude accuracyを返す端末で同じ高度帯に5秒以上留まる。別の帯は実際に標高を変えて再訪する。
  * 箱ごとの解法:
- * - B01「100m未満の箱」: `altitude + altitudeAccuracy < 100`の同一band readingを3回以上、最初から5,000 ms以上維持すると開く。
- * - B02「100〜500mの箱」: `altitude - accuracy >= 100`かつ`altitude + accuracy < 500`を同じ安定条件で満たすと開く。
- * - B03「500m以上の箱」: `altitude - altitudeAccuracy >= 500`を同じ安定条件で満たすと開く。境界を跨ぐaccuracy範囲ではcountをresetする。
+ * - B01「点を結ぶ道」: 標高100 m未満の場所で測位を続ける。`altitude + altitudeAccuracy < 100`の同一band readingを3回以上、最初から5,000 ms以上維持すると開く。
+ * - B02「点を結ぶ道」: 標高100〜500 mの場所で測位を続ける。`altitude - accuracy >= 100`かつ`altitude + accuracy < 500`を同じ安定条件で満たすと開く。
+ * - B03「点を結ぶ道」: 標高500 m以上の場所で測位を続ける。`altitude - altitudeAccuracy >= 500`を同じ安定条件で満たすと開く。境界を跨ぐaccuracy範囲ではcountをresetする。
  * 使用API: Geolocation APIのhigh-accuracy `watchPosition()`、coordinates altitude/altitudeAccuracy、`performance.now()`。
  * 権限・privacy: 位置権限を使用するが、緯度・経度は読まず、現在高度・accuracyと安定countだけをmemory上で判定する。位置・高度を保存・送信しない。
  * 対応環境: secure contextでGeolocationが非nullのaltitudeとaltitudeAccuracyを継続提供するGNSS対応browser/端末。

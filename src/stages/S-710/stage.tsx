@@ -30,10 +30,10 @@ const flagKinds = Object.keys(s710Flags) as S710FlagKind[];
  * 目的: same-origin iframe内の動画圧縮toolで入力・録画mediaを変換し、dark frame・decode破損・QR置換・二回目metadata overlayのflagを見つける。
  * 最初の一手: iframe toolへ動画を選ぶか10秒camera録画を行い、変換後videoを再生・downloadしてframeとmetadata表示を調べる。
  * 箱ごとの解法:
- * - B01「暗黒フレームの箱」: 変換結果の暗黒frameから得る固定flag`busycube{dark_frame}`を共通欄へtrim・小文字化完全一致で入力すると開く。
- * - B02「壊れた入力の箱」: decode不能inputの結果から得る固定flag`busycube{broken_input}`を完全一致で入力すると開く。
- * - B03「置換QRの箱」: 検出QR四辺形の差替え結果から得る固定flag`busycube{qr_replaced}`を完全一致で入力すると開く。
- * - B04「二回目の箱」: metadata overlayを含むsecond passから得る固定flag`busycube{second_pass}`を完全一致で入力すると開く。
+ * - B01「斜線入りの目」: 変換結果の暗黒frameから得る固定flag`busycube{dark_frame}`を共通欄へtrim・小文字化完全一致で入力すると開く。
+ * - B02「紙と下向き矢印」: decode不能inputの結果から得る固定flag`busycube{broken_input}`を完全一致で入力すると開く。
+ * - B03「画面と携帯端末」: 検出QR四辺形の差替え結果から得る固定flag`busycube{qr_replaced}`を完全一致で入力すると開く。
+ * - B04「紙と上向き矢印」: metadata overlayを含むsecond passから得る固定flag`busycube{second_pass}`を完全一致で入力すると開く。
  * 使用API: sandboxed same-origin iframe、MediaBunny、MediaRecorder、Canvas、jsQR、camera capture、session付き`postMessage()`によるlayout調整。
  * 権限・privacy: cameraはtool内で録画を選んだ時だけ使用し、入力/録画/変換mediaはclient memoryとobject URLだけで扱う。mediaと回答をserverへ送信しない。
  * 対応環境: MediaRecorder、HTMLVideoElement、Canvas、iframe downloadを実装し、必要ならcamera permissionを提供するbrowser。

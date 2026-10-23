@@ -22,7 +22,7 @@ const threshold = 0.98;
  * 目的: 大きな二次元scroll plane内のtargetを縦横とも合わせ、実IntersectionObserver可視率を98%以上にする。
  * 最初の一手: scroll areaを上下左右へ動かして淡い大窓を探し、四辺がroot内へほぼ完全に収まるよう微調整する。
  * 箱ごとの解法:
- * - B01「交差率の箱」: rootの実client sizeより縦横24 px小さいtargetについて、IntersectionObserver entryの`intersectionRatio >= 0.98`になると開く。
+ * - B01「点線の四角」: 上下左右にscrollしてtargetをroot内へほぼ完全に重ねる。rootの実client sizeより縦横24 px小さいtargetについて、IntersectionObserver entryの`intersectionRatio >= 0.98`になると開く。
  * 使用API: scroll container、ResizeObserverによるtarget size調整、root指定IntersectionObserverとintersectionRatio。
  * 権限・privacy: 権限・外部dataを使わず、現在layoutのintersection ratioだけを表示・判定する。scroll位置や履歴を保存・送信しない。
  * 対応環境: 二軸scroll、ResizeObserver、root付きIntersectionObserverを実装するbrowser。

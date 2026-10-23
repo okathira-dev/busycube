@@ -28,7 +28,7 @@ interface BadgeNavigator extends Navigator {
  * 目的: page外のapp iconやtaskbar等に表示されるbadge numberを、成功したApp Badging API呼出しで1から3へ進める。
  * 最初の一手: install済みappとして開き、「外側を一つ進める」を3回押して外側のbadgeが1→2→3になることを確認する。
  * 箱ごとの解法:
- * - B01「外側の数字の箱」: `setAppBadge(1)`、`setAppBadge(2)`、`setAppBadge(3)`がこのattemptで順に成功し、内部levelが3へ到達すると開く。
+ * - B01「名札」: install済みappで「外側を一つ進める」を3回押す。`setAppBadge(1)`、`setAppBadge(2)`、`setAppBadge(3)`がこのattemptで順に成功し、内部levelが3へ到達すると開く。
  * 使用API: App Badging APIの`navigator.setAppBadge()`と`clearAppBadge()`。
  * 権限・privacy: 権限や個人dataを使用せず、固定の1〜3だけをapp badgeへ表示する。stage離脱時にはbadgeをclearする。
  * 対応環境: secure contextでApp Badging APIを実装し、install済みWeb App等の外側UIへbadgeを表示できるbrowser/OS。

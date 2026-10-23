@@ -20,7 +20,7 @@ import { locale } from "./locale";
  * 目的: browserが動かす往復animationを利用者のtimingでpauseし、timeline中央付近の実進捗を読み取る。
  * 最初の一手: 横へ往復するmarkerを見て、中央へ来た瞬間に「止める／動かす」を押してpauseする。
  * 箱ごとの解法:
- * - B01「時間の箱」: pause直後の`getComputedTiming().progress`が0.5±0.1、すなわち0.4〜0.6なら開く。pause中の再押下は再生するだけで判定しない。
+ * - B01「時計」: markerが中央に来たときに「止める／動かす」を押す。pause直後の`getComputedTiming().progress`が0.5±0.1、すなわち0.4〜0.6なら開く。pause中の再押下は再生するだけで判定しない。
  * 使用API: Web Animations APIの`Element.animate()`、`Animation.playState` / `pause()` / `play()`、`getComputedTiming()`。
  * 権限・privacy: 権限を要求せず、animation進捗は現在表示と開箱判定にだけ使い、操作timingを保存・送信しない。
  * 対応環境: Element.animateとWeb Animations APIのtiming情報を実装するbrowser。

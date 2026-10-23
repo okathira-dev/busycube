@@ -46,10 +46,10 @@ function permissionLabel(key: PermissionKey, currentLocale: Props["locale"]) {
  * 目的: 位置情報・通知・camera・microphoneの許可要求結果ではなく、Permissions APIが報告する最終`granted`状態を4箱へ対応づける。
  * 最初の一手: 各buttonを押してbrowser標準permission UIで許可し、button横の状態が`granted`へ変わるのを待つ。
  * 箱ごとの解法:
- * - B01「位置情報許可の箱」: `permissions.query({name:"geolocation"})`の初期stateまたはchange後stateが`granted`なら開く。
- * - B02「通知許可の箱」: `permissions.query({name:"notifications"})`のPermissionStatusが`granted`なら開く。
- * - B03「カメラ許可の箱」: `permissions.query({name:"camera"})`のPermissionStatusが`granted`なら開く。
- * - B04「マイク許可の箱」: `permissions.query({name:"microphone"})`のPermissionStatusが`granted`なら開く。
+ * - B01「点を結ぶ道」: 位置情報の許可buttonを押し、browser標準UIで許可する。`permissions.query({name:"geolocation"})`の初期stateまたはchange後stateが`granted`なら開く。
+ * - B02「ベル」: 通知の許可buttonを押し、browser標準UIで許可する。`permissions.query({name:"notifications"})`のPermissionStatusが`granted`なら開く。
+ * - B03「二つの画面」: cameraの許可buttonを押し、browser標準UIで許可する。`permissions.query({name:"camera"})`のPermissionStatusが`granted`なら開く。
+ * - B04「音波の出るスピーカー」: microphoneの許可buttonを押し、browser標準UIで許可する。`permissions.query({name:"microphone"})`のPermissionStatusが`granted`なら開く。
  * 使用API: Permissions API/PermissionStatus change、Geolocation `getCurrentPosition()`、Notifications permission、MediaDevices `getUserMedia()`。
  * 権限・privacy: 各権限は対応buttonからだけ要求する。位置結果は捨て、camera/microphone streamは取得直後に全trackをstopし、位置・音声・映像・状態履歴を保存・送信しない。
  * 対応環境: secure contextでPermissions APIが四つのpermission nameをqueryでき、各標準permission promptを提供するbrowser。

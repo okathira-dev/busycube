@@ -28,7 +28,7 @@ interface PostureNavigator extends Navigator {
  * 目的: foldable deviceの物理postureまたはhingeで分割された二つのviewport segmentをbrowserの公開値から観測する。
  * 最初の一手: foldable端末でappをhingeをまたぐように表示し、端末を折り曲げるか二画面span modeへ切り替える。
  * 箱ごとの解法:
- * - B01「折れ目の箱」: 入場時またはchange時に`navigator.devicePosture.type === "folded"`、horizontal segment数2、vertical segment数2のいずれかを満たすと開く。
+ * - B01「折りたたみ画面」: foldable端末を折るか二画面表示にする。入場時またはchange時に`navigator.devicePosture.type === "folded"`、horizontal segment数2、vertical segment数2のいずれかを満たすと開く。
  * 使用API: Device Posture APIの`navigator.devicePosture`、CSS Viewport Segments media query、`matchMedia()` change event。
  * 権限・privacy: 権限を要求せず、folded/continuousとsegment数1/2だけを現在表示・判定に使い、端末形状を保存・送信しない。
  * 対応環境: Device Posture APIまたはviewport segment環境変数/media featureを公開するfoldable・dual-screen browser/端末。

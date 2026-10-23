@@ -59,7 +59,7 @@ interface BluetoothNavigator extends Navigator {
  * 目的: 近くのBluetooth LE peripheralへGATT接続し、標準Battery Serviceから実battery level byteを読む。
  * 最初の一手: Battery Serviceを公開するBLE deviceを近くでadvertiseさせ、「近くの電池を読む」からそのdeviceを選ぶ。
  * 箱ごとの解法:
- * - B01「近くの電池の箱」: 選択deviceへGATT接続し、`battery_service`の`battery_level` characteristicから1 byte以上を正常にreadできると開く。
+ * - B01「Bluetooth」: Battery Serviceを持つBLE deviceを選ぶ。選択deviceへGATT接続し、`battery_service`の`battery_level` characteristicから1 byte以上を正常にreadできると開く。
  * 使用API: Web Bluetoothの`requestDevice()`、Bluetooth GATT connect、primary service/characteristic discovery、`readValue()`。
  * 権限・privacy: device選択権限はbutton操作時だけ要求し、読み取るのはbattery levelの先頭1 byteだけ。device名・ID・値を保存・送信しない。
  * 対応環境: secure contextでWeb Bluetoothを実装し、BLE adapterとBattery Service対応peripheralを利用できるbrowser/OS。

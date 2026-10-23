@@ -21,6 +21,6 @@ export const locale = defineStageLocale({
     ja: "ブラウザが隠れた一節を見つけました。",
     en: "The browser found a hidden passage.",
   },
-  B01: { ja: "読めない断片", en: "Encoded fragment" },
-  B02: { ja: "一語の断片", en: "One-word fragment" },
+  B01: { ja: "点線の四角", en: "Dotted square" },
+  B02: { ja: "点線の四角", en: "Dotted square" },
 });

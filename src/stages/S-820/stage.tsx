@@ -41,9 +41,9 @@ function directionArrow(dx: number, dy: number) {
  * 目的: pointer lockの相対`movementX/Y`だけで無限平面を移動し、遠方三座標の64 px以内へreticleを合わせて箱をclickする。
  * 最初の一手: 「ポインターを固定する」を押し、画面下の矢印と距離を見ながらmouseを動かして最初の(800,-600)へ近づく。
  * 箱ごとの解法:
- * - B01「近い座標の箱」: lock中の累積位置を(800,-600)の64 px以内へ入れ、中央に現れた箱をtrusted clickすると開く。
- * - B02「遠い座標の箱」: 同じ累積位置を(-3000,4000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
- * - B03「最遠座標の箱」: 同じ累積位置を(6000,8000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
+ * - B01「マウス」: lock中の累積位置を(800,-600)の64 px以内へ入れ、中央に現れた箱をtrusted clickすると開く。
+ * - B02「マウス」: 同じ累積位置を(-3000,4000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
+ * - B03「マウス」: 同じ累積位置を(6000,8000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
  * 使用API: Pointer Lock APIのrequest/exit/change/error、MouseEvent `movementX` / `movementY` / isTrusted、window blur。
  * 権限・privacy: pointer lockはbutton操作で要求し、現在の累積x/yだけを訪問memoryに持つ。mouse pathやdevice情報を保存・送信しない。
  * 対応環境: desktop mouseとPointer Lock APIを提供し、長い相対移動を継続取得できるbrowser。

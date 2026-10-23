@@ -25,7 +25,7 @@ const cipher = plain.replace(/[a-z]/g, (letter) =>
  * 目的: Caesar暗号表示からcopy eventで復号文をclipboardへ渡し、paste後に結果文中の答えだけをnative selectionする三段階を行う。
  * 最初の一手: 暗号文を選択してcopyし、「ここへ戻す」のinputへpasteする。現れた英文から`busycube`だけを反転選択する。
  * 箱ごとの解法:
- * - B01「選び出す箱」: 暗号文のcopy handlerが固定復号文をclipboardへ設定し、その同じ全文のpasteを確認した後、結果paragraph内のselection文字列が厳密に`busycube`なら開く。
+ * - B01「点線の四角」: 暗号文をcopyしてpasteし、復号文から`busycube`だけを反転選択する。暗号文のcopy handlerが固定復号文をclipboardへ設定し、その同じ全文のpasteを確認した後、結果paragraph内のselection文字列が厳密に`busycube`なら開く。
  * 使用API: ClipboardEventの`clipboardData` read/writeとpreventDefault、Selection API、`selectionchange`、DOM containment判定。
  * 権限・privacy: stage固定の暗号文・復号文だけをclipboard経由で扱い、既存clipboard内容は読まない。copy/paste/selection内容を保存・送信しない。
  * 対応環境: native copy/paste、ClipboardEvent DataTransferとSelection APIを実装するsecure-context browser。
