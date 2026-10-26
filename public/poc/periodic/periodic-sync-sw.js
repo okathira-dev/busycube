@@ -19,7 +19,7 @@ self.addEventListener("periodicsync", (event) => {
     const database = await openDatabase();
     const state = await new Promise((resolve, reject) => {
       const request = database.transaction(STORE).objectStore(STORE).get("state");
-      request.onsuccess = () => resolve(request.result?.value ?? { phase: 0, care: [], events: 0 });
+      request.onsuccess = () => resolve(request.result ?? { phase: 0, care: [], events: 0 });
       request.onerror = () => reject(request.error ?? new Error("state read failed"));
     });
     const nextPhase = state.phase + (state.care.length > state.phase ? 1 : 0);

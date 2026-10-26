@@ -1,16 +1,15 @@
 import {
   bytesAsHex,
   decodeFatal,
-  encodingFixturePositions,
-  encodingFixtures,
   encodingLabels,
-  solveEncodingFixtures,
-  validLabelsForPosition,
+  isVisiblePuzzleText,
 } from "../fixtures/encoding/data";
 import {
   unicodeExpressionText,
   unicodeFixtures,
 } from "../fixtures/unicode/data";
+import { videoRecoveryOutputs } from "../fixtures/video-recovery/fixtures";
+import { encodingPocFixtures as encodingFixtures } from "./encoding-fixtures";
 import { initPocRegistry } from "./registry";
 import "./styles.css";
 
@@ -456,13 +455,6 @@ offlineBeaconRegistrationButton?.addEventListener("click", async () => {
   try {
     const scopeUrl = new URL("./", location.href);
     const scope = scopeUrl.pathname;
-    const previousRegistrations =
-      await navigator.serviceWorker.getRegistrations();
-    await Promise.all(
-      previousRegistrations
-        .filter((registration) => registration.scope.startsWith(scopeUrl.href))
-        .map((registration) => registration.unregister()),
-    );
     const registration = await Promise.race([
       navigator.serviceWorker.register(
         new URL("./offline-beacon-sw.js", location.href).href,
@@ -658,6 +650,7 @@ for (const item of encodingFixtures) {
   question.append(bytes);
 
   addReference(question, "復元後の回答文字列", item.expectedText);
+  addReference(question, "意味", item.meaning);
   addReference(question, "問題に表示する文字化け", item.presentedText);
   addAnswer(question, item);
   addDecodeTable(question, item);
@@ -761,9 +754,9 @@ const mediaSessionAudio = document.querySelector<HTMLAudioElement>(
 );
 if (mediaSessionAudio) mediaSessionAudio.src = mediaAssetUrls.multiAudio;
 setMediaSource("#recovery-source-t1", videoRecoveryAssets.sourceT1.url);
-setMediaSource("#recovery-alpha-t1", videoRecoveryAssets.recoveredAlpha.url);
+setMediaSource("#recovery-alpha-t1", videoRecoveryOutputs.t1);
 setMediaSource("#recovery-source-t2", videoRecoveryAssets.sourceT2.url);
-setMediaSource("#recovery-alpha-t2", videoRecoveryAssets.recoveredAlpha.url);
+setMediaSource("#recovery-alpha-t2", videoRecoveryOutputs.t2);
 setMediaSource("#recovery-source-t3-alpha", videoRecoveryAssets.sourceT3.url);
 setMediaSource("#recovery-alpha-t3", videoRecoveryAssets.recoveredAlpha.url);
 setMediaSource("#recovery-source-t3-beta", videoRecoveryAssets.sourceT3.url);
@@ -1395,13 +1388,17 @@ document.querySelector("#run-decoder")?.addEventListener("click", () => {
 });
 
 document.querySelector("#run-encoding")?.addEventListener("click", () => {
-  const solutions = solveEncodingFixtures();
-  const ambiguous = encodingFixturePositions
-    .filter((position) => validLabelsForPosition(position).length > 1)
-    .map((position) => position.id);
-  report(
-    `S-640: ${encodingFixtures.length} questions, ${encodingFixturePositions.length} ordered label positions, ${solutions.length} global solution, local ambiguity resolved by one-use rule: ${ambiguous.join(", ") || "none"}.`,
+  const failed = encodingFixtures.filter(
+    (item) =>
+      decodeFatal(item.sourceLabel, item.bytes) !== item.expectedText ||
+      decodeFatal(item.renderedLabel, item.bytes) !== item.presentedText ||
+      !isVisiblePuzzleText(item.expectedText) ||
+      !isVisiblePuzzleText(item.presentedText) ||
+      String(item.expectedText) === String(item.presentedText),
   );
+  const result = `S-640 PoC 最新問題: ${encodingFixtures.length} questions, 16 decodes, mismatches=${failed.map((item) => item.id).join(", ") || "none"}, distinct answers=${new Set(encodingFixtures.map((item) => item.expectedText)).size}.`;
+  report(result);
+  console.log(`[S640 PoC] ${result}`);
 });
 
 document.querySelector("#run-unicode")?.addEventListener("click", async () => {
@@ -1693,7 +1690,13 @@ async function runRecoveryRoute(route: string): Promise<void> {
           ? "#recovery-source-t3-alpha"
           : "#recovery-source-t3-beta";
   const expectedSelector =
-    route === "beta" ? "#recovery-beta-t3" : "#recovery-alpha-t1";
+    route === "t1"
+      ? "#recovery-alpha-t1"
+      : route === "t2"
+        ? "#recovery-alpha-t2"
+        : route === "beta"
+          ? "#recovery-beta-t3"
+          : "#recovery-alpha-t3";
   const source = document.querySelector<HTMLVideoElement>(sourceSelector);
   const expected = document.querySelector<HTMLVideoElement>(expectedSelector);
   const outputContext = recoveryCanvasContext("#video-recovery-canvas");

@@ -71,11 +71,18 @@ function pointerLock(root: PocRoot, cleanups: Array<() => void>) {
       );
   };
   const begin = () => {
-    target.requestPointerLock?.();
     status(
       root,
       "partial",
       "pointer lock待ち。Esc解除と離脱cleanupも確認してください。",
+    );
+    void Promise.resolve(target.requestPointerLock?.()).catch(
+      (error: unknown) =>
+        status(
+          root,
+          "partial",
+          `Pointer Lock未完了: ${error instanceof Error ? error.message : "error"}`,
+        ),
     );
   };
   target.addEventListener("mousemove", move);
@@ -183,6 +190,7 @@ function intersection(root: PocRoot, cleanups: Array<() => void>) {
 
 function documentPip(root: PocRoot, cleanups: Array<() => void>) {
   const start = button(root, "Document PiPを開く");
+  const close = button(root, "Document PiPを閉じる");
   let pip: Window | undefined;
   const begin = async () => {
     const api = (window as ExperimentalWindow).documentPictureInPicture;
@@ -211,6 +219,7 @@ function documentPip(root: PocRoot, cleanups: Array<() => void>) {
     }
   };
   start.addEventListener("click", () => void begin());
+  close.addEventListener("click", () => pip?.close());
   cleanups.push(() => pip?.close());
 }
 
@@ -243,6 +252,30 @@ function editContext(root: PocRoot, cleanups: Array<() => void>) {
 
 function fileSystem(root: PocRoot) {
   const start = button(root, "seed fileを選ぶ");
+  const reread = button(root, "同じファイルを再読込");
+  let handle: FileSystemFileHandle | undefined;
+  const readChangedFile = async () => {
+    if (!handle)
+      return status(
+        root,
+        "partial",
+        "先にPoC専用の新規seed fileを作成してください。",
+      );
+    try {
+      const value = await (await handle.getFile()).text();
+      status(
+        root,
+        value === "BUSYCUBE edited" ? "pass" : "partial",
+        `同じfile handleの内容: ${value}。期待値: BUSYCUBE edited`,
+      );
+    } catch (error) {
+      status(
+        root,
+        "partial",
+        `再読込未完了: ${error instanceof Error ? error.message : "error"}`,
+      );
+    }
+  };
   const begin = async () => {
     if (!("showSaveFilePicker" in window))
       return status(root, "unsupported", "File System Accessがありません。");
@@ -250,15 +283,15 @@ function fileSystem(root: PocRoot) {
       const picker = window.showSaveFilePicker as (options: {
         suggestedName: string;
       }) => Promise<FileSystemFileHandle>;
-      const handle = await picker({ suggestedName: "busycube-poc.txt" });
+      handle = await picker({ suggestedName: "busycube-poc.txt" });
       const writable = await handle.createWritable();
       await writable.write("BUSYCUBE seed");
       await writable.close();
       const value = await (await handle.getFile()).text();
       status(
         root,
-        value === "BUSYCUBE seed" ? "pass" : "fail",
-        `同じfile handleを再読込しました: ${value}`,
+        value === "BUSYCUBE seed" ? "partial" : "fail",
+        `seed確認: ${value}。OS editorで内容をBUSYCUBE editedに変更・保存してから「同じファイルを再読込」を押してください。`,
       );
     } catch (error) {
       status(
@@ -270,6 +303,7 @@ function fileSystem(root: PocRoot) {
     }
   };
   start.addEventListener("click", () => void begin());
+  reread.addEventListener("click", () => void readChangedFile());
 }
 
 function compression(root: PocRoot) {
@@ -278,13 +312,18 @@ function compression(root: PocRoot) {
     if (!("DecompressionStream" in window))
       return status(root, "unsupported", "DecompressionStreamがありません。");
     try {
-      const response = await fetch("../fixtures/s880/assets/parcel-a.gz");
+      // .gzのHTTP Content-Encodingによる自動展開とAPIの展開を区別する。
+      const response = await fetch("./parcel-a.compressed");
+      if (!response.ok || !response.body)
+        throw new Error("fixture unavailable");
       const text = await new Response(
-        response.body?.pipeThrough(new DecompressionStream("gzip")),
+        response.body.pipeThrough(new DecompressionStream("gzip")),
       ).text();
       status(
         root,
-        text.includes("BUSYCUBE") ? "pass" : "fail",
+        text.length === 65536 && text.includes("pocket compass")
+          ? "pass"
+          : "fail",
         `gzip展開結果を照合しました: ${text.slice(0, 80)}`,
       );
     } catch (error) {
@@ -335,8 +374,9 @@ function mediaSource(root: PocRoot, cleanups: Array<() => void>) {
   root.append(video);
   let url: string | undefined;
   const begin = async () => {
-    if (!MediaSource.isTypeSupported('video/webm; codecs="vp8"'))
-      return status(root, "unsupported", "VP8 WebM MediaSourceがありません。");
+    const mime = 'video/webm; codecs="vp9"';
+    if (!MediaSource.isTypeSupported(mime))
+      return status(root, "unsupported", "VP9 WebM MediaSourceがありません。");
     try {
       const source = new MediaSource();
       url = URL.createObjectURL(source);
@@ -344,9 +384,14 @@ function mediaSource(root: PocRoot, cleanups: Array<() => void>) {
       await new Promise<void>((resolve) =>
         source.addEventListener("sourceopen", () => resolve(), { once: true }),
       );
-      const buffer = source.addSourceBuffer('video/webm; codecs="vp8"');
+      const buffer = source.addSourceBuffer(mime);
       const data = await (
-        await fetch("../fixtures/media/assets/reel-320x180.webm")
+        await fetch(
+          new URL(
+            "../fixtures/media/assets/reel-320x180.webm",
+            import.meta.url,
+          ),
+        )
       ).arrayBuffer();
       await new Promise<void>((resolve) => {
         buffer.addEventListener("updateend", () => resolve(), { once: true });
@@ -381,7 +426,10 @@ function webVtt(root: PocRoot, cleanups: Array<() => void>) {
   video.controls = true;
   video.muted = true;
   video.className = "poc-small-video";
-  video.src = "../fixtures/media/assets/reel-320x180.webm";
+  video.src = new URL(
+    "../fixtures/media/assets/reel-320x180.webm",
+    import.meta.url,
+  ).href;
   root.append(video);
   const preview = surface(root, "active cue: none");
   const begin = () => {

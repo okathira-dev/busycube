@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { createPocDownload } from "./pocBackgroundFetch";
 import { securityHeaders } from "./securityHeaders";
 
 type AssetBinding = {
@@ -47,6 +48,14 @@ for (const [route, manifestPath] of Object.entries(paymentManifestRoutes)) {
 // cache済みapplication responseを区別する。
 app.get("/offline-beacon/network-probe", (context) =>
   context.body(null, 204, { "Cache-Control": "no-store" }),
+);
+
+// 固定64KiBを約90秒で流す隔離PoC。待ち時間・サイズは外から変更できない。
+app.on(["GET", "HEAD"], "/poc/background-fetch/slow.bin", (context) =>
+  createPocDownload(context.req.raw),
+);
+app.all("/poc/background-fetch/slow.bin", (context) =>
+  context.body(null, 405, { Allow: "GET, HEAD" }),
 );
 
 // 本番routingはrun_worker_firstのpathだけでHonoを呼ぶ。binding fallbackを
