@@ -1,8 +1,14 @@
 {
-  "name": "Busycube Circle Wallet",
-  "short_name": "○ Wallet",
+  "name": "Pocket Wallet",
+  "short_name": "Pocket Wallet",
   "description": "A fictional circle wallet for a browser API puzzle. No money or credentials are involved.",
-  "icons": [{ "src": "./wallet-icon.svg", "sizes": "any", "type": "image/svg+xml" }],
+  "icons": [
+    {
+      "src": "./wallet-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
   "start_url": "./payment-handler-window.html",
   "display": "standalone",
   "serviceworker": {

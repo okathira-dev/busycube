@@ -20,28 +20,28 @@ import { useEffect, useRef, useState } from "react";
  * 最初の一手: 別tabまたは別appへ切り替えてこのpageを見えない状態にし、まず2秒以上待ってから戻る。
  * 箱ごとの解法:
  * - B01「斜線入りの目」: 別tabまたは別appへ移って2秒以上待ち、このpageへ戻る。`visibilityState`が`hidden`になった後、2,000 ms以上経過して`visible`へ戻ると開く。
- * - B02「斜線入りの目」: 別tabまたは別appへ移って25分以上待ち、このpageへ戻る。同じhidden期間を25分以上保ってから`visible`へ戻ると開く。25分の復帰ではB01の条件も同時に満たす。
+ * - B02「斜線入りの目」: 別tabまたは別appへ移って60秒以上待ち、このpageへ戻る。同じhidden期間を60秒以上保ってから`visible`へ戻ると開く。60秒の復帰ではB01の条件も同時に満たす。
  * 使用API: Page Visibility APIの`document.visibilityState`と`visibilitychange`、単調増加時計`performance.now()`。
  * 権限・privacy: 権限を要求せず、直近のhidden開始時刻と復帰までの秒数だけをmemory上で扱い、時刻・閲覧先・滞在履歴は保存・送信しない。
  * 対応環境: Page Visibility APIとHigh Resolution Time APIを実装し、tab/app切替でpageがhiddenになるbrowser。
  */
 function S040Stage(props: Props) {
   const hiddenAt = useRef<number | null>(null);
-  const [hiddenSeconds, setHiddenSeconds] = useState(0);
+  const [hiddenSeconds, setHiddenSeconds] = useState<number | null>(null);
   const problem = props.boxes[manifest.box.B01];
   const longProblem = props.boxes[manifest.box.B02];
 
   useEffect(() => {
     const observeVisibility = () => {
       if (document.visibilityState === "hidden") {
-        hiddenAt.current = performance.now();
+        hiddenAt.current ??= performance.now();
         return;
       }
       if (hiddenAt.current !== null) {
         const duration = performance.now() - hiddenAt.current;
-        setHiddenSeconds(Math.floor(duration / 1000));
+        setHiddenSeconds(duration / 1000);
         if (duration >= 2000) problem.solve();
-        if (duration >= 25 * 60 * 1000) longProblem.solve();
+        if (duration >= 60_000) longProblem.solve();
         hiddenAt.current = null;
       }
     };
@@ -58,14 +58,20 @@ function S040Stage(props: Props) {
   return (
     <div className="puzzle puzzle--centered">
       <div className="eye-clue" aria-hidden="true">
-        ◉
+        <VisibilityOffOutlined fontSize="inherit" />
       </div>
       <p className="measurement" aria-live="polite">
-        {hiddenSeconds || "…"}
+        {hiddenSeconds === null ? "—" : hiddenSeconds.toFixed(1)}
       </p>
       <div className="problem-row">
-        <StageProblemGiftBox box={problem} locale={props.locale} />
-        <StageProblemGiftBox box={longProblem} locale={props.locale} />
+        <div className="absence-target">
+          <StageProblemGiftBox box={problem} locale={props.locale} />
+          <span>2</span>
+        </div>
+        <div className="absence-target">
+          <StageProblemGiftBox box={longProblem} locale={props.locale} />
+          <span>60</span>
+        </div>
       </div>
     </div>
   );

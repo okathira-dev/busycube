@@ -1,245 +1,240 @@
+import "./styles.css";
 import SelectAllOutlined from "@mui/icons-material/SelectAllOutlined";
+import { useEffect, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
+import { type UnicodeFixture, unicodeFixtures } from "../../fixtures/unicode";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { stageText } from "../locale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
-import { useEffect, useState } from "react";
-import { unicodeExpressionText, unicodeFixtures } from "../../fixtures/unicode";
-import { stageText } from "../locale";
-import { locale } from "./locale";
+function Operand({ text, fixture }: { text: string; fixture: UnicodeFixture }) {
+  return fixture.layout === "mayan" ? (
+    <span className="numeral-mayan" role="img" aria-label={text}>
+      {(
+        [
+          { key: "high", index: 0 },
+          { key: "middle", index: 1 },
+          { key: "low", index: 2 },
+        ] as const
+      ).map((place) => (
+        <span key={place.key}>{[...text][place.index]}</span>
+      ))}
+    </span>
+  ) : (
+    <bdi dir={fixture.direction}>{text}</bdi>
+  );
+}
 
 /**
  * S-620
  *
- * 目的: 17種類のUnicode numeral systemで書かれた加算を読み、すべて同じASCII十進回答欄へ戻す。
- * 最初の一手: fixture fontの読込を待ち、B01のASCII式`123 + 456`を計算して共通回答欄へ`579`と入力する。
+ * 目的: 17種類の数字体系の三桁同士の固定加算を調べ、それぞれの箱の近くへ半角十進の答えを入力する。
+ * 最初の一手: 箱に隣接した式を調べ、等号の右側へ計算結果を入力する。
  * 箱ごとの解法:
- * - B01「点線の四角」: ASCII / European digitsで表示された123 + 456を計算して結果を共通回答欄へ入力する。回答欄が厳密に`579`になると開く。
- * - B02「点線の四角」: Arabic-Indic digitsで表示された234 + 567を計算して結果を共通回答欄へ入力する。回答欄が厳密に`801`になると開く。
- * - B03「点線の四角」: Eastern Arabic-Indic digitsで表示された345 + 678を計算して結果を共通回答欄へ入力する。回答欄が厳密に`1023`になると開く。
- * - B04「点線の四角」: Han numeralsで表示された456 + 321を計算して結果を共通回答欄へ入力する。回答欄が厳密に`777`になると開く。
- * - B05「点線の四角」: Osmanya digitsで表示された517 + 264を計算して結果を共通回答欄へ入力する。回答欄が厳密に`781`になると開く。
- * - B06「点線の四角」: Adlam digitsで表示された629 + 154を計算して結果を共通回答欄へ入力する。回答欄が厳密に`783`になると開く。
- * - B07「点線の四角」: N'Ko digitsで表示された731 + 168を計算して結果を共通回答欄へ入力する。回答欄が厳密に`899`になると開く。
- * - B08「点線の四角」: Garay digitsで表示された842 + 157を計算して結果を共通回答欄へ入力する。回答欄が厳密に`999`になると開く。
- * - B09「点線の四角」: Ol Chiki digitsで表示された913 + 286を計算して結果を共通回答欄へ入力する。回答欄が厳密に`1199`になると開く。
- * - B10「点線の四角」: Mro digitsで表示された184 + 725を計算して結果を共通回答欄へ入力する。回答欄が厳密に`909`になると開く。
- * - B11「点線の四角」: Wancho digitsで表示された295 + 613を計算して結果を共通回答欄へ入力する。回答欄が厳密に`908`になると開く。
- * - B12「点線の四角」: Nag Mundari digitsで表示された376 + 522を計算して結果を共通回答欄へ入力する。回答欄が厳密に`898`になると開く。
- * - B13「点線の四角」: Ol Onal digitsで表示された487 + 410を計算して結果を共通回答欄へ入力する。回答欄が厳密に`897`になると開く。
- * - B14「点線の四角」: Sora Sompeng digitsで表示された598 + 307を計算して結果を共通回答欄へ入力する。回答欄が厳密に`905`になると開く。
- * - B15「点線の四角」: Counting Rod Numeralsで表示された619 + 274を計算して結果を共通回答欄へ入力する。回答欄が厳密に`893`になると開く。
- * - B16「点線の四角」: base-20 Kaktovik numeralsで表示された十進1352 + 1781を計算して結果を共通回答欄へ入力する。回答欄が厳密に`3133`になると開く。
- * - B17「点線の四角」: 縦組みbase-20 Mayan numeralsで表示された十進2056 + 1023を計算して結果を共通回答欄へ入力する。回答欄が厳密に`3079`になると開く。
- * 使用API: Unicode 17.0固定fixture、Unicode code point、Font Loading APIのFontFace/Document.fonts、HTML numeric input。
- * 権限・privacy: 権限を要求せず、Git管理済みsubset fontと式だけを表示する。共通回答値は入場中のmemoryにだけ保持し、保存・送信しない。
- * 対応環境: FontFaceとDocument Font Setを実装し、BMP/補助平面のfixture glyphをsubset fontから描画できるbrowser。
+ * - B18「点線の四角」: そばのASCII / European digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算160+131で、入力が厳密に291へ一致すると開く。
+ * - B19「点線の四角」: そばのArabic-Indic digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算319+293で、入力が厳密に612へ一致すると開く。
+ * - B20「点線の四角」: そばのEastern Arabic-Indic digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算912+903で、入力が厳密に1815へ一致すると開く。
+ * - B21「点線の四角」: そばのHan numeralsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算938+425で、入力が厳密に1363へ一致すると開く。
+ * - B22「点線の四角」: そばのOsmanya digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算486+711で、入力が厳密に1197へ一致すると開く。
+ * - B23「点線の四角」: そばのAdlam digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算679+959で、入力が厳密に1638へ一致すると開く。
+ * - B24「点線の四角」: そばのN'Ko digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算957+717で、入力が厳密に1674へ一致すると開く。
+ * - B25「点線の四角」: そばのGaray digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算320+541で、入力が厳密に861へ一致すると開く。
+ * - B26「点線の四角」: そばのOl Chiki digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算864+193で、入力が厳密に1057へ一致すると開く。
+ * - B27「点線の四角」: そばのMro digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算547+938で、入力が厳密に1485へ一致すると開く。
+ * - B28「点線の四角」: そばのWancho digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算635+253で、入力が厳密に888へ一致すると開く。
+ * - B29「点線の四角」: そばのNag Mundari digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算869+216で、入力が厳密に1085へ一致すると開く。
+ * - B30「点線の四角」: そばのOl Onal digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算705+499で、入力が厳密に1204へ一致すると開く。
+ * - B31「点線の四角」: そばのSora Sompeng digitsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算935+261で、入力が厳密に1196へ一致すると開く。
+ * - B32「点線の四角」: そばのCounting Rod Numeralsの式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算593+979で、入力が厳密に1572へ一致すると開く。
+ * - B33「点線の四角」: そばのKaktovik numerals（20進数）の式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算2690+5740で、入力が厳密に8430へ一致すると開く。
+ * - B34「点線の四角」: そばのMayan numerals（縦組み20進数）の式を調べて計算し、等号の右へ半角十進数で入力する。今回の固定式は十進換算6079+4220で、入力が厳密に10299へ一致すると開く。
+ * 使用API: Unicode固定fixture、FontFace/Document.fonts、HTML input。問題は開発時に一度乱数生成し、入場ごとには変更しない。
+ * 権限・privacy: 権限を要求せず、同梱subset fontを読み込む。回答はこの挑戦中だけに保持し保存・送信しない。
+ * 対応環境: Font Loading APIと補助平面を含むUnicodeを描画できるブラウザー。
  */
 function S620Stage(props: Props) {
-  const [answer, setAnswer] = useState("");
+  const [answers, setAnswers] = useState<Readonly<Record<string, string>>>({});
   const [fontReady, setFontReady] = useState(false);
-  const [fontStatus, setFontStatus] = useState<"loading" | "unavailable" | "">(
-    "loading",
-  );
-
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
     let active = true;
     const faces = [
       new FontFace(
         "BusycubeUnicode",
-        `url(${
-          new URL(
-            "../../fixtures/unicode/fonts/unifont-17.0.05-bmp-subset.woff2",
-            import.meta.url,
-          ).href
-        })`,
+        `url(${new URL("../../fixtures/unicode/fonts/unifont-17.0.05-bmp-subset.woff2", import.meta.url).href})`,
       ),
       new FontFace(
         "BusycubeUnicode",
-        `url(${
-          new URL(
-            "../../fixtures/unicode/fonts/unifont-17.0.05-upper-subset.woff2",
-            import.meta.url,
-          ).href
-        })`,
+        `url(${new URL("../../fixtures/unicode/fonts/unifont-17.0.05-upper-subset.woff2", import.meta.url).href})`,
       ),
     ];
     void Promise.all(faces.map((face) => face.load()))
       .then((loaded) => {
-        if (!active) return;
-        loaded.forEach((face) => {
-          document.fonts.add(face);
-        });
+        if (!active || props.signal.aborted) return;
+        for (const face of loaded) document.fonts.add(face);
         setFontReady(true);
-        setFontStatus("");
       })
       .catch(() => {
-        if (active) setFontStatus("unavailable");
+        if (active && !props.signal.aborted) setFailed(true);
       });
-    return () => {
+    const stop = () => {
       active = false;
-      faces.forEach((face) => {
-        document.fonts.delete(face);
-      });
+      for (const face of faces) document.fonts.delete(face);
     };
-  }, []);
-
+    props.signal.addEventListener("abort", stop, { once: true });
+    return () => {
+      props.signal.removeEventListener("abort", stop);
+      stop();
+    };
+  }, [props.signal]);
   return (
     <div className="puzzle">
-      <div className="problem-row problem-row--wrap">
+      <div className="numeral-problems">
         {unicodeFixtures.map((fixture) => {
-          const boxId = fixture.id as (typeof manifest.boxIds)[number];
-          const problem = props.boxes[boxId];
+          const id = manifest.boxIds.find((boxId) => boxId === fixture.id);
+          if (!id) throw new Error("Missing Unicode box");
           return (
-            <StageProblemGiftBox
-              key={boxId}
-              box={problem}
-              locale={props.locale}
-            />
-          );
-        })}
-      </div>
-      <div
-        className="encoding-question-grid"
-        style={{ fontFamily: '"BusycubeUnicode", sans-serif' }}
-      >
-        {unicodeFixtures.map((fixture) => {
-          const boxId = fixture.id as (typeof manifest.boxIds)[number];
-          return (
-            <article key={boxId} className="parallel-question-card">
-              <strong>{boxId}</strong>
-              <span>{unicodeExpressionText(fixture)}</span>
+            <article className="numeral-problem" key={id}>
+              <StageProblemGiftBox
+                box={props.boxes[id]}
+                locale={props.locale}
+              />
+              <div className="numeral-equation">
+                <Operand text={fixture.leftText} fixture={fixture} />
+                <span>+</span>
+                <Operand text={fixture.rightText} fixture={fixture} />
+                <span>=</span>
+                <input
+                  aria-label={stageText(props.locale, locale.answer)}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={answers[id] ?? ""}
+                  disabled={!fontReady}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    setAnswers((current) => ({ ...current, [id]: value }));
+                    if (
+                      !props.signal.aborted &&
+                      value === String(fixture.answer)
+                    )
+                      props.boxes[id].solve();
+                  }}
+                />
+              </div>
             </article>
           );
         })}
       </div>
-      <label className="parallel-answer">
-        {stageText(props.locale, locale.answer)}
-        <input
-          inputMode="numeric"
-          value={answer}
-          onChange={(event) => {
-            const next = event.currentTarget.value;
-            setAnswer(next);
-            const fixture = unicodeFixtures.find(
-              (candidate) => String(candidate.answer) === next,
-            );
-            if (!fixture) return;
-            const boxId = fixture.id as (typeof manifest.boxIds)[number];
-            props.boxes[boxId].solve();
-          }}
-          disabled={!fontReady}
-          aria-label={stageText(props.locale, locale.sharedAnswer)}
-        />
-      </label>
-      <p className="interaction-status" role="status">
-        {fontStatus === "loading"
-          ? stageText(props.locale, locale.loadingFont)
-          : fontStatus === "unavailable"
-            ? stageText(props.locale, locale.unavailableFont)
-            : null}
-      </p>
+      {!fontReady && (
+        <p role="status">
+          {stageText(
+            props.locale,
+            failed ? locale.unavailableFont : locale.loadingFont,
+          )}
+        </p>
+      )}
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B18]: {
       icon: SelectAllOutlined,
-      color: "#38bdf8",
-      label: locale.B01,
+      tone: "cyan",
+      label: locale.box,
     },
-    [manifest.box.B02]: {
+    [manifest.box.B19]: {
       icon: SelectAllOutlined,
-      color: "#22d3ee",
-      label: locale.B02,
+      tone: "green",
+      label: locale.box,
     },
-    [manifest.box.B03]: {
+    [manifest.box.B20]: {
       icon: SelectAllOutlined,
-      color: "#2dd4bf",
-      label: locale.B03,
+      tone: "blue",
+      label: locale.box,
     },
-    [manifest.box.B04]: {
+    [manifest.box.B21]: {
       icon: SelectAllOutlined,
-      color: "#34d399",
-      label: locale.B04,
+      tone: "violet",
+      label: locale.box,
     },
-    [manifest.box.B05]: {
+    [manifest.box.B22]: {
       icon: SelectAllOutlined,
-      color: "#4ade80",
-      label: locale.B05,
+      tone: "amber",
+      label: locale.box,
     },
-    [manifest.box.B06]: {
+    [manifest.box.B23]: {
       icon: SelectAllOutlined,
-      color: "#38bdf8",
-      label: locale.B06,
+      tone: "cyan",
+      label: locale.box,
     },
-    [manifest.box.B07]: {
+    [manifest.box.B24]: {
       icon: SelectAllOutlined,
-      color: "#22d3ee",
-      label: locale.B07,
+      tone: "green",
+      label: locale.box,
     },
-    [manifest.box.B08]: {
+    [manifest.box.B25]: {
       icon: SelectAllOutlined,
-      color: "#2dd4bf",
-      label: locale.B08,
+      tone: "blue",
+      label: locale.box,
     },
-    [manifest.box.B09]: {
+    [manifest.box.B26]: {
       icon: SelectAllOutlined,
-      color: "#34d399",
-      label: locale.B09,
+      tone: "violet",
+      label: locale.box,
     },
-    [manifest.box.B10]: {
+    [manifest.box.B27]: {
       icon: SelectAllOutlined,
-      color: "#4ade80",
-      label: locale.B10,
+      tone: "amber",
+      label: locale.box,
     },
-    [manifest.box.B11]: {
+    [manifest.box.B28]: {
       icon: SelectAllOutlined,
-      color: "#38bdf8",
-      label: locale.B11,
+      tone: "cyan",
+      label: locale.box,
     },
-    [manifest.box.B12]: {
+    [manifest.box.B29]: {
       icon: SelectAllOutlined,
-      color: "#22d3ee",
-      label: locale.B12,
+      tone: "green",
+      label: locale.box,
     },
-    [manifest.box.B13]: {
+    [manifest.box.B30]: {
       icon: SelectAllOutlined,
-      color: "#2dd4bf",
-      label: locale.B13,
+      tone: "blue",
+      label: locale.box,
     },
-    [manifest.box.B14]: {
+    [manifest.box.B31]: {
       icon: SelectAllOutlined,
-      color: "#34d399",
-      label: locale.B14,
+      tone: "violet",
+      label: locale.box,
     },
-    [manifest.box.B15]: {
+    [manifest.box.B32]: {
       icon: SelectAllOutlined,
-      color: "#4ade80",
-      label: locale.B15,
+      tone: "amber",
+      label: locale.box,
     },
-    [manifest.box.B16]: {
+    [manifest.box.B33]: {
       icon: SelectAllOutlined,
-      color: "#38bdf8",
-      label: locale.B16,
+      tone: "cyan",
+      label: locale.box,
     },
-    [manifest.box.B17]: {
+    [manifest.box.B34]: {
       icon: SelectAllOutlined,
-      color: "#22d3ee",
-      label: locale.B17,
+      tone: "green",
+      label: locale.box,
     },
   },
   probe: () =>
     safeCapabilityProbe(() =>
-      "FontFace" in window && "CSS" in window ? "available" : "unsupported",
+      "FontFace" in window && "fonts" in document ? "available" : "unsupported",
     ),
   Component: S620Stage,
 });

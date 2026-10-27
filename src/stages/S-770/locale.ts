@@ -1,40 +1,12 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "点線の四角", en: "Dotted square" },
-  startGoogle: { ja: "Googleの身分証を提示", en: "Present Google identity" },
-  idle: {
-    ja: "browserが仲介するGoogleのaccount chooserを手動で完了します。",
-    en: "Manually complete Google's browser-mediated account chooser.",
-  },
-  loading: {
-    ja: "公式providerを読み込んでいます…",
-    en: "Loading the official provider…",
-  },
-  waiting: {
-    ja: "browserのFedCM画面を待っています…",
-    en: "Waiting for the browser FedCM surface…",
-  },
-  success: {
-    ja: "FedCMによる手動提示を確認しました。",
-    en: "Confirmed a manual FedCM presentation.",
-  },
-  unconfigured: {
-    ja: "公開origin用のGoogle FedCM Client IDが未設定です。",
-    en: "No Google FedCM client ID is configured for this public origin.",
-  },
-  unavailable: {
-    ja: "Google Identity ServicesまたはFedCMを利用できません。",
-    en: "Google Identity Services or FedCM is unavailable.",
-  },
-  rejected: {
-    ja: "FedCM以外の結果、automatic結果、取消、または失敗は箱を開きません。",
-    en: "Non-FedCM, automatic, cancelled, or failed results do not open the box.",
-  },
+  B01: { ja: "身分証", en: "Identity card" },
+  cancel: { ja: "取消", en: "Cancel" },
+  unconfigured: { ja: "準備されていません", en: "Not configured" },
   privacy: {
-    ja: "返されたtokenやaccount属性は表示・保存・送信せず、判定直後に破棄します。",
-    en: "Returned tokens and account properties are never shown, stored, or forwarded and are discarded immediately.",
+    ja: "受け取った結果は判定だけに使い、アカウント情報やトークンは表示・保存・送信しません。",
+    en: "The result is used only for this check. Account data and tokens are not shown, stored or forwarded.",
   },
 });

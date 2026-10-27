@@ -1,8 +1,14 @@
 {
-  "name": "Busycube Diamond Wallet",
-  "short_name": "◇ Wallet",
+  "name": "Busycube Wallet",
+  "short_name": "Busycube Wallet",
   "description": "A fictional diamond wallet for a browser API puzzle. No money or credentials are involved.",
-  "icons": [{ "src": "./wallet-icon.svg", "sizes": "any", "type": "image/svg+xml" }],
+  "icons": [
+    {
+      "src": "./wallet-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
   "start_url": "./payment-handler-window.html",
   "display": "standalone",
   "serviceworker": {

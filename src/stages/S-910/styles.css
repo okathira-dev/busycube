@@ -3,37 +3,35 @@
   justify-items: center;
   gap: 1rem;
 }
-.s910-stage > p {
-  max-width: 50rem;
-  margin: 0;
-  color: #d8cfdf;
-  text-align: center;
-}
-.s910-captions button,
-.s910-stage > button {
-  border: 1px solid #806ba1;
-  border-radius: 0.55rem;
-  padding: 0.6rem 0.75rem;
-  color: #f7f3ff;
-  background: #2a203b;
-  font: inherit;
-  cursor: pointer;
-}
-.s910-captions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.6rem;
-}
 .s910-video {
-  width: 100%;
+  width: min(100%, 40rem);
   max-height: 22rem;
   border: 2px solid #77475b;
   border-radius: 0.85rem;
   background: #090611;
 }
-.s910-player {
-  position: relative;
-  width: min(100%, 40rem);
-  display: block;
+.s910-captions {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+}
+.s910-captions button,
+.s910-reset {
+  padding: 0.5rem 1rem;
+  border: 1px solid #806ba1;
+  border-radius: 0.5rem;
+  color: #f7f3ff;
+  background: #2a203b;
+  cursor: pointer;
+}
+.s910-captions button {
+  font-size: 1.7rem;
+}
+.s910-captions button[data-matched="true"] {
+  border-color: #7eeba8;
+  background: #164330;
+}
+.s910-reset[data-invalid="true"] {
+  color: #ffb1c1;
+  border-color: #fb7185;
 }

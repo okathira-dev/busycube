@@ -1,8 +1,12 @@
-.eyedropper-target {
-  width: 7rem;
-  height: 7rem;
-  border: 0.4rem solid #21192f;
-  border-radius: 50%;
-  cursor: crosshair;
-  box-shadow: 0 0 2rem #a78bfa66;
+.s260-picked {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.s260-swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid #a39aaf;
+  border-radius: 0.25rem;
 }

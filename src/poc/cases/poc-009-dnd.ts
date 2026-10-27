@@ -1,4 +1,5 @@
 import fixtures from "../../fixtures/drag-contract.json";
+import { evaluateImageDrop } from "../../fixtures/nativeImageDrop";
 import type { PocRoot } from "../contracts";
 
 export function evaluateNativeImageDrop(
@@ -6,29 +7,12 @@ export function evaluateNativeImageDrop(
   fileDigest: string | undefined,
   pageUrl: string,
 ) {
-  const webUrls = uriList.split(/\r?\n/).flatMap((line) => {
-    const value = line.trim();
-    if (!value || value.startsWith("#")) return [];
-    try {
-      const url = new URL(value);
-      return url.protocol === "http:" || url.protocol === "https:"
-        ? [url.href]
-        : [];
-    } catch {
-      return [];
-    }
-  });
-  return Object.entries(fixtures).map(([image, fixture]) => {
-    const expectedUrl = new URL(`../${fixture.filename}`, pageUrl).href;
-    const hasExpectedWebUrl = webUrls.includes(expectedUrl);
-    const fileContentMatches = fileDigest === fixture.sha256;
-    return {
-      image,
-      hasExpectedWebUrl,
-      fileContentMatches,
-      accepted: hasExpectedWebUrl && fileContentMatches,
-    };
-  });
+  return evaluateImageDrop(
+    uriList,
+    fileDigest,
+    new URL("../", pageUrl).href,
+    fixtures,
+  );
 }
 
 export function mount(root: PocRoot): () => void {

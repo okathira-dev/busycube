@@ -412,6 +412,7 @@ export function SettingsView({
             {copy.privacyAndDocuments}
           </Typography>
           <Typography color="text.secondary">{copy.privacy}</Typography>
+          <Typography color="text.secondary">{copy.contactsNotice}</Typography>
           <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <Link href={`./privacy/index.html?locale=${locale}`}>
               {copy.privacyPolicy}

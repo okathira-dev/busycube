@@ -1,98 +1,80 @@
 import "./styles.css";
 import DevicesFoldOutlined from "@mui/icons-material/DevicesFoldOutlined";
+import UnfoldLessOutlined from "@mui/icons-material/UnfoldLessOutlined";
+import UnfoldMoreOutlined from "@mui/icons-material/UnfoldMoreOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useCallback, useEffect, useState } from "react";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
-interface BusyDevicePosture extends EventTarget {
-  type: string;
+type Posture = "continuous" | "folded";
+interface DevicePosture extends EventTarget {
+  readonly type: string;
 }
-
-interface PostureNavigator extends Navigator {
-  devicePosture?: BusyDevicePosture;
+function postureApi(): DevicePosture | undefined {
+  return (navigator as Navigator & { devicePosture?: DevicePosture })
+    .devicePosture;
+}
+function readPosture(): Posture | null {
+  const type = postureApi()?.type;
+  return type === "continuous" || type === "folded" ? type : null;
 }
 
 /**
  * S-320
  *
- * 目的: foldable deviceの物理postureまたはhingeで分割された二つのviewport segmentをbrowserの公開値から観測する。
- * 最初の一手: foldable端末でappをhingeをまたぐように表示し、端末を折り曲げるか二画面span modeへ切り替える。
+ * 目的: 入場時の物理postureを基準に、foldable端末の折り曲げ状態の変化を観測する。
+ * 最初の一手: 画面の開閉アイコンを見て、実端末を開くか折り曲げる。
  * 箱ごとの解法:
- * - B01「折りたたみ画面」: foldable端末を折るか二画面表示にする。入場時またはchange時に`navigator.devicePosture.type === "folded"`、horizontal segment数2、vertical segment数2のいずれかを満たすと開く。
- * 使用API: Device Posture APIの`navigator.devicePosture`、CSS Viewport Segments media query、`matchMedia()` change event。
- * 権限・privacy: 権限を要求せず、folded/continuousとsegment数1/2だけを現在表示・判定に使い、端末形状を保存・送信しない。
- * 対応環境: Device Posture APIまたはviewport segment環境変数/media featureを公開するfoldable・dual-screen browser/端末。
+ * - B02「折りたたみ画面」: 入場時がcontinuousなら端末をfoldedへ、foldedならcontinuousへ変える。実devicePosture.typeが最初の有効観測と異なる既知状態へ変化したら開く。初期folded・viewport二分割だけでは開かない。
+ * 使用API: navigator.devicePostureとchangeイベント。
+ * 権限・privacy: 権限を要求せず、最初と現在の二状態だけを挑戦中に保持し保存・送信しない。
+ * 対応環境: Device Posture APIを公開するfoldable端末とブラウザー。
  */
 function S320Stage(props: Props) {
-  const problem = props.boxes[manifest.box.B01];
-  const [posture, setPosture] = useState("continuous");
-  const [segments, setSegments] = useState(1);
-
-  const inspect = useCallback(() => {
-    const devicePosture = (navigator as unknown as PostureNavigator)
-      .devicePosture;
-    const horizontal = window.matchMedia("(horizontal-viewport-segments: 2)");
-    const vertical = window.matchMedia("(vertical-viewport-segments: 2)");
-    const nextSegments = horizontal.matches || vertical.matches ? 2 : 1;
-    const nextPosture = devicePosture?.type ?? "continuous";
-    setSegments(nextSegments);
-    setPosture(nextPosture);
-    if (nextPosture === "folded" || nextSegments === 2) {
-      problem.solve();
-    }
-  }, [problem.solve]);
-
+  const problem = props.boxes.B02;
+  const initial = useRef(readPosture());
+  const [posture, setPosture] = useState(initial.current);
   useEffect(() => {
-    const devicePosture = (navigator as unknown as PostureNavigator)
-      .devicePosture;
-    const queries = [
-      window.matchMedia("(horizontal-viewport-segments: 2)"),
-      window.matchMedia("(vertical-viewport-segments: 2)"),
-    ];
-    devicePosture?.addEventListener("change", inspect);
-    for (const query of queries) query.addEventListener("change", inspect);
+    const api = postureApi();
+    if (!api) return;
+    const inspect = () => {
+      if (props.signal.aborted) return;
+      const next = readPosture();
+      if (!next) return;
+      initial.current ??= next;
+      setPosture(next);
+      if (next !== initial.current) problem.solve();
+    };
+    api.addEventListener("change", inspect);
     inspect();
-    const cleanup = () => {
-      devicePosture?.removeEventListener("change", inspect);
-      for (const query of queries) query.removeEventListener("change", inspect);
-    };
-    props.signal.addEventListener("abort", cleanup, { once: true });
+    const stop = () => api.removeEventListener("change", inspect);
+    props.signal.addEventListener("abort", stop, { once: true });
     return () => {
-      props.signal.removeEventListener("abort", cleanup);
-      cleanup();
+      props.signal.removeEventListener("abort", stop);
+      stop();
     };
-  }, [inspect, props.signal]);
-
+  }, [problem.solve, props.signal]);
+  const Direction =
+    posture === "folded" ? UnfoldMoreOutlined : UnfoldLessOutlined;
   return (
     <div className="puzzle puzzle--centered">
       <div
         className="fold-preview"
-        data-folded={posture === "folded" || segments === 2}
+        data-folded={posture === "folded"}
+        aria-hidden="true"
       >
         <span />
-        <i aria-hidden="true" />
+        <i />
         <span />
       </div>
-      <p className="measurement">
-        {stageText(
-          props.locale,
-          posture === "folded" ? locale.folded : locale.continuous,
-        )}{" "}
-        · {segments} {stageText(props.locale, locale.segment)}
-      </p>
-      <p className="interaction-status" role="status">
-        {stageText(props.locale, locale.foldHint)}
-      </p>
+      <Direction className="fold-direction" aria-hidden="true" />
       <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
   );
@@ -100,18 +82,13 @@ function S320Stage(props: Props) {
 
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B02]: {
       icon: DevicesFoldOutlined,
-      color: "#c084fc",
-      label: locale.B01,
+      tone: "violet",
+      label: locale.B02,
     },
   },
   probe: () =>
-    safeCapabilityProbe(() =>
-      "devicePosture" in navigator ||
-      CSS.supports("top: env(viewport-segment-top 0 0)")
-        ? "available"
-        : "unsupported",
-    ),
+    safeCapabilityProbe(() => (postureApi() ? "available" : "unsupported")),
   Component: S320Stage,
 });

@@ -1,0 +1,34 @@
+.s670-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 3.5rem);
+  grid-template-rows: repeat(3, 3.5rem);
+  gap: 0.6rem;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+.s670-up {
+  grid-area: 1 / 2;
+}
+.s670-left {
+  grid-area: 2 / 1;
+}
+.s670-down {
+  grid-area: 3 / 2;
+}
+.s670-right {
+  grid-area: 2 / 3;
+}
+.s670-reset {
+  grid-area: 2 / 2;
+}
+.s670-controls > button {
+  width: 100%;
+  height: 100%;
+  padding: 0.6rem;
+}
+.s670-location {
+  font-family: monospace;
+  font-size: 1.25rem;
+  color: #eab308;
+}

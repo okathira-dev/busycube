@@ -1,126 +1,172 @@
+import "./styles.css";
 import MemoryOutlined from "@mui/icons-material/MemoryOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { stageText } from "../locale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
-function boxIndexFor(state: PressureState) {
-  if (state === "nominal") return 0;
-  if (state === "critical") return 2;
-  return 1;
+const levels = [1, 2, 3, 4] as const;
+function Indicator({ level }: { level: number }) {
+  return (
+    <div className="pressure-bars" aria-hidden="true">
+      {levels.map((step) => (
+        <span key={step} data-lit={step <= level} />
+      ))}
+    </div>
+  );
 }
 
 /**
  * S-660
  *
- * 目的: browserがprivacy保護済みhintとして公開するCPU pressureを、nominal・中間・criticalの三帯で観測する。
- * 最初の一手: stageをvisibleのまま1秒間隔の自動観測を待つ。別app等の通常作業負荷を変えて異なるpressure stateを作る。
+ * 目的: ブラウザーが公開する実CPU pressureをnominal、fair、serious/criticalの三帯で観測する。
+ * 最初の一手: チップの四段階メーターを観察し、端末で通常作業を行い状態の変化を待つ。
  * 箱ごとの解法:
- * - B01「チップ」: pageをvisibleに保ち、低負荷状態で自動観測を待つ。CPU sourceの最新PressureRecord `state`が厳密に`nominal`なら開く。
- * - B02「チップ」: 通常作業でCPU負荷を変え、自動観測を待つ。最新stateが`fair`または`serious`のどちらかなら開く。
- * - B03「チップ」: CPUの負荷を高め、自動観測を待つ。最新stateが厳密に`critical`なら開く。訪問をまたいだ三状態は通常進捗へ累積できる。
- * 使用API: Compute Pressure APIの`PressureObserver.knownSources`、CPU `observe()`、PressureRecord state、Page Visibility API。
- * 権限・privacy: Busycube自身は意図的なCPU負荷を生成せず、coarse stateだけを表示・判定する。利用率・process・状態履歴を保存・送信しない。
- * 対応環境: CPU sourceのCompute Pressure APIを公開し、必要なPermissions Policyを満たすbrowser。hidden中は観測せずvisible復帰時に再購読する。
+ * - B01「チップ」: 低負荷の端末で初回の自動観測を待つ。最新の実PressureRecord.stateがnominalなら開く。
+ * - B04「チップ」: 通常作業中の状態変化を待つ。最新stateが厳密にfairなら開く。seriousではこの箱を開かない。
+ * - B03「チップ」: 通常作業中の状態変化を待つ。最新stateがseriousまたはcriticalなら開く。critical単独は必須にせず、訪問間で累積できる。
+ * 使用API: PressureObserver.knownSources、cpu sourceのobserve、PressureRecord、Page Visibility。
+ * 権限・privacy: ゲーム自身は負荷を発生させない。coarseな四状態だけを表示・判定し、CPU使用率・process・状態履歴を取得/保存/送信しない。
+ * 対応環境: CPU sourceのCompute Pressure APIと必要なPermissions Policyを満たすブラウザー。hidden中は切断し、visibleで再購読する。
  */
 function S660Stage(props: Props) {
-  const problems = [props.boxes.B01, props.boxes.B02, props.boxes.B03] as const;
-  const observer = useRef<PressureObserver | null>(null);
-  const [state, setState] = useState<PressureState | "waiting">("waiting");
-  const [status, setStatus] = useState("");
-
-  const stop = useCallback(() => {
-    observer.current?.disconnect();
-    observer.current = null;
-  }, []);
-
+  const boxes = useRef(props.boxes);
+  boxes.current = props.boxes;
+  const [level, setLevel] = useState(0);
+  const [error, setError] = useState(false);
   useEffect(() => {
-    let disposed = false;
+    let active = true;
+    let observer: PressureObserver | null = null;
+    const solved = new Set<string>();
+    const stop = () => {
+      observer?.disconnect();
+      observer = null;
+    };
     const observe = async () => {
-      if (disposed || observer.current || document.visibilityState === "hidden")
+      if (!active || props.signal.aborted || observer || document.hidden)
         return;
       const Constructor = window.PressureObserver;
       if (!Constructor?.knownSources.includes("cpu")) {
-        setStatus(stageText(props.locale, locale.unavailable));
+        setError(true);
         return;
       }
       const instance = new Constructor((records) => {
-        const latest = records.at(-1)?.state;
-        if (!latest) return;
-        setState(latest);
-        problems[boxIndexFor(latest)]?.solve();
-        setStatus(`${stageText(props.locale, locale.cpuPrefix)}=${latest}`);
+        if (
+          !active ||
+          props.signal.aborted ||
+          observer !== instance ||
+          document.hidden
+        )
+          return;
+        const state = records.at(-1)?.state;
+        const ordinal =
+          state === "nominal"
+            ? 1
+            : state === "fair"
+              ? 2
+              : state === "serious"
+                ? 3
+                : state === "critical"
+                  ? 4
+                  : 0;
+        if (!ordinal) return;
+        setLevel(ordinal);
+        setError(false);
+        const box = ordinal === 1 ? "B01" : ordinal === 2 ? "B04" : "B03";
+        if (!solved.has(box)) {
+          solved.add(box);
+          boxes.current[box].solve();
+        }
       });
-      observer.current = instance;
-      setStatus(stageText(props.locale, locale.observing));
+      observer = instance;
       try {
-        await instance.observe("cpu", { sampleInterval: 1_000 });
+        await instance.observe("cpu", { sampleInterval: 1000 });
       } catch {
-        if (observer.current === instance) stop();
-        setStatus(stageText(props.locale, locale.observeFailed));
+        if (active && observer === instance && !props.signal.aborted) {
+          stop();
+          setError(true);
+        }
       }
     };
-    const handleVisibility = () => {
-      if (document.visibilityState === "hidden") {
-        stop();
-        return;
-      }
-      void observe();
+    const visibility = () => {
+      if (document.hidden) stop();
+      else void observe();
     };
-    document.addEventListener("visibilitychange", handleVisibility);
+    const dispose = () => {
+      active = false;
+      stop();
+    };
+    document.addEventListener("visibilitychange", visibility);
+    props.signal.addEventListener("abort", dispose, { once: true });
     void observe();
     return () => {
-      disposed = true;
-      document.removeEventListener("visibilitychange", handleVisibility);
-      observer.current?.disconnect();
-      observer.current = null;
+      document.removeEventListener("visibilitychange", visibility);
+      props.signal.removeEventListener("abort", dispose);
+      dispose();
     };
-  }, [problems, props.locale, stop]);
-
+  }, [props.signal]);
   return (
     <div className="puzzle puzzle--centered">
-      <div className="problem-row">
-        {problems.map((problem) => (
-          <StageProblemGiftBox
-            key={problem.id}
-            box={problem}
-            locale={props.locale}
-          />
-        ))}
+      <div className="pressure-reading">
+        <MemoryOutlined aria-hidden="true" />
+        <Indicator level={level} />
+        <meter
+          className="sr-only"
+          aria-label={stageText(props.locale, locale.level)}
+          min={0}
+          max={4}
+          value={level}
+        >
+          {level}
+        </meter>
       </div>
-      <p className="measurement">{state}</p>
-      <p className="interaction-status" role="status">
-        {status || stageText(props.locale, locale.idle)}
-      </p>
+      <div className="problem-row">
+        <div className="pressure-target">
+          <StageProblemGiftBox box={props.boxes.B01} locale={props.locale} />
+          <Indicator level={1} />
+        </div>
+        <div className="pressure-target">
+          <StageProblemGiftBox box={props.boxes.B04} locale={props.locale} />
+          <Indicator level={2} />
+        </div>
+        <div className="pressure-target">
+          <StageProblemGiftBox box={props.boxes.B03} locale={props.locale} />
+          <div className="pressure-alternatives">
+            <Indicator level={3} />
+            <span aria-hidden="true">/</span>
+            <Indicator level={4} />
+          </div>
+        </div>
+      </div>
+      {error && (
+        <p role="status">{stageText(props.locale, locale.unavailable)}</p>
+      )}
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
       icon: MemoryOutlined,
-      color: "#a7f3d0",
-      label: locale.B01,
+      tone: "cyan",
+      label: locale.box,
     },
-    [manifest.box.B02]: {
+    [manifest.box.B04]: {
       icon: MemoryOutlined,
-      color: "#6ee7b7",
-      label: locale.B02,
+      tone: "amber",
+      label: locale.box,
     },
     [manifest.box.B03]: {
       icon: MemoryOutlined,
-      color: "#10b981",
-      label: locale.B03,
+      tone: "rose",
+      label: locale.box,
     },
   },
   probe: () =>

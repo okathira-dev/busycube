@@ -8,13 +8,11 @@ import {
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { stageText } from "../locale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useEffect, useRef } from "react";
-import { stageText } from "../locale";
-import { locale } from "./locale";
 
 const selectOptions = [
   ...Array.from(
@@ -31,65 +29,50 @@ const selectOptions = [
 /**
  * S-150
  *
- * 目的: native HTML controlsのfocus、select選択、同名detailsの排他toggleという三種類の標準UI挙動を使う。
- * 最初の一手: Tabで最初のbuttonへfocusを移し、次にselectで`open busycube`を選び、最後にA/B/Cのdetailsを二つ以上順番に開く。
+ * 目的: ポインター操作を受け付けない三つの対象へキーボードで移動し、選択を確定する。
+ * 最初の一手: Tabで箱へフォーカスを移し、EnterまたはSpaceで確定する。
  * 箱ごとの解法:
- * - B01「斜線入りの目」: Tabで「キーボードでたどる箱」buttonへfocusを移す。buttonがfocusを受けるか、keyboard操作でbutton自身がclickされると開く。pointer操作はCSSで無効になっている。
- * - B02「点線の四角」: 49項目のnative selectで中央の`open busycube`を選び、change時のvalueが完全一致すると開く。
- * - B03「枝分かれした線」: A/B/Cのdetailsを二つ以上順に開く。同じ`name`を持つA/B/Cのdetailsでtoggleを2回以上発生させ、その時点でopenなdetailsがちょうど1個なら開く。
- * 使用API: HTMLButtonElementのfocus/click、HTMLSelectElementのchangeとnative typeahead、`details` / `summary` / `name`の排他accordion挙動。
- * 権限・privacy: 権限を要求せず、選択値とtoggle回数はこのattemptの判定にだけ使って保存・送信しない。
- * 対応環境: keyboard focus、native select、details toggleを実装するbrowser。capability判定では`MutationObserver`も必要とする。
+ * - B04「斜線入りの目」: Tabで箱へフォーカスを移し、EnterまたはSpaceで押す。箱自身のkeyboard clickで開き、focusだけでは開かない。
+ * - B05「点線の四角」: native selectでopen busycubeをキーボード選択し、Enterで確定する。Enterのkeydown時にvalueが完全一致すると開く。changeだけでは開かない。
+ * - B06「枝分かれした線」: A/B/Cのaccordionをキーボードで開き、中にある丸いボタンをTabで選んでEnterまたはSpaceで押す。開いているdetails内の当たりbuttonのkeyboard clickで開く。
+ * 使用API: native buttonのkeyboard click、HTMLSelectElementのvalue/keydown、同じnameを持つdetails/summary。
+ * 権限・privacy: 権限を要求せず、選択値はこの挑戦中の判定にだけ使用し保存・送信しない。
+ * 対応環境: キーボードによるfocus・native select・details操作を実装するブラウザー。
  */
 function S150Stage(props: Props) {
-  const focusProblem = props.boxes[manifest.box.B01];
-  const selectProblem = props.boxes[manifest.box.B02];
-  const detailsProblem = props.boxes[manifest.box.B03];
-  const detailsRef = useRef<HTMLDivElement>(null);
-  const detailToggleCount = useRef(0);
-
-  useEffect(() => {
-    const container = detailsRef.current;
-    if (!container) return;
-    const details = Array.from(container.querySelectorAll("details"));
-    const inspect = () => {
-      detailToggleCount.current += 1;
-      const openCount = details.filter((item) => item.open).length;
-      if (detailToggleCount.current > 1 && openCount === 1)
-        detailsProblem.solve();
-    };
-    details.forEach((item) => {
-      item.addEventListener("toggle", inspect);
-    });
-    return () => {
-      details.forEach((item) => {
-        item.removeEventListener("toggle", inspect);
-      });
-    };
-  }, [detailsProblem.solve]);
-
+  const focusProblem = props.boxes.B04;
+  const selectProblem = props.boxes.B05;
+  const detailsProblem = props.boxes.B06;
   return (
     <div className="puzzle puzzle--centered accessibility-puzzle">
-      <p className="measurement">{stageText(props.locale, locale.clue)}</p>
-      <button
-        type="button"
-        className="stage-action accessibility-keyboard-button"
-        onFocus={() => focusProblem.solve()}
-        onClick={() => focusProblem.solve()}
-      >
-        {stageText(props.locale, locale.focusButton)}
-      </button>
-      <label className="accessibility-select">
-        {stageText(props.locale, locale.selectLabel)}
+      <div className="keyboard-control">
+        <StageProblemGiftBox
+          box={focusProblem}
+          locale={props.locale}
+          onClick={(event) => {
+            if (event.detail === 0 && !props.signal.aborted)
+              focusProblem.solve();
+          }}
+        />
+      </div>
+      <div className="accessibility-select keyboard-control">
+        <StageProblemGiftBox box={selectProblem} locale={props.locale} />
         <select
+          aria-label={stageText(props.locale, locale.menu)}
           defaultValue=""
-          onChange={(event) => {
-            if (event.currentTarget.value === "open busycube")
+          size={7}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.preventDefault();
+            if (
+              event.key === "Enter" &&
+              event.currentTarget.value === "open busycube" &&
+              !props.signal.aborted
+            )
               selectProblem.solve();
           }}
         >
           <option value="" disabled>
-            {stageText(props.locale, locale.selectPlaceholder)}
+            —
           </option>
           {selectOptions.map((option) => (
             <option key={option} value={option}>
@@ -97,19 +80,33 @@ function S150Stage(props: Props) {
             </option>
           ))}
         </select>
-      </label>
-      <div ref={detailsRef} className="accessibility-details">
+      </div>
+      <div className="accessibility-details keyboard-control">
+        <StageProblemGiftBox box={detailsProblem} locale={props.locale} />
         {(["A", "B", "C"] as const).map((name) => (
           <details key={name} name="busycube-exclusive-details">
             <summary>{name}</summary>
-            <p>{name}</p>
+            {name === "B" ? (
+              <button
+                type="button"
+                className="stage-action"
+                aria-label={stageText(props.locale, locale.circle)}
+                onClick={(event) => {
+                  if (
+                    event.detail === 0 &&
+                    event.currentTarget.closest("details")?.open &&
+                    !props.signal.aborted
+                  )
+                    detailsProblem.solve();
+                }}
+              >
+                ●
+              </button>
+            ) : (
+              <span aria-hidden="true">○</span>
+            )}
           </details>
         ))}
-      </div>
-      <div className="problem-row">
-        <StageProblemGiftBox box={focusProblem} locale={props.locale} />
-        <StageProblemGiftBox box={selectProblem} locale={props.locale} />
-        <StageProblemGiftBox box={detailsProblem} locale={props.locale} />
       </div>
     </div>
   );
@@ -117,25 +114,25 @@ function S150Stage(props: Props) {
 
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B04]: {
       icon: VisibilityOffOutlined,
-      color: "#c084fc",
-      label: locale.B01,
+      tone: "violet",
+      label: locale.B04,
     },
-    [manifest.box.B02]: {
+    [manifest.box.B05]: {
       icon: SelectAllOutlined,
-      color: "#a78bfa",
-      label: locale.B02,
+      tone: "violet",
+      label: locale.B05,
     },
-    [manifest.box.B03]: {
+    [manifest.box.B06]: {
       icon: AccountTreeOutlined,
-      color: "#8b5cf6",
-      label: locale.B03,
+      tone: "violet",
+      label: locale.B06,
     },
   },
   probe: () =>
     safeCapabilityProbe(() =>
-      "MutationObserver" in window ? "available" : "unsupported",
+      "HTMLDetailsElement" in window ? "available" : "unsupported",
     ),
   Component: S150Stage,
 });

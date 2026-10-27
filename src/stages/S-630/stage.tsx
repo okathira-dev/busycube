@@ -1,71 +1,88 @@
 import BluetoothOutlined from "@mui/icons-material/BluetoothOutlined";
-import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
+import CableOutlined from "@mui/icons-material/CableOutlined";
+import SignalCellularAltOutlined from "@mui/icons-material/SignalCellularAltOutlined";
+import WifiOutlined from "@mui/icons-material/WifiOutlined";
+import { useEffect, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { stageText } from "../locale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useState } from "react";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
 type NetworkInformationLike = EventTarget & { readonly type?: string };
-
-const boxIdByType = {
-  wifi: manifest.box.B01,
-  cellular: manifest.box.B02,
-  ethernet: manifest.box.B03,
-  bluetooth: manifest.box.B04,
-} as const;
+function connection() {
+  return (navigator as Navigator & { connection?: NetworkInformationLike })
+    .connection;
+}
 
 /**
  * S-630
  *
- * 目的: Network Information APIが報告する実network routeの種類を、端末外側で切り替えて4箱へ収集する。
- * 最初の一手: Wi-Fi、携帯回線、有線、Bluetooth tetheringのいずれかへ端末側で接続し、「現在の回線を見る」を押す。
+ * 目的: 実NetworkInformation.typeの初回値と変化から、四種類のネット接続を集める。
+ * 最初の一手: 入場時に開いた箱を見て、端末の接続方法を切り替える。
  * 箱ごとの解法:
- * - B01「画面と携帯端末」: 端末をWi-Fiへ接続し、「現在の回線を見る」を押す。明示buttonを押した瞬間の`navigator.connection.type`が厳密に`wifi`なら開く。
- * - B02「画面と携帯端末」: 端末を携帯回線へ接続し、「現在の回線を見る」を押す。同じ読取値が厳密に`cellular`なら開く。
- * - B03「画面と携帯端末」: 端末を有線回線へ接続し、「現在の回線を見る」を押す。同じ読取値が厳密に`ethernet`なら開く。
- * - B04「Bluetooth」: 端末をBluetooth tetheringへ接続し、「現在の回線を見る」を押す。同じ読取値が厳密に`bluetooth`なら開く。訪問をまたいだ4接続の開箱は通常進捗へ累積する。
- * 使用API: Network Information APIの`Navigator.connection`と`NetworkInformation.type`。
- * 権限・privacy: 接続名、SSID、IP address、速度、時刻は取得せず、4値に一致したproblem ID以外を保存・同期・送信しない。
- * 対応環境: `navigator.connection.type`を具体値として公開するAndroid / ChromeOS等のbrowser。欠損環境で推定fallbackを出さない。
+ * - B01「Wi-Fi」: 端末をWi-Fiへ接続する。初期値またはchange時の実connection.typeが厳密にwifiなら開く。
+ * - B02「携帯電波」: 端末を携帯回線へ接続する。実connection.typeが厳密にcellularなら開く。effectiveTypeの4g等からは推定しない。
+ * - B03「ケーブル」: 端末を有線ネット接続へ変える。実connection.typeが厳密にethernetなら開く。
+ * - B04「Bluetooth」: Bluetooth経由でネット接続する。実connection.typeが厳密にbluetoothなら開く。入場後の切替を必須とせず、各接続は訪問間で累積できる。
+ * 使用API: navigator.connection、NetworkInformation.typeとchangeイベント。
+ * 権限・privacy: 権限を要求せず、SSID・IP・機器名・速度を取得しない。接続種別や履歴を保存・送信しない。
+ * 対応環境: connection.typeを具体値として公開するブラウザー・接続環境。missing/unknownや取得失敗を成功にしない。
  */
 function S630Stage(props: Props) {
   const problems = [
-    props.boxes[manifest.box.B01],
-    props.boxes[manifest.box.B02],
-    props.boxes[manifest.box.B03],
-    props.boxes[manifest.box.B04],
+    props.boxes.B01,
+    props.boxes.B02,
+    props.boxes.B03,
+    props.boxes.B04,
   ] as const;
-  const [status, setStatus] = useState(() =>
-    stageText(props.locale, locale.idle),
+  const [wifi, cellular, ethernet, bluetooth] = problems.map(
+    (problem) => problem.solve,
   );
-
-  const inspect = () => {
-    const connection = (
-      navigator as Navigator & { connection?: NetworkInformationLike }
-    ).connection;
-    const type = connection?.type;
-    if (!type) {
-      setStatus(stageText(props.locale, locale.unavailable));
-      return;
-    }
-    const boxId = boxIdByType[type as keyof typeof boxIdByType];
-    if (!boxId) {
-      setStatus(`${stageText(props.locale, locale.ignored)} (${type})`);
-      return;
-    }
-    props.boxes[boxId].solve();
-    setStatus(`${stageText(props.locale, locale.observed)}: ${type}`);
-  };
-
+  const [status, setStatus] = useState<"unavailable" | "unknown" | null>(null);
+  useEffect(() => {
+    const info = connection();
+    const solved = new Set<string>();
+    const inspect = () => {
+      if (props.signal.aborted) return;
+      if (!info || typeof info.type !== "string") {
+        setStatus("unavailable");
+        return;
+      }
+      const solve =
+        info.type === "wifi"
+          ? wifi
+          : info.type === "cellular"
+            ? cellular
+            : info.type === "ethernet"
+              ? ethernet
+              : info.type === "bluetooth"
+                ? bluetooth
+                : undefined;
+      if (!solve) {
+        setStatus("unknown");
+        return;
+      }
+      setStatus(null);
+      if (!solved.has(info.type)) {
+        solved.add(info.type);
+        solve();
+      }
+    };
+    inspect();
+    info?.addEventListener("change", inspect);
+    const stop = () => info?.removeEventListener("change", inspect);
+    props.signal.addEventListener("abort", stop, { once: true });
+    return () => {
+      props.signal.removeEventListener("abort", stop);
+      stop();
+    };
+  }, [wifi, cellular, ethernet, bluetooth, props.signal]);
   return (
     <div className="puzzle puzzle--centered">
       <div className="problem-row">
@@ -77,45 +94,39 @@ function S630Stage(props: Props) {
           />
         ))}
       </div>
-      <button type="button" className="stage-action" onClick={inspect}>
-        {stageText(props.locale, locale.inspect)}
-      </button>
-      <p className="stage-status" role="status" aria-live="polite">
-        {status}
-      </p>
+      {status && (
+        <p role="status">
+          {stageText(
+            props.locale,
+            status === "unavailable" ? locale.unavailable : locale.unknown,
+          )}
+        </p>
+      )}
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
-      icon: DevicesOutlined,
-      color: "#38bdf8",
-      label: locale.B01,
-    },
+    [manifest.box.B01]: { icon: WifiOutlined, tone: "cyan", label: locale.B01 },
     [manifest.box.B02]: {
-      icon: DevicesOutlined,
-      color: "#fb7185",
+      icon: SignalCellularAltOutlined,
+      tone: "rose",
       label: locale.B02,
     },
     [manifest.box.B03]: {
-      icon: DevicesOutlined,
-      color: "#34d399",
+      icon: CableOutlined,
+      tone: "green",
       label: locale.B03,
     },
     [manifest.box.B04]: {
       icon: BluetoothOutlined,
-      color: "#818cf8",
+      tone: "violet",
       label: locale.B04,
     },
   },
   probe: () =>
-    safeCapabilityProbe(() => {
-      const connection = (
-        navigator as Navigator & { connection?: { type?: string } }
-      ).connection;
-      return typeof connection?.type === "string" ? "available" : "unsupported";
-    }),
+    safeCapabilityProbe(() =>
+      typeof connection()?.type === "string" ? "available" : "unsupported",
+    ),
   Component: S630Stage,
 });

@@ -20,5 +20,13 @@ describe("S-770 Google FedCM result boundary", () => {
     expect(isManualGoogleFedCm({ select_by: "fedcm", credential: "" })).toBe(
       false,
     );
+    for (const value of [
+      null,
+      undefined,
+      "token",
+      { select_by: "fedcm", credential: "   " },
+      { select_by: "fedcm", credential: {} },
+    ])
+      expect(isManualGoogleFedCm(value)).toBe(false);
   });
 });

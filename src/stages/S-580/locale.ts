@@ -1,23 +1,19 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  notRecognized: { ja: "認識できない", en: "Not recognized" },
-  speechComplete: { ja: "発話完了", en: "Speech complete" },
-  speechError: { ja: "発話エラー", en: "Speech error" },
-  speaking: {
-    ja: "一文字ずつ発話中…",
-    en: "Speaking one character at a time…",
+  speaker: { ja: "スピーカー", en: "Speaker" },
+  stop: { ja: "停止", en: "Stop" },
+  input: { ja: "入力", en: "Input" },
+  notRecognized: { ja: "認識できません。", en: "Not recognized." },
+  speechError: {
+    ja: "読み上げを開始できません。",
+    en: "Could not start speech.",
   },
-  listen: { ja: "聞き取る", en: "Listen" },
-  shifted: { ja: "ずれた声を聞く", en: "Hear the shifted voice" },
-  B01: {
-    ja: "音波の出るスピーカー",
-    en: "Speaker with sound waves",
+  unavailable: {
+    ja: "この機能は利用できません。",
+    en: "This feature is unavailable.",
   },
-  B02: {
-    ja: "音波の出るスピーカー",
-    en: "Speaker with sound waves",
-  },
+  B03: { ja: "キーボード", en: "Keyboard" },
+  B01: { ja: "マイク", en: "Microphone" },
 });

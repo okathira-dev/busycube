@@ -1,25 +1,8 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  intro: {
-    ja: "箱を小さな常時手前の別画面へ移します。その画面の箱だけを押してください。",
-    en: "Move the box to a small always-on-top document. Press only the box in that document.",
-  },
-  open: { ja: "浮かぶ画面を開く", en: "Open floating document" },
-  mainPlaceholder: {
-    ja: "箱は浮かぶ画面にあります。",
-    en: "The box is in the floating document.",
-  },
-  opened: {
-    ja: "浮かぶ画面で箱を押してください。",
-    en: "Press the box in the floating document.",
-  },
-  unavailable: {
-    ja: "浮かぶ画面を開けませんでした。",
-    en: "Could not open the floating document.",
-  },
+  B02: { ja: "小さな窓が重なる画面", en: "Screen with inset window" },
   floatingTitle: { ja: "浮かぶ箱", en: "Floating box" },
-  B01: { ja: "小さな窓が重なる画面", en: "Screen with inset window" },
+  moved: { ja: "別窓へ移動", en: "Moved to floating window" },
 });

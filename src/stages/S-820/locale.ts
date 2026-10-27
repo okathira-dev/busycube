@@ -1,30 +1,11 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  intro: {
-    ja: "ポインターを固定して、マウス移動だけで果てのない平面を進みます。中心に箱が来たら押してください。",
-    en: "Lock the pointer and cross an endless plane using mouse movement alone. Press the box when it reaches the center.",
-  },
-  begin: { ja: "ポインターを固定する", en: "Lock pointer" },
-  locked: {
-    ja: "移動中。Escで解除できます。",
-    en: "Moving. Press Esc to unlock.",
-  },
-  unlocked: {
-    ja: "移動を始めるには固定します。",
-    en: "Lock the pointer to start moving.",
-  },
-  position: { ja: "現在地", en: "Current position" },
-  target: { ja: "箱まで", en: "To box" },
-  nearby: {
-    ja: "中心に箱があります。押してください。",
-    en: "A box is at the center. Press it.",
-  },
-  noBox: {
-    ja: "中心にはまだ箱がありません。",
-    en: "There is no box at the center yet.",
+  plane: { ja: "仮想平面", en: "Virtual plane" },
+  failed: {
+    ja: "ポインターを固定できませんでした。",
+    en: "Pointer lock failed.",
   },
   B01: { ja: "マウス", en: "Mouse" },
   B02: { ja: "マウス", en: "Mouse" },

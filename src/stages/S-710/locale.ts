@@ -9,8 +9,8 @@ export const locale = defineStageLocale({
   },
   answer: { ja: "合言葉", en: "Password" },
   placeholder: { ja: "busycube{…}", en: "busycube{…}" },
-  B01: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B02: { ja: "紙と下向き矢印", en: "File with downward arrow" },
-  B03: { ja: "画面と携帯端末", en: "Screen and phone" },
-  B04: { ja: "紙と上向き矢印", en: "File with upward arrow" },
+  B01: { ja: "暗い月", en: "Dark moon" },
+  B02: { ja: "割れた画像", en: "Broken image" },
+  B03: { ja: "QRコード", en: "QR code" },
+  B04: { ja: "循環する矢印", en: "Looping arrows" },
 });

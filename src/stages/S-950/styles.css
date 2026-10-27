@@ -1,0 +1,63 @@
+.s950-neck {
+  display: grid;
+  width: min(100%, 35rem);
+  padding: 0.5rem;
+  border-radius: 2rem;
+  background: linear-gradient(
+    90deg,
+    #2a1e15,
+    #745135 35%,
+    #3a281c 72%,
+    transparent 72%
+  );
+}
+.s950-row {
+  height: 6rem;
+  display: grid;
+  grid-template-columns: 1fr 7rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+.s950-row .problem-gift {
+  margin: 0;
+  transform: scale(0.7);
+}
+.s950-string {
+  position: relative;
+  height: 2rem;
+  border-left: 4px solid #c8b499;
+}
+.s950-string::before,
+.s950-string span {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: var(--string-thickness);
+  border-radius: 1rem;
+  background: #d5cbb3;
+}
+.s950-string::before {
+  opacity: 0.35;
+}
+.s950-string span {
+  box-shadow: 0 0 calc(var(--alignment) * 12px) #fff3b5;
+}
+.s950-row[data-active="true"] .s950-string span {
+  animation: s950-vibration 90ms ease-in-out infinite alternate;
+  transform: translateY(calc((1 - var(--alignment)) * -4px));
+}
+@keyframes s950-vibration {
+  from {
+    margin-top: -2px;
+  }
+  to {
+    margin-top: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .s950-row[data-active="true"] .s950-string span {
+    animation: none;
+  }
+}

@@ -1,314 +1,98 @@
-import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
-import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";
-import SelectAllOutlined from "@mui/icons-material/SelectAllOutlined";
-import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";
+import "./styles.css";
+import AccountBalanceWalletOutlined from "@mui/icons-material/AccountBalanceWalletOutlined";
+import CheckCircleOutlineOutlined from "@mui/icons-material/CheckCircleOutlineOutlined";
+import CloseOutlined from "@mui/icons-material/CloseOutlined";
+import HighlightOffOutlined from "@mui/icons-material/HighlightOffOutlined";
+import ReplayOutlined from "@mui/icons-material/ReplayOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
-import { manifest } from "./manifest";
-
-type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useEffect, useMemo, useRef, useState } from "react";
+import { statusText } from "../../ui/statusLocale";
 import { stageText } from "../locale";
 import { locale } from "./locale";
+import { manifest } from "./manifest";
+import { paymentSession } from "./payment";
 
-type PaymentResponseLike = {
-  methodName: string;
-  details: unknown;
-  complete: (result?: string) => Promise<void>;
-  retry?: (errors?: unknown) => Promise<void>;
-};
-
-type PaymentRequestLike = { show: () => Promise<PaymentResponseLike> };
-type PaymentRequestConstructor = new (
-  methodData: unknown[],
-  details: unknown,
-) => PaymentRequestLike;
-
-type PaymentManagerRegistration = ServiceWorkerRegistration & {
-  paymentManager?: { userHint: string };
-};
-
-type Wallet = {
-  id: "circle" | "diamond";
-  worker: URL;
-  scope: URL;
-  userHint: string;
-};
-
-type HandlerEvent = {
-  channel?: unknown;
-  type?: unknown;
-  requestId?: unknown;
-  trusted?: unknown;
-  wallet?: unknown;
-};
-
-function detailsOf(value: unknown): { accepted?: unknown; outcome?: unknown } {
-  return value && typeof value === "object"
-    ? (value as { accepted?: unknown; outcome?: unknown })
-    : {};
-}
-
-function workerScriptUrl(source: MessageEventSource | null): string | null {
-  if (!source || !("scriptURL" in source)) return null;
-  return typeof source.scriptURL === "string" ? source.scriptURL : null;
-}
-
-async function waitUntilActivated(
-  registration: ServiceWorkerRegistration,
-): Promise<void> {
-  if (registration.active?.state === "activated") return;
-  const worker =
-    registration.installing ?? registration.waiting ?? registration.active;
-  if (!worker) throw new Error("Payment handler worker is missing");
-
-  await new Promise<void>((resolve, reject) => {
-    const timeoutId = window.setTimeout(() => {
-      cleanup();
-      reject(new Error("Payment handler activation timed out"));
-    }, 10_000);
-    const onStateChange = () => {
-      if (worker.state === "activated") {
-        cleanup();
-        resolve();
-      } else if (worker.state === "redundant") {
-        cleanup();
-        reject(new Error("Payment handler worker became redundant"));
-      }
-    };
-    const cleanup = () => {
-      window.clearTimeout(timeoutId);
-      worker.removeEventListener("statechange", onStateChange);
-    };
-    worker.addEventListener("statechange", onStateChange);
-    onStateChange();
-  });
-}
-
-async function removeLegacyHandler(paymentRoot: URL): Promise<void> {
-  const legacyScript = new URL("payment-handler-sw.js", paymentRoot).href;
-  for (const registration of await navigator.serviceWorker.getRegistrations()) {
-    if (registration.scope !== paymentRoot.href) continue;
-    const worker =
-      registration.active ?? registration.waiting ?? registration.installing;
-    if (worker?.scriptURL === legacyScript) await registration.unregister();
-  }
-}
-
-async function registerWallets(wallets: readonly Wallet[]): Promise<void> {
-  for (const wallet of wallets) {
-    const registration = (await navigator.serviceWorker.register(
-      wallet.worker,
-      { scope: wallet.scope.href },
-    )) as PaymentManagerRegistration;
-    await waitUntilActivated(registration);
-    if (!registration.paymentManager) {
-      throw new Error("PaymentManager is unavailable");
-    }
-    registration.paymentManager.userHint = wallet.userHint;
-  }
-}
-
+type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 /**
  * S-780
- *
- * 目的: browser所有Payment Handler chooserで架空BCU walletを選び、approved・declined・retry・特定wallet eventを四つのlifecycle結果へ分ける。
- * 最初の一手: 「財布を開く」を押して○または◇walletを選び、handler windowの✓・×・↻を目的の箱に合わせて操作する。
+ * 目的: 架空BCUの実Payment Handlerで承認・拒否・再試行移行・対象財布の起動を四箱に分ける。
+ * 最初の一手: 箱からbrowserの財布選択を開き、BCUとBusycube Walletの名前/ゲームロゴを見る。
  * 箱ごとの解法:
- * - B01「紙と上向き矢印」: handler windowの✓を選んで承認する。response methodが登録methodと一致し、最初のdetailsが`outcome:"approved", accepted:true`で、`complete("success")`まで成功すると開く。
- * - B02「紙と下向き矢印」: handler windowの×を選んで拒否する。最初のdetailsが`outcome:"declined", accepted:false`で、`complete("fail")`まで成功すると開く。
- * - B03「左右の矢印」: handler windowの↻を選んで再試行し、次に承認する。最初が`needs-retry`で同じPaymentResponseの`retry()`を実行し、二回目がapproved/accepted trueで`complete("success")`すると開く。
- * - B04「点線の四角」: chooserで◇walletを選び、そのexact worker scriptからcurrent request ID・trusted true・wallet diamondを持つ実handler-event messageを受けると開く。
- * 使用API: Payment Request/PaymentResponse complete/retry、Payment Handler Service Worker/PaymentRequestEvent、PaymentManager.userHint、payment method manifest、Service Worker messaging。
- * 権限・privacy: currency BCUの架空1.00だけを使い、実決済・payer情報・credentialを要求しない。wallet IDとrequest IDはattempt判定だけに使い、保存・送信しない。
- * 対応環境: secure contextでPaymentRequest、Payment Handler、Service Worker、method manifest response headerと複数wallet chooserを提供するbrowser。
+ * - B01「丸の中のチェック」: 財布の✓で承認する。今回のrequestIdとmethodに一致する実responseがapproved/accepted trueを返し、complete successが成功したときに開く。
+ * - B02「丸の中のばつ」: 財布の×で拒否する。同様にdeclined/accepted falseとcomplete fail成功が揃うと開く。単なるbrowser取消は拒否へ読み替えない。
+ * - B03「回転矢印」: 財布の↻で再試行を求め、実PaymentResponse.retry経路へ移る。retry呼出しが例外なくPromiseを返した後、同じrequestId/method/財布の別native PaymentRequestEventを厳密なWorker source/trusted/eventIdで受けると開く。ページ内clickやretry呼出し直前、Promise解決/二回目の承認は開箱条件にしない。決済処理の終了は別に待ち、取消/離脱で終える。
+ * - B04「財布」: browser chooserでBusycube Walletを選ぶ。対象のexact Workerから今回のrequestId/methodとtrusted PaymentRequestEventに由来する新しいeventIdを受けた時点で開き、承認は要求しない。Pocket Walletや登録だけでは開かない。
+ * 使用API: Payment Request/Response complete/retry/abort、Payment Handler Worker/PaymentRequestEvent/openWindow、PaymentManager.userHint、method/app manifest、実Service Worker message。
+ * 権限・privacy: 自前の架空通貨BCU 1.00だけを使い、実決済・payer/送金/credentialを要求しない。wallet/request/eventの識別値はmemory内の試行照合だけに使い、保存/外部送信しない。
+ * 対応環境: secure context、Payment Handlerと複数財布chooser、同retry内の再handlerイベントを提供するbrowser。登録/例外/未観測を成功へ変換せず、早期retryイベントの提供と残UIの終了は実環境確認事項として残す。
  */
 function S780Stage(props: Props) {
-  const boxes = [
-    props.boxes.B01,
-    props.boxes.B02,
-    props.boxes.B03,
-    props.boxes.B04,
-  ] as const;
-  const [running, setRunning] = useState(false);
-  const [status, setStatus] = useState<"idle" | "waiting" | "unavailable">(
-    "idle",
-  );
-  const activeRequestId = useRef<string | undefined>(undefined);
-  const paymentRoot = useMemo(
-    () => new URL("./payment/", document.baseURI),
-    [],
-  );
-  const method = useMemo(
-    () => new URL("method", paymentRoot).href,
-    [paymentRoot],
-  );
-  const wallets = useMemo<readonly Wallet[]>(
-    () => [
-      {
-        id: "circle",
-        worker: new URL("wallet-circle/payment-handler-sw.js", paymentRoot),
-        scope: new URL("wallet-circle/", paymentRoot),
-        userHint: "○",
-      },
-      {
-        id: "diamond",
-        worker: new URL("wallet-diamond/payment-handler-sw.js", paymentRoot),
-        scope: new URL("wallet-diamond/", paymentRoot),
-        userHint: "◇",
-      },
-    ],
-    [paymentRoot],
-  );
-
+  const boxes = useRef(props.boxes);
+  boxes.current = props.boxes;
+  const session = useRef<ReturnType<typeof paymentSession> | null>(null);
+  const [state, setState] = useState({ status: "idle", running: false });
   useEffect(() => {
-    const target = wallets.find((wallet) => wallet.id === "diamond");
-    if (!target) return;
-    const onMessage = (event: MessageEvent<HandlerEvent>) => {
-      const data = event.data;
-      if (
-        data?.channel !== "busycube-payment" ||
-        data.type !== "handler-event" ||
-        data.requestId !== activeRequestId.current ||
-        data.trusted !== true ||
-        data.wallet !== target.id ||
-        workerScriptUrl(event.source) !== target.worker.href
-      ) {
-        return;
-      }
-      boxes[3]?.solve();
+    const current = paymentSession(
+      props.signal,
+      props.locale,
+      (status, running) => setState({ status, running }),
+      (id) => boxes.current[id].solve(),
+    );
+    session.current = current;
+    return () => {
+      current.dispose();
+      if (session.current === current) session.current = null;
     };
-    navigator.serviceWorker?.addEventListener("message", onMessage);
-    return () =>
-      navigator.serviceWorker?.removeEventListener("message", onMessage);
-  }, [boxes, wallets]);
-
-  const begin = async () => {
-    const PaymentRequest = (
-      window as Window & { PaymentRequest?: PaymentRequestConstructor }
-    ).PaymentRequest;
-    if (!PaymentRequest || !navigator.serviceWorker) {
-      setStatus("unavailable");
-      return;
-    }
-    if (running) return;
-    setRunning(true);
-    setStatus("waiting");
-    const requestId = `busycube-${crypto.randomUUID()}`;
-    activeRequestId.current = requestId;
-    try {
-      await removeLegacyHandler(paymentRoot);
-      await registerWallets(wallets);
-    } catch {
-      activeRequestId.current = undefined;
-      setRunning(false);
-      setStatus("unavailable");
-      return;
-    }
-    try {
-      const request = new PaymentRequest(
-        [{ supportedMethods: method, data: { busycube: true } }],
-        {
-          id: requestId,
-          total: { label: "BCU", amount: { currency: "BCU", value: "1.00" } },
-        },
-      );
-      const response = await request.show();
-      if (props.signal.aborted) return;
-      const first = detailsOf(response.details);
-      if (response.methodName !== method) {
-        await response.complete("unknown");
-        return;
-      }
-      if (first.outcome === "approved" && first.accepted === true) {
-        await response.complete("success");
-        boxes[0]?.solve();
-        return;
-      }
-      if (first.outcome === "declined" && first.accepted === false) {
-        await response.complete("fail");
-        boxes[1]?.solve();
-        return;
-      }
-      if (
-        first.outcome !== "needs-retry" ||
-        typeof response.retry !== "function"
-      ) {
-        await response.complete("fail");
-        return;
-      }
-      await response.retry({ error: "busycube retry" });
-      if (props.signal.aborted) return;
-      const second = detailsOf(response.details);
-      if (second.outcome === "approved" && second.accepted === true) {
-        await response.complete("success");
-        boxes[2]?.solve();
-        return;
-      }
-      await response.complete("fail");
-    } catch {
-      // Browser cancel, handler absence, and timeout are intentionally not a box.
-    } finally {
-      activeRequestId.current = undefined;
-      setRunning(false);
-      setStatus("idle");
-    }
-  };
-
+  }, [props.signal, props.locale]);
   return (
-    <div className="puzzle puzzle--centered">
+    <div className="puzzle puzzle--centered s780-puzzle">
+      <div className="s780-wallet">
+        <img src="/icon.svg" alt="" width={64} height={64} />
+        <span>Busycube Wallet</span>
+        <span>BCU 1.00</span>
+      </div>
       <div className="problem-row">
-        {boxes.map((problem) => (
+        {manifest.boxIds.map((id) => (
           <StageProblemGiftBox
-            key={problem.id}
-            box={problem}
+            key={id}
+            box={props.boxes[id]}
             locale={props.locale}
+            onClick={() => void session.current?.begin()}
           />
         ))}
       </div>
-      <button
-        type="button"
-        className="stage-action"
-        disabled={running}
-        onClick={() => void begin()}
-      >
-        {stageText(props.locale, locale.start)}
-      </button>
-      <p className="stage-status" role="status" aria-live="polite">
-        {status === "waiting"
-          ? stageText(props.locale, locale.waiting)
-          : status === "unavailable"
-            ? stageText(props.locale, locale.unavailable)
-            : ""}
+      {state.running ? (
+        <button
+          type="button"
+          className="stage-action"
+          aria-label={stageText(props.locale, locale.cancel)}
+          onClick={() => session.current?.cancel()}
+        >
+          <CloseOutlined aria-hidden="true" />
+        </button>
+      ) : null}
+      <p role="status" className="interaction-status">
+        {statusText(props.locale, state.status)}
       </p>
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
-      icon: FileUploadOutlined,
+    B01: {
+      icon: CheckCircleOutlineOutlined,
       color: "#facc15",
       label: locale.B01,
     },
-    [manifest.box.B02]: {
-      icon: FileDownloadOutlined,
-      color: "#eab308",
-      label: locale.B02,
-    },
-    [manifest.box.B03]: {
-      icon: SwapHorizOutlined,
-      color: "#ca8a04",
-      label: locale.B03,
-    },
-    [manifest.box.B04]: {
-      icon: SelectAllOutlined,
+    B02: { icon: HighlightOffOutlined, color: "#eab308", label: locale.B02 },
+    B03: { icon: ReplayOutlined, color: "#ca8a04", label: locale.B03 },
+    B04: {
+      icon: AccountBalanceWalletOutlined,
       color: "#a16207",
       label: locale.B04,
     },

@@ -3,14 +3,8 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "画面と携帯端末", en: "Screen and phone" },
-  B02: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  full: { ja: "名刺を選ぶ", en: "Pick the full card" },
-  empty: { ja: "項目を伏せて選ぶ", en: "Pick while withholding fields" },
-  idle: {
-    ja: "この架空人物を端末の連絡先へ作成してから、OSのpickerで選びます。",
-    en: "Create this fictional contact on the device, then choose it in the OS picker.",
-  },
+  B01: { ja: "連絡先カード", en: "Contact card" },
+  B02: { ja: "斜線入りの連絡先カード", en: "Slashed contact card" },
   fullSuccess: {
     ja: "五項目が一致しました。",
     en: "All five properties matched.",
@@ -20,16 +14,8 @@ export const locale = defineStageLocale({
     en: "One contact was selected without sharing the five fields.",
   },
   mismatch: {
-    ja: "選択結果は名刺の五項目と一致しません。",
-    en: "The selected properties do not match the card.",
-  },
-  unavailable: {
-    ja: "Contact Picker APIを利用できません。独自pickerでは代替しません。",
-    en: "Contact Picker is unavailable; no custom picker substitutes for it.",
-  },
-  cancelled: {
-    ja: "連絡先選択を取消しました。",
-    en: "Contact selection was cancelled.",
+    ja: "選択結果が一致しません。",
+    en: "The selected result did not match.",
   },
   iconAlt: {
     ja: "Busycube Courierの架空アイコン",

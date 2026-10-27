@@ -1,24 +1,14 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  intro: {
-    ja: "浮かぶ部屋をクリックして、画面端で動く影の箱が本物になる場所を探してください。",
-    en: "Click through the floating rooms until an edge-aware shadow box becomes real.",
-  },
   start: { ja: "迷路を開く", en: "Open maze" },
   frameTitle: { ja: "ポップオーバー迷路の額縁", en: "Popover maze frame" },
-  unavailableArea: { ja: "表示不可エリア", en: "OUTSIDE DISPLAY AREA" },
   directionUp: { ja: "上へ進む", en: "Go up" },
   directionRight: { ja: "右へ進む", en: "Go right" },
   directionDown: { ja: "下へ進む", en: "Go down" },
   directionLeft: { ja: "左へ進む", en: "Go left" },
   deadEnd: { ja: "行き止まり", en: "Dead end" },
-  ready: {
-    ja: "影の箱は画面端で位置を変えます。浮かぶ部屋をたどってください。",
-    en: "Shadow boxes move at the viewport edge. Follow the floating rooms.",
-  },
   preparing: {
     ja: "迷路の額縁を準備しています…",
     en: "Preparing the maze frame…",
@@ -27,7 +17,11 @@ export const locale = defineStageLocale({
     ja: "この迷路にはPopoverとAnchor Positioningが必要です。",
     en: "This maze needs Popover and Anchor Positioning.",
   },
-  B01: { ja: "点を結ぶ道", en: "Path connecting dots" },
-  B02: { ja: "点を結ぶ道", en: "Path connecting dots" },
-  B03: { ja: "点を結ぶ道", en: "Path connecting dots" },
+  failed: {
+    ja: "迷路の表示を準備できませんでした。",
+    en: "Maze display preparation failed.",
+  },
+  B01: { ja: "経路", en: "Route" },
+  B02: { ja: "経路", en: "Route" },
+  B03: { ja: "経路", en: "Route" },
 });

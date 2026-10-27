@@ -1,16 +1,16 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  relayedScreen: { ja: "中継された画面", en: "Relayed screen" },
   sharedScreen: { ja: "共有画面のプレビュー", en: "Shared screen preview" },
   noAudio: { ja: "音声なし", en: "No audio" },
-  captureScreen: { ja: "画面を映す", en: "Capture a screen" },
-  openObserver: { ja: "観測窓を開く", en: "Open observer" },
+  captureScreen: { ja: "画面を映す", en: "Share a screen" },
   openMap: { ja: "地図を開く", en: "Open the map" },
-  B01: { ja: "二つの画面", en: "Two screens" },
-  B02: { ja: "二つの画面", en: "Two screens" },
-  B03: { ja: "窓", en: "Window" },
-  B04: { ja: "スポイト", en: "Eyedropper" },
+  browserOnly: {
+    ja: "ブラウザータブ共有を確認できません",
+    en: "Browser tab sharing could not be confirmed",
+  },
+  explore: { ja: "探索領域", en: "Exploration area" },
+  B05: { ja: "四隅", en: "Four corners" },
+  B06: { ja: "地球と虫眼鏡", en: "Globe and magnifier" },
 });

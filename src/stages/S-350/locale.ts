@@ -4,8 +4,8 @@ import { stageName } from "./name";
 export const locale = defineStageLocale({
   stageName,
   videoToOperate: { ja: "操作する映像", en: "Video to operate" },
-  B01: { ja: "時計", en: "Clock" },
-  B02: { ja: "音波の出るスピーカー", en: "Speaker with sound waves" },
+  B01: { ja: "左右の矢印", en: "Opposing arrows" },
+  B02: { ja: "斜線入りスピーカー", en: "Crossed-out speaker" },
   B03: { ja: "二本の縦線", en: "Two vertical bars" },
   B04: { ja: "速度計", en: "Speedometer" },
   B05: { ja: "字幕線", en: "Caption lines" },

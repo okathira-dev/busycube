@@ -3,6 +3,7 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  pausePlay: { ja: "止める / 動かす", en: "Pause / play" },
-  B01: { ja: "時計", en: "Clock" },
+  pause: { ja: "停止", en: "Pause" },
+  play: { ja: "再開", en: "Resume" },
+  B02: { ja: "時計", en: "Clock" },
 });

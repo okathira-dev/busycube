@@ -1,0 +1,35 @@
+.s450-entrances {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 5vw, 3rem);
+  width: min(100%, 34rem);
+}
+.s450-entrance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.s450-entrance > img,
+.s450-browser {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+.s450-uri {
+  color: #d8c5ff;
+  font-family: monospace;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.s450-note {
+  max-width: 32rem;
+  font-size: 0.8rem;
+  color: #c3b6d4;
+  text-align: center;
+}
+.s450-install {
+  display: inline-flex;
+  color: #c4b5fd;
+  padding: 0.75rem;
+}

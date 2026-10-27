@@ -1,23 +1,12 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  wall: {
-    ja: "壁。盤面をConsoleへ再表示した。",
-    en: "Wall; the board was printed again.",
-  },
-  exit: { ja: "出口に到達。", en: "Exit reached." },
-  printed: {
-    ja: "盤面をConsoleへ再表示した。",
-    en: "Board printed to Console.",
-  },
-  resetStatus: { ja: "開始位置へ戻した。", en: "Reset to the start." },
-  controls: { ja: "迷路操作", en: "Maze controls" },
-  reset: { ja: "リセット", en: "Reset" },
-  initial: {
-    ja: "Consoleを開いて盤面を見る。",
-    en: "Open Console to see the board.",
-  },
-  B01: { ja: "斜線入りの目", en: "Crossed-out eye" },
+  controls: { ja: "方向キー", en: "Directional controls" },
+  up: { ja: "上向き矢印", en: "Up arrow" },
+  left: { ja: "左向き矢印", en: "Left arrow" },
+  down: { ja: "下向き矢印", en: "Down arrow" },
+  right: { ja: "右向き矢印", en: "Right arrow" },
+  reset: { ja: "回転する矢印", en: "Rotating arrow" },
+  B01: { ja: "山括弧と下線", en: "Angle bracket and underscore" },
 });

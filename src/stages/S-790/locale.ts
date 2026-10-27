@@ -1,47 +1,14 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "画面と下向き矢印", en: "Screen with downward arrow" },
-  download: { ja: "専用活字をダウンロード", en: "Download the dedicated font" },
-  scan: { ja: "OSの活字を探す", en: "Find the OS font" },
-  clear: { ja: "読み込んだ活字を破棄", en: "Release loaded font" },
-  instruction: {
-    ja: "ファイルをOS標準のfont previewからinstallし、このpageへ戻って限定照会します。",
-    en: "Install the file through the OS font preview, then return and run the limited query.",
+  B02: { ja: "画面と下向き矢印", en: "Screen with downward arrow" },
+  download: { ja: "専用活字ファイル", en: "Dedicated font file" },
+  answer: { ja: "合言葉", en: "Passphrase" },
+  glyphLabel: { ja: "四つの活字", en: "Four glyphs" },
+  missing: { ja: "専用活字が見つかりません", en: "Dedicated font not found" },
+  cleanup: {
+    ja: "OSへ追加した活字は、端末のフォント設定から削除できます。",
+    en: "The installed font can be removed in your device’s font settings.",
   },
-  idle: {
-    ja: "全fontは列挙せず、Busycube専用PostScript名だけを照会します。",
-    en: "Only the Busycube PostScript name is queried; all fonts are never enumerated.",
-  },
-  scanning: {
-    ja: "OSの専用活字を確認しています…",
-    en: "Checking the dedicated OS font…",
-  },
-  success: {
-    ja: "OSから戻った実font dataで専用glyphを表示しました。",
-    en: "Rendered the dedicated glyph from real OS font data.",
-  },
-  missing: {
-    ja: "専用活字が一件だけ見つかりません。install後に再試行します。",
-    en: "Exactly one dedicated font was not found. Install it and try again.",
-  },
-  mismatch: {
-    ja: "font dataがGit管理fixtureと一致しません。",
-    en: "The font data does not match the Git-managed fixture.",
-  },
-  unavailable: {
-    ja: "Local Font Access APIを利用できません。uploadやlocal()では代替しません。",
-    en: "Local Font Access is unavailable; upload and local() are not substitutes.",
-  },
-  cancelled: {
-    ja: "font照会は取消または失敗しました。",
-    en: "The font query was cancelled or failed.",
-  },
-  cleared: {
-    ja: "FontData、FontFace、object URLを破棄しました。OSのuninstallは端末側で行います。",
-    en: "Released FontData, FontFace, and object URL. Uninstall the font in the OS.",
-  },
-  glyphLabel: { ja: "専用glyph", en: "Dedicated glyph" },
 });

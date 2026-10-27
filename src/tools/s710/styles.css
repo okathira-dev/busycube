@@ -98,6 +98,26 @@ video {
   gap: 8px;
   margin: 12px 0;
 }
+.samples,
+.output-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.samples {
+  margin: 0 0 1rem;
+  border: 1px solid #d8dfeb;
+  border-radius: 8px;
+}
+.samples legend {
+  font-size: 12px;
+  color: #60708c;
+}
+.samples > span {
+  display: flex;
+  gap: 0.25rem;
+}
 .recording-indicator {
   color: #bd1e1e;
   font:
@@ -119,6 +139,10 @@ a {
 button:disabled {
   opacity: 0.45;
   cursor: default;
+}
+.output-actions > button {
+  display: inline-flex;
+  align-items: center;
 }
 .compress,
 .download {

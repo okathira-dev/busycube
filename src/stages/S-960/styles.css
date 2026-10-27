@@ -1,0 +1,9 @@
+.s960-cloud {
+  font-size: 4rem;
+  color: #a5ddff;
+}
+.s960-stage progress {
+  width: min(100%, 28rem);
+  height: 1rem;
+  accent-color: #38bdf8;
+}

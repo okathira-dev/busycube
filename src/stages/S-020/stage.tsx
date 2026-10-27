@@ -7,6 +7,7 @@ import {
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { stageText } from "../locale";
 import { locale } from "./locale";
 import { manifest } from "./manifest";
 
@@ -16,9 +17,9 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * S-020
  *
  * 目的: stage入場時のviewport幅から80 CSS px離れた目標へ、実際のbrowser viewportをresizeして合わせる。
- * 最初の一手: 表示された「現在幅 → 目標幅」を見て、browser windowの端を目標方向へdragする。
+ * 最初の一手: ゲージの目標帯を見て、browser windowの端をdragする。
  * 箱ごとの解法:
- * - B01「四隅の枠」: 表示された目標幅へブラウザーの窓端をドラッグする。`resize`後の`window.innerWidth`を目標値の±18 px以内にすると開く。初期幅420 px以下では+80 px、それ以外では-80 pxが目標になる。
+ * - B01「縦横の枠」: ゲージの目標帯へブラウザーの窓端をドラッグする。`resize`後の`window.innerWidth`を目標値の±18 px以内にすると開く。初期幅420 px以下では+80 px、それ以外では-80 pxが目標になる。
  * 使用API: `window.innerWidth`、Windowの`resize` event。capability判定では`ResizeObserver`の有無も確認する。
  * 権限・privacy: 権限を要求せず、現在幅と入場時に算出した目標幅は画面内の判定にだけ使い、保存・送信しない。
  * 対応環境: `ResizeObserver`を備え、windowまたはviewport幅を利用者が変更できるdesktop browser等。
@@ -33,14 +34,17 @@ function S020Stage(props: Props) {
     [],
   );
   const [width, setWidth] = useState(window.innerWidth);
+  const [screenWidth, setScreenWidth] = useState(window.screen.width);
   const box = props.boxes[manifest.box.B01];
-  const meterMin = Math.min(initialWidth.current, targetWidth) - 100;
-  const meterMax = Math.max(initialWidth.current, targetWidth) + 100;
+  const meterMax = Math.max(1, screenWidth);
+  const low = Math.max(0, targetWidth - 18);
+  const high = Math.min(meterMax, targetWidth + 18);
 
   useEffect(() => {
     const observe = () => {
       const nextWidth = window.innerWidth;
       setWidth(nextWidth);
+      setScreenWidth(window.screen.width);
       if (Math.abs(nextWidth - targetWidth) <= 18) box.solve();
     };
     window.addEventListener("resize", observe);
@@ -54,23 +58,32 @@ function S020Stage(props: Props) {
 
   return (
     <div className="puzzle puzzle--centered">
-      <div className="resize-ruler" aria-hidden="true">
+      <div className="resize-ruler">
+        <meter
+          aria-label={stageText(props.locale, locale.gauge)}
+          min={0}
+          max={meterMax}
+          low={Math.min(meterMax, low)}
+          high={Math.max(0, high)}
+          optimum={Math.min(meterMax, targetWidth)}
+          value={Math.min(meterMax, width)}
+        />
         <span
-          className="resize-ruler__fill"
-          style={{ width: `${Math.min(100, (width / targetWidth) * 100)}%` }}
+          className="resize-ruler__target"
+          aria-hidden="true"
+          style={{
+            left: `${(Math.min(meterMax, low) / meterMax) * 100}%`,
+            width: `${(Math.max(0, high - low) / meterMax) * 100}%`,
+          }}
+        />
+        <span
+          className="resize-ruler__optimum"
+          aria-hidden="true"
+          style={{
+            left: `${(Math.min(meterMax, targetWidth) / meterMax) * 100}%`,
+          }}
         />
       </div>
-      <p className="measurement" aria-live="polite">
-        {width} → {targetWidth}
-      </p>
-      <meter
-        min={meterMin}
-        max={meterMax}
-        optimum={targetWidth}
-        value={Math.min(meterMax, Math.max(meterMin, width))}
-      >
-        {width}
-      </meter>
       <StageProblemGiftBox box={box} locale={props.locale} />
     </div>
   );

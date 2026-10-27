@@ -25,13 +25,13 @@ import { locale } from "./locale";
  * 最初の一手: B01の`cafÃ© franÃ§ais`がUTF-8 bytesをWindows-1252表示した結果だと見抜き、共通欄へ`café français`と入力する。
  * 箱ごとの解法:
  * - B01「斜線入りの目」: UTF-8→Windows-1252のmojibakeへ、正解`café français`を完全一致で入力すると開く。
- * - B02「斜線入りの目」: KOI8-R→Windows-1251のmojibakeへ、正解`русский ящик`を完全一致で入力すると開く。
- * - B03「斜線入りの目」: KOI8-U→IBM866のmojibakeへ、正解`український код`を完全一致で入力すると開く。
- * - B04「斜線入りの目」: Macintosh→x-mac-cyrillicのmojibakeへ、正解`åbn æsken`を完全一致で入力すると開く。
- * - B05「斜線入りの目」: Windows-1255→ISO-8859-7のmojibakeへ、正解`תיבת קוד`を完全一致で入力すると開く。
- * - B06「斜線入りの目」: Windows-874→Windows-1252のmojibakeへ、正解`กล่อง รหัส`を完全一致で入力すると開く。
- * - B07「斜線入りの目」: ISO-8859-2→Macintoshのmojibakeへ、正解`český kód`を完全一致で入力すると開く。
- * - B08「斜線入りの目」: GBK→Big5のmojibakeへ、正解`编码 宝箱`を完全一致で入力すると開く。
+ * - B09「斜線入りの目」: KOI8-R→Windows-1251のmojibakeへ、正解`матрёшка`を完全一致で入力すると開く。
+ * - B10「斜線入りの目」: KOI8-U→IBM866のmojibakeへ、正解`пампушка`を完全一致で入力すると開く。
+ * - B11「斜線入りの目」: Macintosh→x-mac-cyrillicのmojibakeへ、正解`smørrebrød`を完全一致で入力すると開く。
+ * - B12「斜線入りの目」: Windows-1255→ISO-8859-7のmojibakeへ、正解`חנוכה`を完全一致で入力すると開く。
+ * - B13「斜線入りの目」: Windows-874→Windows-1252のmojibakeへ、正解`ต้มยำกุ้ง`を完全一致で入力すると開く。
+ * - B14「斜線入りの目」: ISO-8859-2→Macintoshのmojibakeへ、正解`svíčková`を完全一致で入力すると開く。
+ * - B15「斜線入りの目」: GBK→Big5のmojibakeへ、正解`月饼`を完全一致で入力すると開く。
  * 使用API: Encoding StandardのTextDecoder対応を前提に検証済みの固定byte/encoding fixtureとHTML text input。
  * 権限・privacy: 権限を要求せず、Git管理済みfixtureと共通回答値だけを扱う。入力回答は入場中のmemoryにだけ保持し、保存・送信しない。
  * 対応環境: TextDecoderとfixtureで使うUTF/legacy encoding label、各scriptのfont描画を実装するbrowser。
@@ -98,40 +98,40 @@ export const stage = defineStageModule(manifest, {
       color: "#818cf8",
       label: locale.B01,
     },
-    [manifest.box.B02]: {
+    [manifest.box.B09]: {
       icon: VisibilityOffOutlined,
       color: "#6366f1",
-      label: locale.B02,
+      label: locale.B09,
     },
-    [manifest.box.B03]: {
+    [manifest.box.B10]: {
       icon: VisibilityOffOutlined,
       color: "#4f46e5",
-      label: locale.B03,
+      label: locale.B10,
     },
-    [manifest.box.B04]: {
+    [manifest.box.B11]: {
       icon: VisibilityOffOutlined,
       color: "#4338ca",
-      label: locale.B04,
+      label: locale.B11,
     },
-    [manifest.box.B05]: {
+    [manifest.box.B12]: {
       icon: VisibilityOffOutlined,
       color: "#818cf8",
-      label: locale.B05,
+      label: locale.B12,
     },
-    [manifest.box.B06]: {
+    [manifest.box.B13]: {
       icon: VisibilityOffOutlined,
       color: "#6366f1",
-      label: locale.B06,
+      label: locale.B13,
     },
-    [manifest.box.B07]: {
+    [manifest.box.B14]: {
       icon: VisibilityOffOutlined,
       color: "#4f46e5",
-      label: locale.B07,
+      label: locale.B14,
     },
-    [manifest.box.B08]: {
+    [manifest.box.B15]: {
       icon: VisibilityOffOutlined,
       color: "#4338ca",
-      label: locale.B08,
+      label: locale.B15,
     },
   },
   probe: () =>

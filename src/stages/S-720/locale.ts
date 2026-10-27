@@ -3,14 +3,6 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  connectPrompt: {
-    ja: "動画ノードを出力へつないでください。",
-    en: "Connect a source to the output.",
-  },
-  direct: {
-    ja: "動画を直接出力へ接続しました。",
-    en: "Direct source connection.",
-  },
   applying: {
     ja: "接続した変換を適用中…",
     en: "Applying the connected transforms…",
@@ -51,5 +43,5 @@ export const locale = defineStageLocale({
   B01: { ja: "左右の矢印", en: "Opposing arrows" },
   B02: { ja: "左右の矢印", en: "Opposing arrows" },
   B03: { ja: "左右の矢印", en: "Opposing arrows" },
-  B04: { ja: "画面と携帯端末", en: "Screen and phone" },
+  B04: { ja: "左右の矢印", en: "Opposing arrows" },
 });

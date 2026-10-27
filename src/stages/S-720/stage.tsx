@@ -1,5 +1,8 @@
 import "./styles.css";
-import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
+import AutorenewOutlined from "@mui/icons-material/AutorenewOutlined";
+import ErrorOutlineOutlined from "@mui/icons-material/ErrorOutlineOutlined";
+import FilterNoneOutlined from "@mui/icons-material/FilterNoneOutlined";
+import RestartAltOutlined from "@mui/icons-material/RestartAltOutlined";
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";
 import {
   defineStageModule,
@@ -56,22 +59,6 @@ const transformKind: Record<TransformNode, TransformKind> = {
   t1b: "t1",
   t2b: "t2",
   t3b: "t3",
-};
-
-const portPositions: Record<
-  NodeId,
-  { input?: [number, number]; output?: [number, number] }
-> = {
-  source1: { output: [220, 110] },
-  source2: { output: [220, 325] },
-  source3: { output: [220, 540] },
-  t1a: { input: [330, 110], output: [500, 110] },
-  t2a: { input: [330, 325], output: [500, 325] },
-  t3a: { input: [330, 540], output: [500, 540] },
-  t1b: { input: [590, 110], output: [760, 110] },
-  t2b: { input: [590, 325], output: [760, 325] },
-  t3b: { input: [590, 540], output: [760, 540] },
-  output: { input: [840, 325] },
 };
 
 function nodeKind(node: TransformNode) {
@@ -201,10 +188,19 @@ async function renderVideoRoute(
   signal: AbortSignal,
 ) {
   const response = await fetch(videoRecoveryAssets[source], { signal });
+  if (!response.ok) throw new Error("Source unavailable");
   const input = new Input({
     source: new BlobSource(await response.blob()),
     formats: [WEBM],
   });
+  let sourceEncoder: CanvasSource | undefined;
+  let output: Output | undefined;
+  const abort = () => {
+    input.dispose();
+    void output?.cancel().catch(() => undefined);
+  };
+  signal.addEventListener("abort", abort, { once: true });
+  if (signal.aborted) abort();
   try {
     const track = await input.getPrimaryVideoTrack();
     if (!track || !(await track.canDecode()))
@@ -233,14 +229,14 @@ async function renderVideoRoute(
     const canvas = document.createElement("canvas");
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
-    const sourceEncoder = new CanvasSource(canvas, {
+    sourceEncoder = new CanvasSource(canvas, {
       codec: "vp8",
       bitrate: 600_000,
       keyFrameInterval: 1,
       sizeChangeBehavior: "deny",
     });
     const target = new BufferTarget();
-    const output = new Output({ format: new WebMOutputFormat(), target });
+    output = new Output({ format: new WebMOutputFormat(), target });
     output.addVideoTrack(sourceEncoder, { frameRate: 12 });
     await output.start();
     const context = canvas.getContext("2d");
@@ -256,7 +252,13 @@ async function renderVideoRoute(
     if (!target.buffer) throw new Error("encoded output unavailable");
     return new Blob([target.buffer], { type: "video/webm" });
   } finally {
-    input.dispose();
+    signal.removeEventListener("abort", abort);
+    try {
+      sourceEncoder?.close();
+    } finally {
+      await output?.cancel().catch(() => undefined);
+      input.dispose();
+    }
   }
 }
 
@@ -281,7 +283,7 @@ function routeDetails(path: readonly NodeId[]) {
  * - B01「左右の矢印」: `source1 → T1(swap halves) → output`を再生してQRを読み、`busycube{swap_halves}`を完全一致で入力すると開く。
  * - B02「左右の矢印」: `source2 → T2(merge frames) → output`を再生してQRを読み、`busycube{merge_frames}`を完全一致で入力すると開く。
  * - B03「左右の矢印」: `source3 → T3(select half) → T2(merge) → output`から`busycube{odd_even_alpha}`を得て完全一致で入力すると開く。
- * - B04「画面と携帯端末」: `source3 → T1 → T3 → T2 → T1 → output`から`busycube{swap_route_beta}`を得て完全一致で入力すると開く。
+ * - B04「左右の矢印」: `source3 → T1 → T3 → T2 → T1 → output`から`busycube{swap_route_beta}`を得て完全一致で入力すると開く。別端末や配線履歴を追加の達成条件にはしない。
  * 使用API: Canvas 2D cable描画/frame変換、MediaBunny decode/CanvasSink/VP8 encode、HTMLVideoElement、Blob URL、AbortSignal。
  * 権限・privacy: Git管理済みfixtureだけをclient内でdecode・変換・再encodeし、mediaや回答を保存・送信しない。
  * 対応環境: Canvas 2D、WebM/VP8 decode・encodeとMediaBunnyが動作するbrowser。
@@ -297,9 +299,10 @@ function S720Stage(props: Props) {
   const [cables, setCables] = useState<VideoPatchCable[]>([]);
   const [pendingFrom, setPendingFrom] = useState<VideoPatchCable["from"]>();
   const [outputUrl, setOutputUrl] = useState<string>();
-  const [status, setStatus] = useState(() =>
-    stageText(props.locale, locale.connectPrompt),
-  );
+  const [status, setStatus] = useState<
+    "idle" | "processing" | "ready" | "error"
+  >("idle");
+  const [errorDetail, setErrorDetail] = useState("");
   const [answer, setAnswer] = useState("");
   const activePath = useMemo(() => pathForCables(cables), [cables]);
 
@@ -313,9 +316,26 @@ function S720Stage(props: Props) {
     context.shadowColor = "#000b";
     context.shadowBlur = 5;
     context.shadowOffsetY = 3;
+    const surface = cableCanvasRef.current?.parentElement;
+    if (!surface) return;
+    const origin = surface.getBoundingClientRect();
+    const point = (
+      node: NodeId,
+      direction: string,
+    ): [number, number] | undefined => {
+      const port = surface.querySelector(
+        `[data-port-node="${node}"][data-port-direction="${direction}"]`,
+      );
+      if (!port) return undefined;
+      const rect = port.getBoundingClientRect();
+      return [
+        rect.left + rect.width / 2 - origin.left,
+        rect.top + rect.height / 2 - origin.top,
+      ];
+    };
     for (const cable of cables) {
-      const start = portPositions[cable.from].output;
-      const end = portPositions[cable.to].input;
+      const start = point(cable.from, "out");
+      const end = point(cable.to, "in");
       if (!start || !end) continue;
       const curve = Math.max(60, Math.abs(end[0] - start[0]) * 0.4);
       context.beginPath();
@@ -333,13 +353,12 @@ function S720Stage(props: Props) {
   }, [cables]);
 
   useEffect(() => {
+    if (props.signal.aborted) return;
+    setErrorDetail("");
     const details = activePath ? routeDetails(activePath) : undefined;
     if (!details) {
-      setOutputUrl((previous) => {
-        if (previous?.startsWith("blob:")) URL.revokeObjectURL(previous);
-        return undefined;
-      });
-      setStatus(stageText(props.locale, locale.connectPrompt));
+      setOutputUrl(undefined);
+      setStatus("idle");
       return;
     }
     const controller = new AbortController();
@@ -347,49 +366,53 @@ function S720Stage(props: Props) {
     const sourceUrl = videoRecoveryAssets[details.source];
     if (details.transforms.length === 0) {
       setOutputUrl(sourceUrl);
-      setStatus(stageText(props.locale, locale.direct));
+      setStatus("ready");
     } else {
-      setStatus(stageText(props.locale, locale.applying));
+      setOutputUrl(undefined);
+      setStatus("processing");
       void renderVideoRoute(
         details.source,
         details.transforms,
         controller.signal,
       )
         .then((blob) => {
-          if (disposed) return;
+          if (disposed || props.signal.aborted) return;
           const next = URL.createObjectURL(blob);
-          setOutputUrl((previous) => {
-            if (previous?.startsWith("blob:")) URL.revokeObjectURL(previous);
-            return next;
-          });
-          setStatus(stageText(props.locale, locale.ready));
+          setOutputUrl(next);
+          setStatus("ready");
         })
         .catch((error: unknown) => {
-          if (!disposed && (error as Error).name !== "AbortError") {
-            setStatus(
-              `${stageText(props.locale, locale.failed)}: ${error instanceof Error ? error.message : stageText(props.locale, locale.unknownError)}`,
+          if (!disposed && !props.signal.aborted) {
+            setStatus("error");
+            setErrorDetail(
+              error instanceof Error
+                ? error.message
+                : stageText(props.locale, locale.unknownError),
             );
           }
         });
     }
-    return () => {
+    const stop = () => {
       disposed = true;
       controller.abort();
     };
-  }, [activePath, props.locale]);
+    props.signal.addEventListener("abort", stop, { once: true });
+    return () => {
+      props.signal.removeEventListener("abort", stop);
+      disposed = true;
+      controller.abort();
+    };
+  }, [activePath, props.locale, props.signal]);
 
   useEffect(
     () => () => {
-      setOutputUrl((previous) => {
-        if (previous?.startsWith("blob:")) URL.revokeObjectURL(previous);
-        return undefined;
-      });
+      if (outputUrl?.startsWith("blob:")) URL.revokeObjectURL(outputUrl);
     },
-    [],
+    [outputUrl],
   );
 
   const connectTo = (to: VideoPatchCable["to"]) => {
-    if (!pendingFrom || pendingFrom === to) return;
+    if (props.signal.aborted || !pendingFrom || pendingFrom === to) return;
     setCables((previous) => {
       const withoutConflicts = previous.filter(
         (cable) => cable.from !== pendingFrom && cable.to !== to,
@@ -454,7 +477,12 @@ function S720Stage(props: Props) {
               <button
                 type="button"
                 className={`patch-port patch-port--out${pendingFrom === id ? " patch-port--active" : ""}`}
-                onClick={() => setPendingFrom(id)}
+                data-port-node={id}
+                data-port-direction="out"
+                aria-pressed={pendingFrom === id}
+                onClick={() => {
+                  if (!props.signal.aborted) setPendingFrom(id);
+                }}
                 aria-label={`${stageText(props.locale, locale.connectSourceOutput)} ${index + 1}`}
               />
             </section>
@@ -468,21 +496,31 @@ function S720Stage(props: Props) {
                 <button
                   type="button"
                   className="patch-port patch-port--in"
+                  data-port-node={id}
+                  data-port-direction="in"
+                  data-ready={Boolean(pendingFrom && pendingFrom !== id)}
                   onClick={() => connectTo(id)}
                   aria-label={`${stageText(props.locale, locale.connectNodeInput)} ${id}`}
                 />
                 <strong>{nodeKind(id).toUpperCase()}</strong>
-                <span>
-                  {nodeKind(id) === "t1"
-                    ? "⇆"
-                    : nodeKind(id) === "t2"
-                      ? "∏"
-                      : "◐"}
+                <span className="patch-transform-symbol">
+                  {nodeKind(id) === "t1" ? (
+                    "⇆"
+                  ) : nodeKind(id) === "t2" ? (
+                    <FilterNoneOutlined aria-hidden="true" />
+                  ) : (
+                    "◐"
+                  )}
                 </span>
                 <button
                   type="button"
                   className={`patch-port patch-port--out${pendingFrom === id ? " patch-port--active" : ""}`}
-                  onClick={() => setPendingFrom(id)}
+                  data-port-node={id}
+                  data-port-direction="out"
+                  aria-pressed={pendingFrom === id}
+                  onClick={() => {
+                    if (!props.signal.aborted) setPendingFrom(id);
+                  }}
                   aria-label={`${stageText(props.locale, locale.connectNodeOutput)} ${id}`}
                 />
               </section>
@@ -492,6 +530,9 @@ function S720Stage(props: Props) {
             <button
               type="button"
               className="patch-port patch-port--in"
+              data-port-node="output"
+              data-port-direction="in"
+              data-ready={Boolean(pendingFrom)}
               onClick={() => connectTo("output")}
               aria-label={stageText(props.locale, locale.connectOutput)}
             />
@@ -523,7 +564,31 @@ function S720Stage(props: Props) {
                 ∿
               </div>
             )}
-            <small role="status">{status}</small>
+            {status === "processing" ? (
+              <span
+                className="patch-processing"
+                role="status"
+                aria-label={stageText(props.locale, locale.applying)}
+              >
+                <AutorenewOutlined aria-hidden="true" />
+              </span>
+            ) : status === "error" ? (
+              <details className="patch-error">
+                <summary>
+                  <ErrorOutlineOutlined aria-hidden="true" />
+                  <span className="sr-only">
+                    {stageText(props.locale, locale.failed)}
+                  </span>
+                </summary>
+                <p>{errorDetail}</p>
+              </details>
+            ) : (
+              <small role="status">
+                {status === "ready"
+                  ? stageText(props.locale, locale.ready)
+                  : ""}
+              </small>
+            )}
           </section>
         </div>
       </section>
@@ -532,11 +597,13 @@ function S720Stage(props: Props) {
           type="button"
           className="stage-action"
           onClick={() => {
+            if (props.signal.aborted) return;
             setCables([]);
             setPendingFrom(undefined);
           }}
+          aria-label={stageText(props.locale, locale.disconnect)}
         >
-          {stageText(props.locale, locale.disconnect)}
+          <RestartAltOutlined aria-hidden="true" />
         </button>
         <label className="parallel-answer">
           {stageText(props.locale, locale.flagLabel)}
@@ -544,6 +611,7 @@ function S720Stage(props: Props) {
             value={answer}
             placeholder="busycube{…}"
             onChange={(event) => {
+              if (props.signal.aborted) return;
               const next = event.currentTarget.value;
               setAnswer(next);
               const normalized = next.trim().toLowerCase();
@@ -588,7 +656,7 @@ export const stage = defineStageModule(manifest, {
       label: locale.B03,
     },
     [manifest.box.B04]: {
-      icon: DevicesOutlined,
+      icon: SwapHorizOutlined,
       color: "#9f1239",
       label: locale.B04,
     },

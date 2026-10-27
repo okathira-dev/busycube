@@ -3,6 +3,6 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  receiveUsb: { ja: "線の向こうから受け取る", en: "Receive across the wire" },
+  opened: { ja: "開きました", en: "Opened" },
   B01: { ja: "USB", en: "USB" },
 });

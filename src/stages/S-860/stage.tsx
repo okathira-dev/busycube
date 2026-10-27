@@ -1,152 +1,56 @@
 import "./styles.css";
 import EditOutlined from "@mui/icons-material/EditOutlined";
+import { useCallback } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
+import { messages, productCopy } from "../../i18n";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
-import { manifest } from "./manifest";
-
-type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import { type Locale, messages, productCopy } from "../../i18n";
 import { stageText } from "../locale";
 import { locale } from "./locale";
+import { manifest } from "./manifest";
+import { ProofLine } from "./ProofLine";
 
-interface ProofLineProps {
-  initialText: string;
-  className: string;
-  as: "h1" | "p";
-  label: string;
-  onCorrect(value: string): void;
-}
-
-function ProofLine({
-  initialText,
-  className,
-  as,
-  label,
-  onCorrect,
-}: ProofLineProps) {
-  const elementRef = useRef<HTMLElement>(null);
-  const [value, setValue] = useState(initialText);
-  const Tag = as;
-
-  useEffect(() => {
-    const element = elementRef.current;
-    const Edit = window.EditContext;
-    if (!element || !Edit) return;
-    const context = new Edit({ text: initialText });
-    element.editContext = context;
-    const update = (event: Event) => {
-      const detail = event as EditContextTextUpdateEvent;
-      context.updateText(
-        detail.updateRangeStart,
-        detail.updateRangeEnd,
-        detail.text,
-      );
-      context.updateSelection(
-        detail.updateRangeStart + detail.text.length,
-        detail.updateRangeStart + detail.text.length,
-      );
-      const next = context.text;
-      setValue(next);
-      onCorrect(next);
-    };
-    context.addEventListener("textupdate", update);
-    const updateBounds = () => {
-      const rect = element.getBoundingClientRect();
-      context.updateControlBounds(rect);
-      context.updateSelectionBounds(rect, rect);
-      context.updateCharacterBounds(
-        0,
-        Array.from({ length: Math.max(1, context.text.length) }, () => rect),
-      );
-    };
-    const resizeObserver = new ResizeObserver(updateBounds);
-    resizeObserver.observe(element);
-    const frame = requestAnimationFrame(updateBounds);
-    return () => {
-      cancelAnimationFrame(frame);
-      resizeObserver.disconnect();
-      context.removeEventListener("textupdate", update);
-      if (element.editContext === context) element.editContext = undefined;
-    };
-  }, [initialText, onCorrect]);
-
-  return (
-    <Tag
-      ref={elementRef as never}
-      className={className}
-      tabIndex={0}
-      role="textbox"
-      aria-label={label}
-      aria-multiline="false"
-    >
-      {value}
-    </Tag>
-  );
-}
-
-function corruptedCopy(locale: Locale) {
-  const copy = messages[locale];
-  return {
-    title: "Busycuve: Web API Explorer",
-    subtitle:
-      locale === "ja"
-        ? "ブラウザそのものが鍵となるパズル。"
-        : "A new kind of puzzle where the browser itself is the key.",
-    tagline:
-      locale === "ja"
-        ? "いつものブラウザが、突然パズルになる。"
-        : "Your everyday browser suddenly becomes the puzzle.",
-    correct: {
-      title: productCopy.fullTitle,
-      subtitle: copy.subtitle,
-      tagline: copy.tagline,
-    },
-  };
-}
+type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 /**
  * S-860
  *
- * 目的: input/contenteditableではない見出し・本文へEditContextをattachし、共通product copyの誤字・欠語・余分語を直接校正する。
- * 最初の一手: 題名行をclickまたはTab focusし、`Busycuve`のvをbへ直して`Busycube: Web API Explorer`にする。残り2行も見本どおり校正する。
+ * 目的: メインページと同じ見出し四行から違いを見つけ、EditContextで三行の誤りを直接校正する。
+ * 最初の一手: メインページを思い出し、Busycuveの文字をクリックまたはTabで選んで誤字を直す。
  * 箱ごとの解法:
- * - B01「鉛筆」: 題名をfocusして誤字を直す。EditContext `textupdate`後の題名が厳密に`Busycube: Web API Explorer`なら開く。
- * - B02「鉛筆」: 日本語は欠けた`新感覚`を戻して`ブラウザそのものが鍵となる新感覚パズル。`、英語は`game`を戻して共通subtitleと完全一致すると開く。
- * - B03「鉛筆」: 日本語は余分な`突然`、英語は`suddenly`を削り、共通tagline（`いつものブラウザが、パズルになる。` / `Your everyday browser becomes the puzzle.`）と一致すると開く。
- * 使用API: EditContextのtextupdate/updateText/updateSelection、control/selection/character bounds、ResizeObserver、通常HTMLElement focus。
- * 権限・privacy: 権限を要求せず、編集文字列は各lineのcomponent memoryにだけ保持する。入力内容やselectionを保存・送信しない。
- * 対応環境: EditContextとIME/selection連携、ResizeObserverを実装するbrowser。
+ * - B04「鉛筆」: 題名をBusycubeだけへ直す。実EditContextの編集後のtextが共通brandNameと完全一致すると開く。
+ * - B02「鉛筆」: 日本語subtitleへ欠けた新感覚、英語へgameを戻し、表示言語の共通subtitleと完全一致すると開く。
+ * - B03「鉛筆」: 日本語taglineの突然、英語のsuddenlyを削除し、表示言語の共通taglineと完全一致すると開く。
+ * 使用API: EditContextの実textupdate/composition/selection/character bounds、DOM Range、ResizeObserver、focus。
+ * 権限・privacy: 権限不要。編集中の文字と選択だけをcomponent memoryに保持し、保存・送信しない。
+ * 対応環境: EditContextを実装するbrowser。Web API Explorerは見出しの再現のみで第四の箱はない。IME変換中は確定前の一致を達成にしない。
  */
 function S860Stage(props: Props) {
-  const titleProblem = props.boxes[manifest.box.B01];
+  const titleProblem = props.boxes[manifest.box.B04];
   const subtitleProblem = props.boxes[manifest.box.B02];
   const taglineProblem = props.boxes[manifest.box.B03];
-  const copy = corruptedCopy(props.locale);
+  const copy = messages[props.locale];
   const correctTitle = useCallback(
     (value: string) => {
-      if (value === copy.correct.title) titleProblem.solve();
+      if (value === productCopy.brandName) titleProblem.solve();
     },
-    [copy.correct.title, titleProblem.solve],
+    [titleProblem.solve],
   );
   const correctSubtitle = useCallback(
     (value: string) => {
-      if (value === copy.correct.subtitle) subtitleProblem.solve();
+      if (value === copy.subtitle) subtitleProblem.solve();
     },
-    [copy.correct.subtitle, subtitleProblem.solve],
+    [copy.subtitle, subtitleProblem.solve],
   );
   const correctTagline = useCallback(
     (value: string) => {
-      if (value === copy.correct.tagline) taglineProblem.solve();
+      if (value === copy.tagline) taglineProblem.solve();
     },
-    [copy.correct.tagline, taglineProblem.solve],
+    [copy.tagline, taglineProblem.solve],
   );
-
   return (
     <div className="puzzle s860-stage">
       <div className="problem-row">
@@ -154,44 +58,47 @@ function S860Stage(props: Props) {
         <StageProblemGiftBox box={subtitleProblem} locale={props.locale} />
         <StageProblemGiftBox box={taglineProblem} locale={props.locale} />
       </div>
-      <p>{stageText(props.locale, locale.intro)}</p>
-      <section
-        className="s860-proof"
-        aria-label={stageText(props.locale, locale.stageName)}
-      >
+      <header className="hero s860-proof" key={props.locale}>
+        <span className="eyebrow">{productCopy.descriptor}</span>
         <ProofLine
-          initialText={copy.title}
-          className="s860-proof__title"
+          initialText={productCopy.brandName.replace("cube", "cuve")}
+          className="s860-title"
           as="h1"
-          label={stageText(props.locale, locale.B01)}
+          label={stageText(props.locale, locale.B04)}
           onCorrect={correctTitle}
         />
         <ProofLine
-          initialText={copy.subtitle}
-          className="s860-proof__subtitle"
-          as="p"
-          label={stageText(props.locale, locale.B02)}
-          onCorrect={correctSubtitle}
-        />
-        <ProofLine
-          initialText={copy.tagline}
-          className="s860-proof__tagline"
+          initialText={
+            props.locale === "ja"
+              ? copy.tagline.replace("、", "、突然")
+              : copy.tagline.replace(" becomes", " suddenly becomes")
+          }
+          className="hero__tagline"
           as="p"
           label={stageText(props.locale, locale.B03)}
           onCorrect={correctTagline}
         />
-      </section>
-      <small>{stageText(props.locale, locale.focusHint)}</small>
+        <ProofLine
+          initialText={
+            props.locale === "ja"
+              ? copy.subtitle.replace("新感覚", "")
+              : copy.subtitle.replace("puzzle game", "puzzle")
+          }
+          className="hero__subtitle"
+          as="p"
+          label={stageText(props.locale, locale.B02)}
+          onCorrect={correctSubtitle}
+        />
+      </header>
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B04]: {
       icon: EditOutlined,
       color: "#fbbf24",
-      label: locale.B01,
+      label: locale.B04,
     },
     [manifest.box.B02]: {
       icon: EditOutlined,

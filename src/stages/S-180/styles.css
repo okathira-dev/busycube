@@ -1,0 +1,9 @@
+.s180-copy svg {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+.s180-copy[data-copied="true"] {
+  border-color: #8de4b2;
+  color: #8de4b2;
+}

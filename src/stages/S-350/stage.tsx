@@ -1,10 +1,10 @@
 import FullscreenOutlined from "@mui/icons-material/FullscreenOutlined";
 import PauseOutlined from "@mui/icons-material/PauseOutlined";
 import PictureInPictureAltOutlined from "@mui/icons-material/PictureInPictureAltOutlined";
-import ScheduleOutlined from "@mui/icons-material/ScheduleOutlined";
 import SpeedOutlined from "@mui/icons-material/SpeedOutlined";
 import SubtitlesOutlined from "@mui/icons-material/SubtitlesOutlined";
-import VolumeUpOutlined from "@mui/icons-material/VolumeUpOutlined";
+import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";
+import VolumeOffOutlined from "@mui/icons-material/VolumeOffOutlined";
 import {
   defineStageModule,
   type StageComponentProps,
@@ -41,8 +41,8 @@ const captionSources = {
  * 目的: browser native video controlsからseek・音量・pause・速度・字幕・PiP・fullscreenを操作し、media elementが報告する実状態を箱ごとに読む。
  * 最初の一手: videoを再生し、native controlsの各menu/buttonを順番に使う。まずtimelineを0.5秒以上動かすとB01を開ける。
  * 箱ごとの解法:
- * - B01「時計」: native videoのtimelineを0.5秒以上動かす。seek開始前の安定currentTimeと`seeked`後の時刻差が0.5秒以上なら開く。ただし終了位置から0.25秒以内への自動先頭復帰は除く。
- * - B02「音波の出るスピーカー」: native controlsでvideoをミュートにする。`volumechange`時にvideoの`muted`がtrue、または`volume`が厳密に0なら開く。
+ * - B01「左右の矢印」: native videoのtimelineを0.5秒以上動かす。seek開始前の安定currentTimeと`seeked`後の時刻差が0.5秒以上なら開く。ただし終了位置から0.25秒以内への自動先頭復帰は除く。
+ * - B02「斜線入りスピーカー」: native controlsでvideoをミュートにする。`volumechange`時にvideoの`muted`がtrue、または`volume`が厳密に0なら開く。
  * - B03「二本の縦線」: 一度playしてから0.2秒以上進み、終了前かつstage離脱処理ではない`pause` eventを受けると開く。
  * - B04「速度計」: native controlsで再生速度を1以外にする。`ratechange`時の`playbackRate`が標準の1以外なら開く。
  * - B05「字幕線」: native字幕menuでlabel `Busycube`のtext trackだけを`showing`にし、他のtrackが一つもshowingでなければ開く。
@@ -233,12 +233,12 @@ function S350Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
-      icon: ScheduleOutlined,
+      icon: SwapHorizOutlined,
       color: "#60a5fa",
       label: locale.B01,
     },
     [manifest.box.B02]: {
-      icon: VolumeUpOutlined,
+      icon: VolumeOffOutlined,
       color: "#f472b6",
       label: locale.B02,
     },

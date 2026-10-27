@@ -1,0 +1,44 @@
+.pressure-reading {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.pressure-reading > svg {
+  font-size: 5rem;
+}
+.pressure-bars {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 0.25rem;
+  height: 2rem;
+}
+.pressure-bars span {
+  width: 0.7rem;
+  height: 25%;
+  border: 1px solid #94a3b8;
+  border-radius: 0.15rem;
+  background: #181329;
+}
+.pressure-bars span:nth-child(2) {
+  height: 50%;
+}
+.pressure-bars span:nth-child(3) {
+  height: 75%;
+}
+.pressure-bars span:nth-child(4) {
+  height: 100%;
+}
+.pressure-bars [data-lit="true"] {
+  background: #fbbf24;
+}
+.pressure-target {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.pressure-alternatives {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}

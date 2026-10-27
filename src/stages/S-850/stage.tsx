@@ -1,133 +1,192 @@
 import "./styles.css";
 import PictureInPictureAltOutlined from "@mui/icons-material/PictureInPictureAltOutlined";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
-import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { GiftBox, StageProblemGiftBox } from "../../ui/GiftBox";
+import { statusText } from "../../ui/statusLocale";
+import { stageText } from "../locale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
-function copyDocumentStyles(target: Document) {
-  for (const style of document.head.querySelectorAll(
-    "link[rel='stylesheet'], style",
-  )) {
-    target.head.append(style.cloneNode(true));
-  }
-}
-
+const target = { width: 360, height: 300 };
 /**
  * S-850
- *
- * 目的: browser所有Document Picture-in-Picture windowの別documentへ実GiftBoxをReact portalで移し、そのwindow内で操作する。
- * 最初の一手: 「浮かぶ画面を開く」を押し、常時手前のPiP windowへ移った箱を探してclickする。
+ * 目的: 実Document PiPへ逃げた箱の幅と高さを、元ページに残る通常の箱のシルエットへ合わせる。
+ * 最初の一手: 箱を押し、別窓へ移った箱と残った影を見比べる。
  * 箱ごとの解法:
- * - B01「小さな窓が重なる画面」: 「浮かぶ画面を開く」を押し、PiP windowへ移った箱を直接クリックする。箱のownerDocumentが`requestWindow()`で得たPiP documentで、native event viewが保持中PiP windowと一致するtrusted clickなら開く。
- * 使用API: Document Picture-in-Picture API、React `createPortal()`、cross-document stylesheet clone、Window pagehide。
- * 権限・privacy: camera・screen capture・window内容を取得せず、browserが返したPiP Window/Document参照だけを表示中に保持する。dataを保存・送信しない。
- * 対応環境: Document Picture-in-Pictureを提供するdesktop Chromium系browser。
+ * - B02「小さな窓が重なる画面」: 箱から開いた実PiP窓をリサイズする。箱の横/縦倍率は実innerWidth/360とinnerHeight/300。初期寸法から変わったtrusted resizeを受け、両寸法が目標±6 CSS pxに同時一致したら開く。比率だけ、小窓起動、箱の再clickでは開かない。
+ * 使用API: Document Picture-in-Picture requestWindow/window、別documentへのReact portal、Window resize/pagehide、実innerWidth/innerHeight。
+ * 権限・privacy: 画面captureやcameraは使わず、表示中のWindowと寸法のみをmemoryに保持する。
+ * 対応環境: user activationからDocument PiPを開き、360×300 CSS pxへリサイズできるdesktop browser。旧B01は小窓clickの履歴に保持し、新サイズ合わせへコピーしない。
  */
 function S850Stage(props: Props) {
-  const problem = props.boxes[manifest.box.B01];
-  const windowRef = useRef<Window | null>(null);
-  const [pipDocument, setPipDocument] = useState<Document>();
-  const [status, setStatus] = useState("");
-
+  const problem = props.boxes.B02;
+  const visit = useRef({ alive: false, generation: 0, opening: false });
+  const current = useRef<Window | null>(null);
+  const detach = useRef<() => void>(() => {});
+  const boxes = useRef(props.boxes);
+  boxes.current = props.boxes;
+  const [pip, setPip] = useState<Window | null>(null);
+  const [size, setSize] = useState({ width: 480, height: 240 });
+  const [status, setStatus] = useState("idle");
   useEffect(() => {
-    const close = () => {
-      windowRef.current?.close();
-      windowRef.current = null;
-      setPipDocument(undefined);
+    const state = visit.current;
+    state.alive = true;
+    const stop = () => {
+      state.alive = false;
+      state.generation++;
+      state.opening = false;
+      detach.current();
+      const window = current.current;
+      current.current = null;
+      window?.close();
     };
-    props.signal.addEventListener("abort", close, { once: true });
+    props.signal.addEventListener("abort", stop, { once: true });
+    if (props.signal.aborted) stop();
     return () => {
-      props.signal.removeEventListener("abort", close);
-      close();
+      stop();
+      props.signal.removeEventListener("abort", stop);
     };
   }, [props.signal]);
-
   const open = async () => {
-    const api = window.documentPictureInPicture;
-    if (!api) return;
-    windowRef.current?.close();
+    const state = visit.current,
+      api = window.documentPictureInPicture;
+    if (
+      !state.alive ||
+      props.signal.aborted ||
+      state.opening ||
+      current.current
+    )
+      return;
+    if (!api) {
+      setStatus("unavailable");
+      return;
+    }
+    const generation = ++state.generation;
+    state.opening = true;
     try {
-      const pipWindow = await api.requestWindow({ width: 360, height: 320 });
-      windowRef.current = pipWindow;
-      pipWindow.document.title = stageText(props.locale, locale.floatingTitle);
-      copyDocumentStyles(pipWindow.document);
-      const close = () => {
-        if (windowRef.current === pipWindow) {
-          windowRef.current = null;
-          setPipDocument(undefined);
+      const floating = await api.requestWindow({ width: 480, height: 240 });
+      if (
+        !state.alive ||
+        props.signal.aborted ||
+        generation !== state.generation
+      ) {
+        floating.close();
+        return;
+      }
+      current.current = floating;
+      floating.document.title = stageText(props.locale, locale.floatingTitle);
+      floating.document.documentElement.lang = props.locale;
+      floating.document.documentElement.style.fontSize = getComputedStyle(
+        document.documentElement,
+      ).fontSize;
+      for (const style of document.head.querySelectorAll(
+        "link[rel='stylesheet'], style",
+      ))
+        floating.document.head.append(style.cloneNode(true));
+      const initial = {
+        width: floating.innerWidth,
+        height: floating.innerHeight,
+      };
+      setSize(initial);
+      setPip(floating);
+      setStatus("waiting");
+      const valid = () =>
+        state.alive &&
+        !props.signal.aborted &&
+        generation === state.generation &&
+        current.current === floating &&
+        api.window === floating &&
+        !floating.closed;
+      const resize = (event: Event) => {
+        if (!valid() || !event.isTrusted) return;
+        const width = floating.innerWidth,
+          height = floating.innerHeight;
+        setSize({ width, height });
+        if (
+          (width !== initial.width || height !== initial.height) &&
+          Math.abs(width - target.width) <= 6 &&
+          Math.abs(height - target.height) <= 6
+        ) {
+          boxes.current.B02.solve();
+          setStatus("success");
         }
       };
-      pipWindow.addEventListener("pagehide", close, { once: true });
-      setPipDocument(pipWindow.document);
-      setStatus(stageText(props.locale, locale.opened));
+      const close = () => {
+        if (current.current !== floating) return;
+        detach.current();
+        current.current = null;
+        if (state.alive) {
+          setPip(null);
+          setStatus("idle");
+        }
+      };
+      floating.addEventListener("resize", resize);
+      floating.addEventListener("pagehide", close, { once: true });
+      detach.current = () => {
+        floating.removeEventListener("resize", resize);
+        floating.removeEventListener("pagehide", close);
+      };
     } catch {
-      setStatus(stageText(props.locale, locale.unavailable));
+      if (state.alive && generation === state.generation)
+        setStatus("unavailable");
+    } finally {
+      if (generation === state.generation) state.opening = false;
     }
   };
-
-  const floatingBox =
-    pipDocument && windowRef.current
-      ? createPortal(
-          <main className="s850-floating-root">
-            <h1>{stageText(props.locale, locale.floatingTitle)}</h1>
-            <StageProblemGiftBox
-              box={problem}
-              locale={props.locale}
-              onClick={(event) => {
-                if (
-                  event.isTrusted &&
-                  event.currentTarget.ownerDocument === pipDocument &&
-                  event.nativeEvent.view === windowRef.current
-                ) {
-                  problem.solve();
-                }
-              }}
-            />
-          </main>,
-          pipDocument.body,
-        )
-      : null;
-
   return (
     <div className="puzzle puzzle--centered s850-stage">
-      {floatingBox}
-      <div className="problem-row">
-        <StageProblemGiftBox box={problem} locale={props.locale} />
+      {pip
+        ? createPortal(
+            <main className="s850-floating-root">
+              <div
+                className="s850-scaler"
+                style={{
+                  transform: `scale(${size.width / target.width}, ${size.height / target.height})`,
+                }}
+              >
+                <StageProblemGiftBox box={problem} locale={props.locale} />
+              </div>
+            </main>,
+            pip.document.body,
+          )
+        : null}
+      <div className="s850-reference">
+        {pip ? (
+          <>
+            <div className="s850-shadow" aria-hidden="true">
+              <GiftBox state="ribboned" color="#60a5fa" label="" decorative />
+            </div>
+            <PictureInPictureAltOutlined
+              aria-label={stageText(props.locale, locale.moved)}
+            />
+          </>
+        ) : (
+          <StageProblemGiftBox
+            box={problem}
+            locale={props.locale}
+            onClick={() => void open()}
+          />
+        )}
       </div>
-      <p>{stageText(props.locale, locale.intro)}</p>
-      <button
-        type="button"
-        className="stage-action"
-        onClick={() => void open()}
-      >
-        {stageText(props.locale, locale.open)}
-      </button>
-      <output className="interaction-status" aria-live="polite">
-        {pipDocument
-          ? stageText(props.locale, locale.opened)
-          : status || stageText(props.locale, locale.mainPlaceholder)}
-      </output>
+      <p className="interaction-status" role="status">
+        {statusText(props.locale, status)}
+      </p>
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    B02: {
       icon: PictureInPictureAltOutlined,
       color: "#60a5fa",
-      label: locale.B01,
+      label: locale.B02,
     },
   },
   probe: () =>

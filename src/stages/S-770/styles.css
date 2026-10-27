@@ -1,0 +1,38 @@
+.s770-identity {
+  width: min(70vw, 15rem);
+  height: 9rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid #83a7dc;
+  border-radius: 1rem;
+  color: #a8c7fa;
+  background: linear-gradient(140deg, #1c304d, #13192c);
+  box-shadow: 0 0.75rem 1.5rem #09061155;
+}
+.s770-identity > svg {
+  width: 7rem;
+  height: 7rem;
+}
+.s770-state {
+  min-height: 2.5rem;
+  color: #a8c7fa;
+}
+.s770-loading {
+  animation: s770-spin 1.2s linear infinite;
+}
+.s770-privacy {
+  max-width: 30rem;
+  color: #c3b6d4;
+  text-align: center;
+  font-size: 0.8rem;
+}
+@keyframes s770-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .s770-loading {
+    animation-duration: 4s;
+  }
+}

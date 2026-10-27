@@ -1,37 +1,10 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "ベル", en: "Bell" },
-  request: { ja: "SMSを待つ", en: "Wait for SMS" },
+  B01: { ja: "SMSの吹き出し", en: "SMS speech bubble" },
   copy: { ja: "SMS本文をコピー", en: "Copy SMS body" },
-  reset: { ja: "新しい封書", en: "New letter" },
-  instruction: {
-    ja: "別の電話または協力者から、次の本文をSMSで送ります。電話番号はこのpageへ入力しません。",
-    en: "Send this exact SMS from another phone or collaborator. Do not enter a phone number on this page.",
-  },
+  copied: { ja: "コピーしました", en: "Copied" },
+  reset: { ja: "新しいコード", en: "New code" },
   inputLabel: { ja: "ワンタイムコード", en: "One-time code" },
-  idle: {
-    ja: "OTP専用のbrowser / OS経路だけを待ちます。",
-    en: "Waiting only for a browser or OS OTP-specific path.",
-  },
-  waiting: { ja: "実SMSを待っています…", en: "Waiting for a real SMS…" },
-  received: {
-    ja: "OTP専用経路で届きました。",
-    en: "Received through an OTP-specific path.",
-  },
-  copied: { ja: "SMS本文をコピーしました。", en: "Copied the SMS body." },
-  manual: {
-    ja: "手入力、paste、dropは受取経路になりません。",
-    en: "Typing, paste, and drop are not receipt paths.",
-  },
-  unavailable: {
-    ja: "WebOTPは利用できません。対応OSのSecurity Code AutoFillは欄へ直接現れます。",
-    en: "WebOTP is unavailable. A supported OS Security Code AutoFill may still fill the field.",
-  },
-  cancelled: {
-    ja: "OTP待機は取消または失敗しました。",
-    en: "OTP waiting was cancelled or failed.",
-  },
 });

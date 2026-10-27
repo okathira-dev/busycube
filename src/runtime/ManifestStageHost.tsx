@@ -160,7 +160,21 @@ export function ManifestStageHost({
   const signal = abortController.signal;
   const { solved, solvedCount } = stageProgress(manifest, progress);
   // 入場前のクリアと今回のクリアを分け、再訪時にも箱の開封演出を成立させる。
-  const [solvedBeforeEntry] = useState(() => new Set(solved));
+  const [solvedBeforeEntry, setSolvedBeforeEntry] =
+    useState<ReadonlySet<string> | null>(() =>
+      progress.storageState === "loading" ? null : new Set(solved),
+    );
+  useEffect(() => {
+    if (solvedBeforeEntry === null && progress.storageState !== "loading")
+      setSolvedBeforeEntry(
+        new Set(progress.document.stages[manifest.id]?.solvedBoxIds ?? []),
+      );
+  }, [
+    manifest.id,
+    progress.document.stages,
+    progress.storageState,
+    solvedBeforeEntry,
+  ]);
   const [solvedThisAttempt, setSolvedThisAttempt] = useState<
     ReadonlySet<string>
   >(() => new Set());
@@ -231,7 +245,7 @@ export function ManifestStageHost({
             id: boxId,
             definition,
             state: deriveProblemBoxVisualState(
-              solvedBeforeEntry.has(boxId),
+              solvedBeforeEntry?.has(boxId) ?? false,
               solvedThisAttempt.has(boxId),
             ),
             solve,

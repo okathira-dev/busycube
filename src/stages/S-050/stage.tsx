@@ -11,7 +11,6 @@ import { manifest } from "./manifest";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
 import { useEffect, useMemo, useState } from "react";
-import { stageText } from "../locale";
 import { locale } from "./locale";
 
 type ChannelMessage = { type: "hello" | "ack"; sender: string };
@@ -29,10 +28,10 @@ function isChannelMessage(value: unknown): value is ChannelMessage {
  * S-050
  *
  * 目的: 同一originで同じstageを開いた二つの独立したwindow/tabが、互いの存在をchannel越しに確認する。
- * 最初の一手: 「もう一つ開く」を押して同じURLを新しいwindow/tabに開き、両方を閉じずに待つ。
+ * 最初の一手: 二つの窓の図を見て、同じstageを新しいwindow/tabでも開く。
  * 箱ごとの解法:
- * - B01「窓」: 「もう一つ開く」で二つ目のwindowまたはtabを開く。各contextが固有sender ID付き`hello`を送信し、自分以外のsenderによる正しい`hello`または`ack`を`BroadcastChannel`で受信すると開く。
- * 使用API: `window.open()`、Web Cryptoの`crypto.randomUUID()`、Broadcast Channel APIのmessage送受信。
+ * - B01「窓」: 同じstageを二つ目のwindowまたはtabでも開く。各contextが固有sender ID付き`hello`を送信し、自分以外のsenderによる正しい`hello`または`ack`を`BroadcastChannel`で受信すると開く。
+ * 使用API: Web Cryptoの`crypto.randomUUID()`、Broadcast Channel APIのmessage送受信。
  * 権限・privacy: 権限を要求せず、tab間にはmessage種別と一時的なrandom sender IDだけを流し、閲覧内容や個人情報は保存・外部送信しない。
  * 対応環境: 同一originの複数window/tab間で`BroadcastChannel`を共有でき、popupまたは新規tabを開けるbrowser。
  */
@@ -64,13 +63,6 @@ function S050Stage(props: Props) {
         <span className="window-clue__pane">1</span>
         <span className="window-clue__pane">{peer ? "2" : "?"}</span>
       </div>
-      <button
-        type="button"
-        className="stage-action"
-        onClick={() => window.open(window.location.href, "_blank", "noopener")}
-      >
-        {stageText(props.locale, locale.openAnother)}
-      </button>
       <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
   );

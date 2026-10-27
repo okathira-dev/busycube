@@ -3,3 +3,13 @@
   border: 1px solid #4d4265;
   border-radius: 1rem;
 }
+.s740-away {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: #86efac;
+}
+.s740-away > svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}

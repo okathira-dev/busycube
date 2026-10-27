@@ -1,0 +1,27 @@
+.s550-layout {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+
+.s550-space {
+  width: min(100%, 11rem);
+  height: 18rem;
+  overflow: visible;
+  color: #c084fc;
+}
+
+.s550-target {
+  fill: #c084fc14;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+}
+
+.s550-phone {
+  opacity: 1;
+}
+
+.s550-phone[data-observed="false"] {
+  opacity: 0.3;
+}

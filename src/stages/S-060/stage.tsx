@@ -1,8 +1,7 @@
 import "./styles.css";
 import KeyboardReturnOutlined from "@mui/icons-material/KeyboardReturnOutlined";
 import SignalWifiOffOutlined from "@mui/icons-material/SignalWifiOffOutlined";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { hasRevisitFlag, setRevisitFlag } from "../../infra/synchronousFlags";
+import { useEffect, useRef, useState } from "react";
 import {
   defineStageModule,
   type StageComponentProps,
@@ -18,71 +17,104 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * S-060
  *
  * 目的: 初回訪問とは別の再入場と、offline中に送ったbeaconをService Workerが受領した事実をそれぞれ確認する。
- * 最初の一手: いったん別stageへ移動して戻りB01を開く。B02はworker制御下で端末をofflineにして「投函する」を押す。
+ * 最初の一手: 折り返す矢印を見て別stageへ移動し、このstageへ戻る。
  * 箱ごとの解法:
- * - B01「折り返す矢印」: 別stageへ移動してからこのstageへ戻る。初回入場で`entered` markerと同期flagを記録し、後の入場開始時点でどちらかが既に存在すれば開く。
- * - B02「斜線入りWi-Fi」: offlineのまま「投函する」を押してから、このstageを再訪する。offlineかつService Worker制御中に生成したnonceを`sendBeacon`で投函し、遷移後の`offline-beacon` queryとIndexedDBの`receipts`に同じnonceの受領記録があれば、そのrecordを消費して開く。
- * 使用API: stage進捗marker、同期revisit flag、`navigator.onLine`、online/offline event、Service Worker controller、`navigator.sendBeacon()`、IndexedDB、`location.assign()`、`crypto.randomUUID()`。
- * 権限・privacy: 権限を要求せず、再訪flagと一回限りのrandom nonceだけを保存する。receiptは成功判定時に削除し、beacon本文へ個人情報を含めない。
+ * - B03「折り返す矢印」: 別stageへ移動してからこのstageへ戻る。同じdocument内のゲーム移動履歴で別stage経由の再訪が観測されると開く。reloadや一覧だけの往復では開かない。
+ * - B02「斜線入りWi-Fi」: 点を押してonlineの受け口への移動を観察し、offlineで再び押す。実sendBeaconが受理されて点が画面外へ移り、再読み込み後に今回のnonceと一致するService Workerのoffline受領記録をIndexedDBから消費すると開く。
+ * 使用API: ゲーム内stage移動履歴、`navigator.onLine`、online/offline event、Service Worker controller、`navigator.sendBeacon()`、IndexedDB、`location.assign()`、`crypto.randomUUID()`。
+ * 権限・privacy: 権限を要求せず、一回限りのrandom nonceだけを保存する。receiptは成功判定時に削除し、beacon本文へ個人情報を含めない。
  * 対応環境: Service Workerに制御され、offline navigation・Beacon API・IndexedDBを利用できるsecure contextのbrowser。
  */
 function S060Stage(props: Props) {
-  const returnBox = props.boxes.B01;
+  const returnBox = props.boxes.B03;
   const beaconBox = props.boxes.B02;
   const [status, setStatus] = useState("");
+  const [motion, setMotion] = useState<
+    "origin" | "inside" | "outside" | "received"
+  >("origin");
+  const navigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [offline, setOffline] = useState(() => !navigator.onLine);
   const [workerControlled, setWorkerControlled] = useState(() =>
-    Boolean(navigator.serviceWorker.controller),
+    Boolean(navigator.serviceWorker?.controller),
   );
-  const seenBefore = useRef(
-    props.progress.hasMarker("entered") || hasRevisitFlag(),
-  );
-
-  useLayoutEffect(() => {
-    if (!seenBefore.current) {
-      setRevisitFlag();
-      props.progress.mark("entered");
-    }
-  }, [props.progress]);
-
+  const { arrival } = props.services;
   useEffect(() => {
-    if (seenBefore.current) returnBox.solve();
-  }, [returnBox.solve]);
+    if (
+      arrival?.stageId === manifest.id &&
+      arrival.revisit &&
+      !props.signal.aborted
+    )
+      returnBox.solve();
+  }, [arrival, returnBox.solve, props.signal]);
 
   useEffect(() => {
     const nonce = new URL(window.location.href).searchParams.get(
       "offline-beacon",
     );
     if (!nonce || !("indexedDB" in window)) return;
-    const request = indexedDB.open("busycube-offline-beacon", 1);
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore("receipts", { keyPath: "nonce" });
+    let active = true;
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const retry = () => {
+      if (!active || props.signal.aborted) return;
+      attempts += 1;
+      if (attempts < 20) timer = setTimeout(inspect, 500);
+      else setStatus(stageText(props.locale, locale.receiptUnavailable));
     };
-    request.onsuccess = () => {
-      const database = request.result;
-      const transaction = database.transaction("receipts", "readwrite");
-      const lookup = transaction.objectStore("receipts").get(nonce);
-      lookup.onsuccess = () => {
-        if (!lookup.result) {
-          setStatus(stageText(props.locale, locale.receiptUnavailable));
+    const inspect = () => {
+      if (!active || props.signal.aborted) return;
+      const request = indexedDB.open("busycube-offline-beacon", 1);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("receipts", { keyPath: "nonce" });
+      };
+      request.onerror = retry;
+      request.onsuccess = () => {
+        const database = request.result;
+        if (!active || props.signal.aborted) {
           database.close();
           return;
         }
-        transaction.objectStore("receipts").delete(nonce);
-        beaconBox.solve();
-        setStatus(stageText(props.locale, locale.receiptConsumed));
+        const transaction = database.transaction("receipts", "readwrite");
+        const store = transaction.objectStore("receipts");
+        const lookup = store.get(nonce);
+        let received = false;
+        lookup.onsuccess = () => {
+          if (!active || props.signal.aborted || lookup.result?.nonce !== nonce)
+            return;
+          received = true;
+          store.delete(nonce);
+        };
+        transaction.oncomplete = () => {
+          database.close();
+          if (!active || props.signal.aborted) return;
+          if (!received) {
+            retry();
+            return;
+          }
+          setMotion("received");
+          beaconBox.solve();
+          const url = new URL(window.location.href);
+          url.searchParams.delete("offline-beacon");
+          window.history.replaceState(window.history.state, "", url);
+        };
+        transaction.onabort = () => {
+          database.close();
+          retry();
+        };
       };
-      transaction.oncomplete = () => database.close();
-      transaction.onerror = () => database.close();
     };
-    request.onerror = () =>
-      setStatus(stageText(props.locale, locale.receiptUnavailable));
-  }, [beaconBox.solve, props.locale]);
+    inspect();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [beaconBox.solve, props.locale, props.signal]);
 
   useEffect(() => {
     const handleOnline = () => setOffline(false);
     const handleOffline = () => setOffline(true);
-    const handleController = () => setWorkerControlled(true);
+    const handleController = () =>
+      setWorkerControlled(Boolean(navigator.serviceWorker?.controller));
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     navigator.serviceWorker?.addEventListener(
@@ -90,6 +122,7 @@ function S060Stage(props: Props) {
       handleController,
     );
     return () => {
+      if (navigationTimer.current) clearTimeout(navigationTimer.current);
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
       navigator.serviceWorker?.removeEventListener(
@@ -100,13 +133,13 @@ function S060Stage(props: Props) {
   }, []);
 
   const sendBeacon = () => {
-    if (!offline || !workerControlled) {
-      setStatus(
-        stageText(
-          props.locale,
-          !workerControlled ? locale.waitingWorker : locale.needOffline,
-        ),
-      );
+    if (props.signal.aborted || motion === "outside") return;
+    if (!offline) {
+      setMotion(motion === "inside" ? "origin" : "inside");
+      return;
+    }
+    if (!workerControlled) {
+      setStatus(stageText(props.locale, locale.waitingWorker));
       return;
     }
     const nonce = crypto.randomUUID();
@@ -121,39 +154,29 @@ function S060Stage(props: Props) {
       setStatus(stageText(props.locale, locale.rejected));
       return;
     }
-    setStatus(stageText(props.locale, locale.accepted));
+    setMotion("outside");
     const receiver = new URL("./", window.location.href);
     receiver.searchParams.set("stage", manifest.id);
     receiver.searchParams.set("offline-beacon", nonce);
-    window.location.assign(receiver);
+    navigationTimer.current = setTimeout(() => {
+      if (!props.signal.aborted) window.location.assign(receiver);
+    }, 700);
   };
 
   return (
     <div className="puzzle puzzle--centered">
-      <div className="return-clue" aria-hidden="true">
-        ↪
-      </div>
-      <p>{stageText(props.locale, locale.revisitClue)}</p>
-      <div className="stage-actions">
+      <div className="beacon-path" data-motion={motion}>
+        <span className="beacon-path__receiver" aria-hidden="true" />
         <button
           type="button"
-          className="stage-action"
+          className="beacon-path__point"
+          aria-label={stageText(props.locale, locale.point)}
           onClick={sendBeacon}
-          disabled={!offline || !workerControlled}
-        >
-          {stageText(props.locale, locale.post)}
-        </button>
+          disabled={motion === "outside"}
+        />
       </div>
       <p className="interaction-status" role="status">
-        {status ||
-          stageText(
-            props.locale,
-            !workerControlled
-              ? locale.waitingWorker
-              : offline
-                ? locale.readyOffline
-                : locale.needOffline,
-          )}
+        {status}
       </p>
       <div className="problem-row">
         <StageProblemGiftBox box={returnBox} locale={props.locale} />
@@ -165,10 +188,10 @@ function S060Stage(props: Props) {
 
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B03]: {
       icon: KeyboardReturnOutlined,
       tone: "violet",
-      label: locale.B01,
+      label: locale.B03,
     },
     [manifest.box.B02]: {
       icon: SignalWifiOffOutlined,

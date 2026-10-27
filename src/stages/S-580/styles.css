@@ -1,0 +1,11 @@
+.speech-input {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.speech-pair {
+  align-items: start;
+}
+.speech-pair[data-listening="true"] > .problem-gift {
+  filter: drop-shadow(0 0 1rem #fb7185);
+}

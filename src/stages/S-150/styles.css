@@ -1,5 +1,9 @@
-.accessibility-keyboard-button {
+.keyboard-control {
   pointer-events: none;
+}
+.keyboard-control :focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 4px;
 }
 .accessibility-select {
   display: grid;

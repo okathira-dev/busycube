@@ -1,17 +1,12 @@
-.battery-preview {
+.s280-boxes {
   display: flex;
-  align-items: flex-end;
-  width: 3.5rem;
-  height: 6rem;
-  padding: 0.35rem;
-  border: 0.25rem solid #cbc1d9;
-  border-radius: 0.5rem;
-  background: #151122;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
-.battery-preview span {
-  display: block;
-  width: 100%;
-  border-radius: 0.2rem;
-  background: linear-gradient(#22d3ee, #34d399);
-  transition: height 250ms ease;
+.s280-problem {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 1rem;
 }

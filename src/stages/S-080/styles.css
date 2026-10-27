@@ -1,10 +1,97 @@
-.door-clue {
-  font-size: clamp(7rem, 28vw, 12rem);
-  line-height: 1;
-  transform-origin: left center;
-  transition: transform 240ms ease;
+.s080-puzzle {
+  display: grid;
+  justify-items: center;
+  gap: 2rem;
 }
-.door-clue--open {
-  transform: perspective(12rem) rotateY(-50deg);
-  color: #ffd166;
+.s080-entrances,
+.s080-other-entrances {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(1rem, 4vw, 3rem);
+}
+.s080-cell {
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  width: 10rem;
+}
+.s080-app {
+  width: 7rem;
+  border: 2px solid #a797c4;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.s080-app__bar {
+  height: 1.2rem;
+  border-bottom: 1px solid #a797c4;
+  background: #45365d;
+  line-height: 1rem;
+  color: #e0d6f3;
+}
+.s080-app--browser .s080-app__bar {
+  height: 1.8rem;
+}
+.s080-app__icon {
+  display: grid;
+  place-items: center;
+  position: relative;
+  padding: 0.6rem;
+}
+.s080-app__badge {
+  position: absolute;
+  width: 0.9rem;
+  height: 0.9rem;
+  top: 0.35rem;
+  right: 1.2rem;
+  background: #ef4444;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+.s080-answer {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.s080-answer input {
+  width: 3.5rem;
+  border: 1px solid #a797c4;
+  border-radius: 0.4rem;
+  padding: 0.5rem;
+  font: inherit;
+  color: #f7f3ff;
+  background: #251c37;
+}
+.s080-answer .stage-action {
+  padding: 0.45rem 0.75rem;
+}
+.s080-titlebar {
+  position: fixed;
+  overflow: clip;
+  display: grid;
+  place-items: center;
+  z-index: 100;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+.s080-titlebar .problem-gift {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.s080-titlebar .gift-box {
+  --gift-width: 1.5rem;
+  --gift-height: 1.1rem;
+  --gift-lid-height: 0.3rem;
+  --gift-top-space: 0.7rem;
+  --gift-left-space: 0.3rem;
+}
+.s080-titlebar .problem-gift__clue {
+  --problem-gift-clue-size: 1rem;
+}
+@media (max-width: 420px) {
+  .s080-cell {
+    width: 7.5rem;
+  }
 }

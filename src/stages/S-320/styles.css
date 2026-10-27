@@ -28,3 +28,6 @@
 .fold-preview[data-folded="true"] span:last-child {
   transform: rotateY(-18deg);
 }
+.fold-direction {
+  font-size: 4rem;
+}

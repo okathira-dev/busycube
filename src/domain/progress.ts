@@ -87,6 +87,7 @@ export function parseProgressDocument(value: unknown): ProgressParseResult {
   }
   if (
     typeof value.installationId !== "string" ||
+    value.installationId.trim().length === 0 ||
     !isRecord(value.stages) ||
     !isRecord(value.settings) ||
     !isLocale(value.settings.locale)

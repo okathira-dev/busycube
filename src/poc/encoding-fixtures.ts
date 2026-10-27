@@ -1,6 +1,6 @@
 import type { EncodingFixture } from "../fixtures/encoding/data";
 
-// ゲーム本体への反映前に、対話で確定した問題を隔離PoCで確認する。
+// 製品と同じ確定問題を使い、実decoderの観測をゲーム進捗から隔離する。
 export const encodingPocFixtures = [
   {
     id: "M01",

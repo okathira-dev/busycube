@@ -74,4 +74,39 @@ describe("useDriveBackup", () => {
     expect(result.current.state).toBe("error");
     expect(result.current.failure).toEqual({ code: "unknown", replicas: [] });
   });
+
+  it.each([null, "local", "remote"])(
+    "reports only the fresh remote installation (%s) and keeps the local identity",
+    async (remoteInstallationId) => {
+      const local = progress();
+      let applied = local.document;
+      local.replaceDocument = vi.fn((change) => {
+        applied = change(applied);
+      });
+      driveMocks.syncDriveBackup.mockResolvedValueOnce({
+        document: {
+          ...local.document,
+          stages: { "S-020": { solvedBoxIds: ["B01"] } },
+        },
+        remoteInstallationId,
+      });
+      const { result } = renderHook(() => useDriveBackup(local));
+      await act(async () => {
+        expect(await result.current.sync()).toEqual({
+          synced: true,
+          remoteDevice: remoteInstallationId === "remote",
+        });
+      });
+      expect(applied.installationId).toBe("local");
+      expect(applied.stages["S-020"]?.solvedBoxIds).toEqual(["B01"]);
+      driveMocks.syncDriveBackup.mockRejectedValueOnce(new Error("offline"));
+      await act(async () => {
+        expect(await result.current.sync()).toEqual({
+          synced: false,
+          remoteDevice: false,
+        });
+      });
+      expect(local.replaceDocument).toHaveBeenCalledOnce();
+    },
+  );
 });

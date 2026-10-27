@@ -1,4 +1,6 @@
 import "./styles.css";
+import BlockOutlined from "@mui/icons-material/BlockOutlined";
+import DoorFrontOutlined from "@mui/icons-material/DoorFrontOutlined";
 import RouteOutlined from "@mui/icons-material/RouteOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
@@ -89,11 +91,11 @@ function shadowAnchorName(goalId: string, step: number) {
  * S-920 — Popover迷路
  *
  * 目的: iframe内のtop layerへ開く入れ子の実Popoverを方向buttonで進み、CSS Anchor Positioningの画面端fallbackを通った3つの終点へ到達する。
- * 最初の一手: 準備完了後に「迷路を開く」を押し、最初の浮かぶ部屋から矢印buttonを選ぶ。行き止まりではEscか外側clickで閉じて入り直す。
+ * 最初の一手: 入口アイコンを押し、浮かぶ部屋から矢印buttonを選ぶ。行き止まりの進入不可マークからはEscか外側clickで戻る。
  * 箱ごとの解法:
- * - B01: 起点から右→右→上→右→右→下→右と進み、inline端でfallback配置されたamber終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
- * - B02: 起点から下→左→下→下と進み、block端でfallback配置されたcyan終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
- * - B03: 起点から左→上→左→上→左→下と進み、混合方向のviolet終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
+ * - B01「経路」: 起点から右→右→上→右→右→下→右と進み、inline端でfallback配置された終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
+ * - B02「経路」: 起点から下→左→下→下と進み、block端でfallback配置された終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
+ * - B03「経路」: 起点から左→上→左→上→左→下と進み、混合方向の終点Popover内の箱を直接クリックする。終点が`:popover-open`でtrusted clickなら開く。
  * 使用API: Popover APIの`popover="auto"`、`popoverTarget`、`:popover-open`、CSS Anchor Positioningの`anchor-name`、`position-anchor`、`position-area`、`position-try-fallbacks`。
  * 権限・privacy: 権限・端末情報・保存・送信を使わず、JavaScriptでviewport座標を取得せずにCSSだけで実Popoverと経路silhouetteを配置する。
  * 対応環境: Popover APIとCSS Anchor Positioningの`position-area`および`position-try-fallbacks`をiframe内でも提供するbrowser。
@@ -103,14 +105,15 @@ function S920Stage(props: Props) {
   const nodeRefs = useRef(new Map<string, HTMLElement>());
   const [frameRoot, setFrameRoot] = useState<HTMLElement | null>(null);
   const [layoutState, setLayoutState] = useState<
-    "preparing" | "ready" | "unavailable"
+    "preparing" | "ready" | "unavailable" | "failed"
   >("preparing");
 
   const prepareFrame = useCallback(async () => {
     const frame = frameRef.current;
     const frameDocument = frame?.contentDocument;
     const nextFrameWindow = frame?.contentWindow as S920FrameWindow | null;
-    if (!frame || !frameDocument || !nextFrameWindow) return;
+    if (!frame || !frameDocument || !nextFrameWindow)
+      throw new Error("Frame unavailable");
 
     setLayoutState("preparing");
     frameDocument.documentElement.lang = props.locale;
@@ -128,9 +131,13 @@ function S920Stage(props: Props) {
       clone.dataset.s920ClonedStyle = "true";
       if (clone instanceof HTMLLinkElement) {
         styleLoads.push(
-          new Promise((resolve) => {
+          new Promise((resolve, reject) => {
             clone.addEventListener("load", () => resolve(), { once: true });
-            clone.addEventListener("error", () => resolve(), { once: true });
+            clone.addEventListener(
+              "error",
+              () => reject(new Error("Frame stylesheet unavailable")),
+              { once: true },
+            );
           }),
         );
       }
@@ -140,7 +147,7 @@ function S920Stage(props: Props) {
 
     if (frameRef.current !== frame || props.signal.aborted) return;
     const root = frameDocument.getElementById("s920-frame-root");
-    if (!root) return;
+    if (!root) throw new Error("Frame root unavailable");
     setFrameRoot(root);
     setLayoutState(
       supportsS920Layout(nextFrameWindow) ? "ready" : "unavailable",
@@ -192,7 +199,13 @@ function S920Stage(props: Props) {
   }, [frameRoot]);
 
   const solveGoal = (node: S920MazeNode) => (event: ReactMouseEvent) => {
-    if (!node.boxId || !event.isTrusted) return;
+    if (
+      layoutState !== "ready" ||
+      props.signal.aborted ||
+      !node.boxId ||
+      !event.isTrusted
+    )
+      return;
     if (!nodeRefs.current.get(node.id)?.matches(":popover-open")) return;
     props.boxes[node.boxId].solve();
   };
@@ -227,8 +240,12 @@ function S920Stage(props: Props) {
             />
           ) : null}
           {isDeadEnd ? (
-            <span className="s920-popover__dead-end">
-              {stageText(props.locale, locale.deadEnd)}
+            <span
+              className="s920-popover__dead-end"
+              role="img"
+              aria-label={stageText(props.locale, locale.deadEnd)}
+            >
+              <BlockOutlined />
             </span>
           ) : null}
           {children.length > 0 ? (
@@ -335,8 +352,9 @@ function S920Stage(props: Props) {
           className="stage-action s920-start"
           popoverTarget={s920RootId}
           disabled={layoutState !== "ready"}
+          aria-label={stageText(props.locale, locale.start)}
         >
-          {stageText(props.locale, locale.start)}
+          <DoorFrontOutlined />
         </button>
         {renderNode(s920RootId)}
       </div>
@@ -348,31 +366,26 @@ function S920Stage(props: Props) {
 
   return (
     <div className="puzzle s920-stage">
-      <p>{stageText(props.locale, locale.intro)}</p>
       <div className="s920-frame-shell">
-        <span className="s920-frame-shell__label">
-          {stageText(props.locale, locale.unavailableArea)}
-        </span>
         <iframe
           ref={frameRef}
           className="s920-frame"
           title={stageText(props.locale, locale.frameTitle)}
           srcDoc={s920FrameSource}
           loading="lazy"
-          onLoad={() => void prepareFrame()}
+          onLoad={() =>
+            void prepareFrame().catch(() => {
+              if (!props.signal.aborted) setLayoutState("failed");
+            })
+          }
         />
       </div>
       {frameRoot ? createPortal(frameContent, frameRoot) : null}
-      <output className="interaction-status" aria-live="polite">
-        {stageText(
-          props.locale,
-          layoutState === "ready"
-            ? locale.ready
-            : layoutState === "unavailable"
-              ? locale.unavailable
-              : locale.preparing,
-        )}
-      </output>
+      {layoutState !== "ready" ? (
+        <output className="interaction-status" aria-live="polite">
+          {stageText(props.locale, locale[layoutState])}
+        </output>
+      ) : null}
     </div>
   );
 }

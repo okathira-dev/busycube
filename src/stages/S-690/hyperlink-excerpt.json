@@ -1,0 +1,13 @@
+{
+  "title": "Hyperlink — Uses in various technologies",
+  "source": "https://en.wikipedia.org/w/index.php?title=Hyperlink&oldid=1373749763",
+  "authors": "https://en.wikipedia.org/w/index.php?title=Hyperlink&action=history",
+  "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "changes": "Excerpted HTML, XLink and Permalinks prose; reference markers and original links removed; the adverbs therefore and simply omitted. Each word is linked to another occurrence for the puzzle.",
+  "paragraphs": [
+    "Tim Berners-Lee saw the possibility of using hyperlinks to link any information to any other information over the Internet. Hyperlinks were integral to the creation of the World Wide Web. Web pages are written in the hypertext mark-up language HTML.",
+    "Webgraph is a graph, formed from web pages as vertices and hyperlinks, as directed edges.",
+    "The W3C recommendation called XLink describes hyperlinks that offer a far greater degree of functionality than those offered in HTML. These extended links can be multidirectional, remove linking from, within, and between XML documents. It can also describe simple links, which are unidirectional and therefore offer no more functionality than hyperlinks in HTML.",
+    "Permalinks are URLs that are intended to remain unchanged for many years into the future, yielding hyperlinks that are less susceptible to link rot. Permalinks are often rendered that is, as friendly URLs, so as to be easy for people to type and remember. Permalinks are used in order to point and redirect readers to the same Web page, blog post or any online digital media."
+  ]
+}

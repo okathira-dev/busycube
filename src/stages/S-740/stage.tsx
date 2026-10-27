@@ -1,231 +1,197 @@
 import "./styles.css";
-import HourglassEmptyOutlined from "@mui/icons-material/HourglassEmptyOutlined";
+import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
+import DesktopAccessDisabledOutlined from "@mui/icons-material/DesktopAccessDisabledOutlined";
+import SpaOutlined from "@mui/icons-material/SpaOutlined";
+import YardOutlined from "@mui/icons-material/YardOutlined";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { statusText } from "../../ui/statusLocale";
+import { stageText } from "../locale";
+import {
+  type GreenhouseView,
+  greenhouse,
+  greenhouseRequest,
+  periodicUrl,
+  S740_TAG,
+} from "./functions";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { stageText } from "../locale";
-import {
-  deleteS740State,
-  initialS740State,
-  readS740State,
-  S740_TAG,
-  type S740State,
-  writeS740Care,
-} from "./functions";
-import { locale } from "./locale";
-
-type PeriodicSyncManagerLike = {
-  register(tag: string, options?: { minInterval?: number }): Promise<void>;
-  unregister(tag: string): Promise<void>;
-};
-
-type PeriodicRegistration = ServiceWorkerRegistration & {
-  periodicSync?: PeriodicSyncManagerLike;
-};
-
-function publicUrl(path: string): string {
-  return new URL(
-    `periodic/${path}`,
-    new URL(import.meta.env.BASE_URL, location.origin),
-  ).href;
-}
-
 /**
  * S-740
- *
- * 目的: installed PWAのwindowが0件でもbrowser schedulerがService Workerを起動するPeriodic Background Syncを、二回の植物成長として確認する。
- * 最初の一手: 「温室を預ける」でtagを登録し、「水を預ける」を押してBusycubeの全windowを閉じ、browserによる実periodic syncを待つ。
+ * 目的: 全同origin windowが閉じている間の実Periodic Background Sync一回で開花画像を保存し、再訪して発見する。
+ * 最初の一手: 芽の鉢の箱を押し、閉じた画面から温室へ続く図を見る。
  * 箱ごとの解法:
- * - B01「砂時計」: 水を預けて全windowを閉じ、実periodic sync後に再訪して光を預け、再び全windowを閉じて待つ。client 0件のperiodicsyncでpending waterをphase 1へ進め、再訪してpending lightを預け、別のclientless eventでphase 2へ進める。再訪時にclientlessEventsが2以上かつCache Storageに`bloom.svg`があれば開く。
- * 使用API: Periodic Background Sync、Service Worker/Clients API、IndexedDB、Cache Storage、PWA installation。
- * 権限・privacy: 保存するのはphase、pending care種別、event countだけで、時刻・account・network・通知情報を保持しない。stage離脱後も長期ギミック用にlocal registration/stateを維持する。
- * 対応環境: 公開HTTPSでinstall済みPWAへPeriodic Background Syncを許可し、window 0件でもworkerを二回起動できるbrowser/OS。
+ * - B02「芽の出た鉢」: 箱で専用tagを登録し、同originの全windowを閉じてbrowserの実schedulerを待つ。trusted periodicsyncが窓0件とarmed試行を確認し、実開花SVGの取得/Cache保存/IDBの同試行完了を終えた後、再訪時の自動読込でその画像と完了が両方揃えば開く。水/光の二回待ちや時間経過で代用しない。実行時刻は保証せず、登録間隔の下限希望は24時間とする。別の植え直し操作は植物だけを新試行へ戻し、共通クリア済み箱/記録を消さない。
+ * 使用API: 専用scopeのService Worker、Periodic Background Sync、Clients matchAll includeUncontrolled、IndexedDB、Cache Storage、MessageChannel、実画像Blob URL。
+ * 権限・privacy: 保存は一時試行UUIDと植物のphase/開花画像のみ。古い二段階のcare storeと進捗は保持し、新条件へ達成をコピーしない。開花保存後にこのstageのtagだけを自動unregisterし、失敗時は再訪/復帰で再試行する。SW全体や他のtagは解除しない。
+ * 対応環境: 長期の背景同期を許可し、全窓を閉じても実periodicsyncを起動できるbrowser/OS。schedulerやinstall/許可の条件はbrowser依存で、拒否/不在/未観測を開花へ変換しない。
  */
 function S740Stage(props: Props) {
-  const problem = props.boxes[manifest.box.B01];
-  const solveProblem = problem.solve;
-  const [state, setState] = useState<S740State>(initialS740State);
-  const [registered, setRegistered] = useState(false);
-  const [status, setStatus] = useState(() =>
-    stageText(props.locale, locale.idle),
-  );
-  const workerUrl = useMemo(() => publicUrl("periodic-sync-sw.js"), []);
-  const scope = useMemo(() => publicUrl(""), []);
-  const imageUrl = publicUrl(
-    state.phase === 0
-      ? "seed.svg"
-      : state.phase === 1
-        ? "sprout.svg"
-        : "bloom.svg",
-  );
-
-  const getRegistration = async (): Promise<PeriodicRegistration> =>
-    (await navigator.serviceWorker.register(workerUrl, {
-      scope: new URL(scope).pathname,
-      type: "module",
-    })) as PeriodicRegistration;
-
-  const inspect = useCallback(async () => {
-    try {
-      const next = await readS740State();
-      setState(next);
-      if (next.phase === 2 && next.clientlessEvents >= 2) {
-        const cached = await caches.match(publicUrl("bloom.svg"));
-        if (cached) {
-          solveProblem();
-          setStatus(stageText(props.locale, locale.bloom));
-          return;
-        }
+  const boxes = useRef(props.boxes);
+  boxes.current = props.boxes;
+  const api = useRef<ReturnType<typeof greenhouse> | null>(null);
+  const sequence = useRef(0);
+  const solved = useRef(false);
+  const [view, setView] = useState<GreenhouseView | null>(null);
+  const [image, setImage] = useState<string>();
+  const [status, setStatus] = useState("waiting");
+  const [busy, setBusy] = useState(false);
+  const locked = useRef(false);
+  const connect = useCallback(() => {
+    if (!api.current)
+      api.current = greenhouse(props.signal).catch((error) => {
+        api.current = null;
+        throw error;
+      });
+    return api.current;
+  }, [props.signal]);
+  const accept = useCallback((next: GreenhouseView) => {
+    setView(next);
+    if (next.phase === "bloom" && next.image) {
+      setImage(URL.createObjectURL(next.image));
+      setStatus("success");
+      if (!solved.current) {
+        solved.current = true;
+        boxes.current.B02.solve();
       }
-      if (next.phase === 1 && !next.pendingCare)
-        setStatus(stageText(props.locale, locale.sprout));
-      else if (next.pendingCare === "water")
-        setStatus(stageText(props.locale, locale.waterLeft));
-      else if (next.pendingCare === "light")
-        setStatus(stageText(props.locale, locale.lightLeft));
-      else setStatus(stageText(props.locale, locale.waiting));
-    } catch {
-      setStatus(stageText(props.locale, locale.failed));
+    } else {
+      setImage(undefined);
+      setStatus(
+        next.phase === "bloom"
+          ? "error"
+          : next.phase === "armed"
+            ? "waiting"
+            : "idle",
+      );
     }
-  }, [props.locale, solveProblem]);
-
+  }, []);
+  const inspect = useCallback(async () => {
+    if (props.signal.aborted || locked.current) return;
+    const token = ++sequence.current;
+    try {
+      const { worker } = await connect();
+      const next = await greenhouseRequest(worker, "read", props.signal);
+      if (!props.signal.aborted && token === sequence.current) accept(next);
+    } catch {
+      if (!props.signal.aborted && token === sequence.current)
+        setStatus("error");
+    }
+  }, [props.signal, connect, accept]);
   useEffect(() => {
     void inspect();
+    const focus = () => {
+      if (document.visibilityState === "visible") void inspect();
+    };
+    window.addEventListener("focus", focus);
+    document.addEventListener("visibilitychange", focus);
+    return () => {
+      sequence.current++;
+      window.removeEventListener("focus", focus);
+      document.removeEventListener("visibilitychange", focus);
+    };
   }, [inspect]);
-
-  const register = async () => {
+  useEffect(
+    () => () => {
+      if (image) URL.revokeObjectURL(image);
+    },
+    [image],
+  );
+  const plant = async (replant: boolean) => {
+    if (
+      props.signal.aborted ||
+      locked.current ||
+      (!replant && view?.phase === "bloom")
+    )
+      return;
+    locked.current = true;
+    setBusy(true);
+    const token = ++sequence.current;
     try {
-      const registration = await getRegistration();
+      const { registration, worker } = await connect();
+      if (props.signal.aborted || token !== sequence.current) return;
       if (!registration.periodicSync) {
-        setStatus(stageText(props.locale, locale.unsupported));
+        setStatus("unavailable");
         return;
       }
+      const nonce = crypto.randomUUID();
+      const prepared = await greenhouseRequest(
+        worker,
+        "prepare",
+        props.signal,
+        nonce,
+      );
+      if (props.signal.aborted || token !== sequence.current) return;
+      accept(prepared);
+      setStatus("waiting");
       await registration.periodicSync.register(S740_TAG, {
         minInterval: 24 * 60 * 60 * 1000,
       });
-      setRegistered(true);
-      setStatus(stageText(props.locale, locale.registered));
-    } catch {
-      setStatus(stageText(props.locale, locale.failed));
+      if (props.signal.aborted || token !== sequence.current) return;
+      const armed = await greenhouseRequest(worker, "arm", props.signal, nonce);
+      if (!props.signal.aborted && token === sequence.current) accept(armed);
+    } catch (error) {
+      if (!props.signal.aborted && token === sequence.current)
+        setStatus(
+          error instanceof DOMException && error.name === "NotAllowedError"
+            ? "denied"
+            : "error",
+        );
+    } finally {
+      locked.current = false;
+      if (!props.signal.aborted && token === sequence.current) setBusy(false);
     }
   };
-
-  const leaveCare = async (care: "water" | "light") => {
-    try {
-      const next = await writeS740Care(care);
-      setState(next);
-      setStatus(
-        stageText(
-          props.locale,
-          care === "water" ? locale.waterLeft : locale.lightLeft,
-        ),
-      );
-    } catch {
-      setStatus(stageText(props.locale, locale.failed));
-    }
-  };
-
-  const reset = async () => {
-    try {
-      const registration = (await navigator.serviceWorker.getRegistration(
-        scope,
-      )) as PeriodicRegistration | undefined;
-      await registration?.periodicSync?.unregister(S740_TAG);
-      await registration?.unregister();
-      for (const key of await caches.keys()) {
-        if (key.startsWith("busycube-s740-")) await caches.delete(key);
-      }
-      await deleteS740State();
-      setState(initialS740State);
-      setRegistered(false);
-      setStatus(stageText(props.locale, locale.cleared));
-    } catch {
-      setStatus(stageText(props.locale, locale.failed));
-    }
-  };
-
   return (
-    <div className="puzzle puzzle--centered">
-      <div className="problem-row">
-        <StageProblemGiftBox box={problem} locale={props.locale} />
+    <div className="puzzle puzzle--centered s740-puzzle">
+      <StageProblemGiftBox
+        box={props.boxes.B02}
+        locale={props.locale}
+        onClick={() => void plant(false)}
+      />
+      <div className="s740-away" aria-hidden="true">
+        <DesktopAccessDisabledOutlined />
+        <ArrowForwardOutlined />
+        <SpaOutlined />
       </div>
       <img
         className="s740-plant"
-        src={imageUrl}
+        src={image ?? periodicUrl("seed.svg")}
         alt={stageText(props.locale, locale.imageAlt)}
         width={480}
         height={320}
       />
-      <div className="stage-action-row">
-        <button
-          type="button"
-          className="stage-action"
-          onClick={() => void register()}
-        >
-          {stageText(props.locale, locale.register)}
-        </button>
-        <button
-          type="button"
-          className="stage-action"
-          disabled={
-            !registered || state.phase !== 0 || Boolean(state.pendingCare)
-          }
-          onClick={() => void leaveCare("water")}
-        >
-          {stageText(props.locale, locale.water)}
-        </button>
-        <button
-          type="button"
-          className="stage-action"
-          disabled={
-            !registered || state.phase !== 1 || Boolean(state.pendingCare)
-          }
-          onClick={() => void leaveCare("light")}
-        >
-          {stageText(props.locale, locale.light)}
-        </button>
-        <button
-          type="button"
-          className="stage-action"
-          onClick={() => void inspect()}
-        >
-          {stageText(props.locale, locale.refresh)}
-        </button>
-        <button
-          type="button"
-          className="stage-action"
-          onClick={() => void reset()}
-        >
-          {stageText(props.locale, locale.reset)}
-        </button>
-      </div>
-      <p className="stage-status" role="status" aria-live="polite">
-        {status}
+      <p role="status" className="interaction-status">
+        {view?.cleanupPending
+          ? stageText(props.locale, locale.cleanup)
+          : statusText(props.locale, status)}
       </p>
+      <button
+        type="button"
+        className="stage-action"
+        disabled={busy}
+        onClick={() => void plant(true)}
+        aria-label={stageText(props.locale, locale.replant)}
+      >
+        <YardOutlined aria-hidden="true" />
+      </button>
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
-  boxes: {
-    [manifest.box.B01]: {
-      icon: HourglassEmptyOutlined,
-      color: "#4ade80",
-      label: locale.B01,
-    },
-  },
+  boxes: { B02: { icon: SpaOutlined, color: "#86efac", label: locale.B02 } },
   probe: () =>
     safeCapabilityProbe(() =>
-      isSecureContext && "serviceWorker" in navigator
-        ? "permission-required"
+      "serviceWorker" in navigator &&
+      "caches" in window &&
+      "indexedDB" in window
+        ? "available"
         : "unsupported",
     ),
   Component: S740Stage,

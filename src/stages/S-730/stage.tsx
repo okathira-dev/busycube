@@ -1,289 +1,269 @@
 import "./styles.css";
-import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
 import SelectAllOutlined from "@mui/icons-material/SelectAllOutlined";
+import ViewInArOutlined from "@mui/icons-material/ViewInArOutlined";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { stageText } from "../locale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useCallback, useEffect, useRef, useState } from "react";
-// TODO: S-730の最小描画・raycastをThree.jsで維持するか、WebXR/WebGLの直接実装へ置き換えて依存を削除するかを設計レビューする。
-import type { Mesh, WebGLRenderer } from "three";
-import { stageText } from "../locale";
-import { locale } from "./locale";
+type Mode = "immersive-vr" | "immersive-ar";
+type View = ReturnType<typeof import("./xrRenderer").createXrView>;
+interface Attempt {
+  cancelled: boolean;
+  ended: boolean;
+  session?: XRSession;
+  view?: View;
+  ending?: Promise<void>;
+  detach?: () => void;
+}
+function closeAttempt(attempt: Attempt) {
+  attempt.cancelled = true;
+  attempt.detach?.();
+  attempt.detach = undefined;
+  attempt.view?.dispose();
+  if (attempt.session && !attempt.ended && !attempt.ending) {
+    attempt.ending = attempt.session.end().catch(() => undefined);
+  }
+  return attempt.ending ?? Promise.resolve();
+}
 
 /**
  * S-730
  *
- * 目的: immersive WebXR sessionを開始し、XR空間の正面1.5 mに置いたboxへ実input sourceのtarget rayを当てる。
- * 最初の一手: AR/VR機器を接続し「XR空間を開く」からbrowser開始UIを完了する。正面の紫boxへcontrollerを向けてselectする。
+ * 目的: 実immersive WebXR空間で、リボンと蓋のある箱へ光線を当てて実選択する。
+ * 最初の一手: AR/VR機器を接続し、XRアイコンを押してbrowserの開始UIを完了する。
  * 箱ごとの解法:
- * - B01「画面と携帯端末」: AR/VR機器を接続して「XR空間を開く」を押す。`immersive-vr`優先、非対応なら`immersive-ar` sessionを開始し、animation frameで最初の非null viewer poseを得ると開く。
- * - B02「点線の四角」: XR空間で正面の箱へcontrollerを向けてselectする。B01後の実`select` eventからtargetRaySpace poseを得てraycastし、0.4 m角・正面z=-1.5 mのbox meshと交差すると開く。
- * 使用API: WebXR Device APIのsupport/requestSession/reference space/viewer pose/input select、WebGLとThree.js renderer/raycast。
- * 権限・privacy: XR sessionは明示buttonから開始し、pose/rayは現在frameの交差判定だけに使う。部屋映像・座標履歴・device情報を保存・送信しない。
- * 対応環境: secure contextでimmersive-vrまたはimmersive-arと対応AR/VR hardware、WebGLを提供するbrowser。
+ * - B02「点線の四角」: XRアイコンから入った空間で、箱へ入力機器の光線を当てて選択する。実sessionのinputSourcesに属するsourceからのtrusted select eventで、event.frameのtargetRaySpace poseの光線が表示中の箱のmeshへ交差した時だけ開く。viewer poseの取得やhoverだけでは開かない。
+ * 使用API: WebXR support/requestSession（VR優先、AR対応時はAR）、local reference space、実viewer/input pose、session select、Three.jsのWebGLRenderer/Group/Raycaster。箱は最初の有効なviewer poseから1.5m前方へ配置して固定し、各frameの入力光線を表示・交差時に点灯、実選択後に蓋を開く。
+ * 権限・privacy: XR要求はアイコンの明示操作からだけ行う。pose/rayは現在frameの配置/交差表示だけに使い、部屋映像・座標履歴・機器情報を保存・送信しない。
+ * 対応環境: secure contextでimmersive-vrまたはimmersive-ar、local space、WebGLと実AR/VR入力機器を提供するbrowser。
  */
 function S730Stage(props: Props) {
-  const [rendererModule, setRendererModule] =
-    useState<typeof import("./xrRenderer")>();
-  const sessionProblem = props.boxes[manifest.box.B01];
-  const selectProblem = props.boxes[manifest.box.B02];
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const runtimeRef = useRef<
-    | {
-        session: XRSession;
-        renderer: WebGLRenderer;
-        box: Mesh;
-        referenceSpace: XRReferenceSpace;
-        onSelect: (event: XRInputSourceEvent) => void;
-        dispose: () => void;
-      }
-    | undefined
-  >(undefined);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const alive = useRef(false);
+  const attempt = useRef<Attempt | null>(null);
+  const mode = useRef<Mode | null>(null);
+  const preparing = useRef(0);
+  const starting = useRef(false);
+  const closing = useRef(false);
+  const [checking, setChecking] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const [presenting, setPresenting] = useState(false);
   const [status, setStatus] = useState(() =>
-    stageText(props.locale, locale.idle),
+    stageText(props.locale, locale.preparing),
   );
-
-  useEffect(() => {
-    let active = true;
-    const prepare = async () => {
-      const xr = navigator.xr;
-      if (
-        !isSecureContext ||
-        !xr ||
-        (!(await xr.isSessionSupported("immersive-vr")) &&
-          !(await xr.isSessionSupported("immersive-ar")))
-      ) {
-        if (active) setStatus(stageText(props.locale, locale.unsupported));
-        return;
-      }
-      if (!active || props.signal.aborted) return;
-      setStatus(stageText(props.locale, locale.preparing));
-      const module = await import("./xrRenderer");
-      if (active && !props.signal.aborted) {
-        setRendererModule(module);
-        if (!runtimeRef.current)
-          setStatus(stageText(props.locale, locale.idle));
-      }
-    };
-    void prepare().catch(() => {
-      if (active) setStatus(stageText(props.locale, locale.cancelled));
-    });
-    return () => {
-      active = false;
-    };
-  }, [props.locale, props.signal]);
-
-  const cleanup = useCallback(async () => {
-    const runtime = runtimeRef.current;
-    runtimeRef.current = undefined;
-    if (!runtime) return;
-    runtime.session.removeEventListener("select", runtime.onSelect);
-    runtime.renderer.setAnimationLoop(null);
-    runtime.dispose();
-    try {
-      await runtime.session.end();
-    } catch {
-      // The platform may already be tearing down the immersive session.
-    }
+  const copy = useRef(props.locale);
+  copy.current = props.locale;
+  const box = useRef(props.boxes[manifest.box.B02]);
+  box.current = props.boxes[manifest.box.B02];
+  const stop = useCallback(() => {
+    const prior = attempt.current;
+    attempt.current = null;
+    return prior ? closeAttempt(prior) : Promise.resolve();
   }, []);
-
   useEffect(() => {
-    const stop = () => void cleanup();
-    props.signal.addEventListener("abort", stop, { once: true });
-    return () => {
-      props.signal.removeEventListener("abort", stop);
-      void cleanup();
+    alive.current = !props.signal.aborted;
+    const dispose = () => {
+      alive.current = false;
+      void stop();
     };
-  }, [cleanup, props.signal]);
-
+    props.signal.addEventListener("abort", dispose, { once: true });
+    return () => {
+      props.signal.removeEventListener("abort", dispose);
+      dispose();
+    };
+  }, [props.signal, stop]);
+  const prepare = useCallback(async () => {
+    if (!alive.current || attempt.current) return;
+    const revision = ++preparing.current;
+    setChecking(true);
+    setStatus(stageText(copy.current, locale.preparing));
+    try {
+      const xr = navigator.xr;
+      const supported =
+        isSecureContext && xr
+          ? (await xr.isSessionSupported("immersive-vr"))
+            ? "immersive-vr"
+            : (await xr.isSessionSupported("immersive-ar"))
+              ? "immersive-ar"
+              : null
+          : null;
+      if (
+        !alive.current ||
+        props.signal.aborted ||
+        revision !== preparing.current ||
+        attempt.current
+      )
+        return;
+      mode.current = supported;
+      setStatus(
+        stageText(copy.current, supported ? locale.idle : locale.unsupported),
+      );
+      if (supported) void import("./xrRenderer").catch(() => {});
+    } catch {
+      if (alive.current && revision === preparing.current) {
+        mode.current = null;
+        setStatus(stageText(copy.current, locale.unsupported));
+      }
+    } finally {
+      if (alive.current && revision === preparing.current) setChecking(false);
+    }
+  }, [props.signal]);
+  useEffect(() => {
+    void prepare();
+    const change = () => void prepare();
+    navigator.xr?.addEventListener("devicechange", change);
+    return () => navigator.xr?.removeEventListener("devicechange", change);
+  }, [prepare]);
   const start = async () => {
+    if (
+      !alive.current ||
+      props.signal.aborted ||
+      starting.current ||
+      closing.current ||
+      attempt.current
+    )
+      return;
     const xr = navigator.xr;
-    const canvas = canvasRef.current;
-    if (!xr || !canvas) {
-      setStatus(stageText(props.locale, locale.unsupported));
+    const target = canvas.current;
+    const chosen = mode.current;
+    if (!xr || !target || !chosen) {
+      void prepare();
       return;
     }
-    await cleanup();
-    setStatus(stageText(props.locale, locale.starting));
-    let pendingSession: XRSession | undefined;
-    let pendingRenderer: WebGLRenderer | undefined;
+    const current: Attempt = { cancelled: false, ended: false };
+    attempt.current = current;
+    starting.current = true;
+    setBusy(true);
+    setStatus(stageText(copy.current, locale.starting));
+    const valid = () =>
+      alive.current &&
+      !props.signal.aborted &&
+      !current.cancelled &&
+      attempt.current === current;
     try {
-      const vr = await xr.isSessionSupported("immersive-vr");
-      const ar = vr ? false : await xr.isSessionSupported("immersive-ar");
-      if (!vr && !ar) {
-        setStatus(stageText(props.locale, locale.unsupported));
-        return;
-      }
-      const session = await xr.requestSession(
-        vr ? "immersive-vr" : "immersive-ar",
-        {
-          optionalFeatures: ["local-floor"],
-        },
-      );
-      pendingSession = session;
-      // 機器を後から接続した場合も、明示操作のsession要求より前にimportを挟まない。
-      const rendering = rendererModule ?? (await import("./xrRenderer"));
-      if (props.signal.aborted) {
-        await session.end();
-        return;
-      }
-      const {
-        BoxGeometry,
-        Color,
-        Mesh,
-        MeshStandardMaterial,
-        PerspectiveCamera,
-        PointLight,
-        Quaternion,
-        Raycaster,
-        Scene,
-        Vector3,
-        WebGLRenderer,
-      } = rendering;
-      const renderer = new WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: true,
+      // requestSessionは明示操作中に呼び、importやsupport queryのawaitを先に挟まない。
+      current.session = await xr.requestSession(chosen, {
+        requiredFeatures: ["local"],
       });
-      pendingRenderer = renderer;
-      renderer.xr.enabled = true;
-      renderer.xr.setReferenceSpaceType("local-floor");
-      await renderer.xr.setSession(session);
-      const referenceSpace = await session
-        .requestReferenceSpace("local-floor")
-        .catch(() => session.requestReferenceSpace("viewer"));
-      if (props.signal.aborted) {
-        renderer.dispose();
-        await session.end();
+      if (!valid()) {
+        await closeAttempt(current);
         return;
       }
-      const scene = new Scene();
-      scene.background = new Color(0x050816);
-      const camera = new PerspectiveCamera(60, 16 / 9, 0.01, 20);
-      const box = new Mesh(
-        new BoxGeometry(0.4, 0.4, 0.4),
-        new MeshStandardMaterial({ color: 0xa78bfa, roughness: 0.35 }),
-      );
-      box.position.set(0, 0, -1.5);
-      scene.add(box);
-      const light = new PointLight(0xffffff, 4, 10);
-      light.position.set(0.5, 1, -0.5);
-      scene.add(light);
-      let disposed = false;
-      const dispose = () => {
-        if (disposed) return;
-        disposed = true;
-        box.geometry.dispose();
-        const material = box.material;
-        if (Array.isArray(material))
-          material.forEach((item) => {
-            item.dispose();
-          });
-        else material.dispose();
-        renderer.dispose();
-      };
-      let poseSeen = false;
-      const onSelect = (event: XRInputSourceEvent) => {
-        const pose = event.frame.getPose(
-          event.inputSource.targetRaySpace,
-          referenceSpace,
-        );
-        if (!pose || !poseSeen) return;
-        const origin = new Vector3(
-          pose.transform.position.x,
-          pose.transform.position.y,
-          pose.transform.position.z,
-        );
-        const orientation = new Quaternion(
-          pose.transform.orientation.x,
-          pose.transform.orientation.y,
-          pose.transform.orientation.z,
-          pose.transform.orientation.w,
-        );
-        const direction = new Vector3(0, 0, -1).applyQuaternion(orientation);
-        if (new Raycaster(origin, direction).intersectObject(box).length === 0)
-          return;
-        selectProblem.solve();
-        setStatus(stageText(props.locale, locale.selected));
-      };
-      session.addEventListener("select", onSelect);
-      session.addEventListener(
-        "end",
-        () => {
-          session.removeEventListener("select", onSelect);
-          if (runtimeRef.current?.session !== session) {
-            dispose();
-            return;
-          }
-          runtimeRef.current = undefined;
-          renderer.setAnimationLoop(null);
-          dispose();
-          setStatus(stageText(props.locale, locale.ended));
-        },
-        { once: true },
-      );
-      runtimeRef.current = {
-        session,
-        renderer,
-        box,
-        referenceSpace,
-        onSelect,
-        dispose,
-      };
-      pendingSession = undefined;
-      pendingRenderer = undefined;
-      renderer.setAnimationLoop((_time, frame) => {
-        if (frame && !poseSeen && frame.getViewerPose(referenceSpace)) {
-          poseSeen = true;
-          sessionProblem.solve();
-          setStatus(stageText(props.locale, locale.pose));
+      const session = current.session;
+      const onEnd = () => {
+        current.ended = true;
+        const wasCurrent = attempt.current === current;
+        if (wasCurrent) attempt.current = null;
+        void closeAttempt(current);
+        if (alive.current && wasCurrent) {
+          setPresenting(false);
+          setStatus(stageText(copy.current, locale.ended));
         }
-        renderer.render(scene, camera);
-      });
-    } catch {
-      pendingRenderer?.dispose();
-      await pendingSession?.end().catch(() => undefined);
-      if (!props.signal.aborted)
-        setStatus(stageText(props.locale, locale.cancelled));
-      await cleanup();
+      };
+      session.addEventListener("end", onEnd, { once: true });
+      current.detach = () => session.removeEventListener("end", onEnd);
+      setPresenting(true);
+      const rendering = await import("./xrRenderer");
+      if (!valid()) {
+        await closeAttempt(current);
+        return;
+      }
+      current.view = rendering.createXrView(
+        session,
+        target,
+        chosen === "immersive-ar",
+        () => {
+          if (!valid()) return;
+          box.current.solve();
+          setStatus(stageText(copy.current, locale.selected));
+        },
+        () => {
+          if (!valid()) return;
+          attempt.current = null;
+          void closeAttempt(current);
+          setPresenting(false);
+          setStatus(stageText(copy.current, locale.failed));
+        },
+      );
+      await current.view.start();
+      if (!valid()) {
+        await closeAttempt(current);
+        return;
+      }
+      setStatus(stageText(copy.current, locale.active));
+    } catch (error) {
+      const wasCurrent = attempt.current === current;
+      if (wasCurrent) attempt.current = null;
+      await closeAttempt(current);
+      if (alive.current && wasCurrent) {
+        setPresenting(false);
+        const reason =
+          error instanceof DOMException &&
+          (error.name === "NotAllowedError" || error.name === "AbortError")
+            ? locale.cancelled
+            : error instanceof DOMException &&
+                error.name === "NotSupportedError"
+              ? locale.unsupported
+              : locale.failed;
+        setStatus(stageText(copy.current, reason));
+      }
+    } finally {
+      starting.current = false;
+      if (alive.current) setBusy(false);
     }
   };
-
+  const end = async () => {
+    if (closing.current) return;
+    closing.current = true;
+    setStopping(true);
+    setPresenting(false);
+    await stop();
+    closing.current = false;
+    if (alive.current) {
+      setStopping(false);
+      setStatus(stageText(copy.current, locale.ended));
+    }
+  };
   return (
     <div className="puzzle puzzle--centered">
-      <div className="problem-row">
-        <StageProblemGiftBox box={sessionProblem} locale={props.locale} />
-        <StageProblemGiftBox box={selectProblem} locale={props.locale} />
-      </div>
-      <canvas ref={canvasRef} className="s730-canvas" />
-      <div className="stage-action-row">
-        <button
-          type="button"
-          className="stage-action"
-          onClick={() => void start()}
-        >
-          {stageText(props.locale, locale.start)}
-        </button>
-        <button
-          type="button"
-          className="stage-action"
-          onClick={() => {
-            void cleanup().then(() =>
-              setStatus(stageText(props.locale, locale.ended)),
-            );
-          }}
-        >
-          {stageText(props.locale, locale.end)}
-        </button>
-      </div>
-      <p className="stage-status" role="status" aria-live="polite">
+      <StageProblemGiftBox
+        box={props.boxes[manifest.box.B02]}
+        locale={props.locale}
+      />
+      <button
+        type="button"
+        className="stage-action s730-enter"
+        aria-label={stageText(props.locale, locale.start)}
+        title={stageText(props.locale, locale.start)}
+        disabled={checking || busy || stopping || presenting}
+        onClick={() => void start()}
+      >
+        <ViewInArOutlined aria-hidden="true" fontSize="large" />
+      </button>
+      <canvas
+        ref={canvas}
+        className="s730-canvas"
+        hidden={!presenting}
+        aria-label={stageText(props.locale, locale.canvas)}
+      />
+      <button
+        type="button"
+        className="stage-action"
+        disabled={(!presenting && !busy) || stopping}
+        onClick={() => void end()}
+      >
+        {stageText(props.locale, locale.end)}
+      </button>
+      <p className="stage-status" role="status">
         {status}
       </p>
     </div>
@@ -292,11 +272,6 @@ function S730Stage(props: Props) {
 
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
-      icon: DevicesOutlined,
-      color: "#60a5fa",
-      label: locale.B01,
-    },
     [manifest.box.B02]: {
       icon: SelectAllOutlined,
       color: "#a78bfa",

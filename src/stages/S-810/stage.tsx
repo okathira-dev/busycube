@@ -1,5 +1,5 @@
 import "./styles.css";
-import AspectRatioOutlined from "@mui/icons-material/AspectRatioOutlined";
+import { createSvgIcon } from "@mui/material/utils";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -21,6 +21,24 @@ const sweepLabelKeys: Record<S810AspectKey, keyof typeof locale> = {
   "sixteen-nine": "sixteenNine",
   "nine-twenty": "nineTwenty",
 };
+
+const frameIcon = (width: number, height: number, name: string) =>
+  createSvgIcon(
+    <rect
+      x={(24 - width) / 2}
+      y={(24 - height) / 2}
+      width={width}
+      height={height}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />,
+    name,
+  );
+const SquareFrame = frameIcon(18, 18, "SquareFrame");
+const FourThreeFrame = frameIcon(20, 15, "FourThreeFrame");
+const SixteenNineFrame = frameIcon(20, 11.25, "SixteenNineFrame");
+const NineTwentyFrame = frameIcon(9, 20, "NineTwentyFrame");
 
 function appendSegment(
   sourceBuffer: SourceBuffer,
@@ -120,10 +138,10 @@ function createSweepMediaSource(signal: AbortSignal) {
  * 目的: MSEで連結した固定VP8 segmentをnative controlsでseekし、停止中に提示されたframeのnative width/heightから四つのaspect ratioを読む。
  * 最初の一手: 初期停止frameでB01を確認し、native timelineを別segmentへseekしてpauseしたまま4:3、16:9、縦長9:20を探す。
  * 箱ごとの解法:
- * - B01「四隅の枠」: 動画の初期停止frameを表示する。pausedかつ非seeking frameの`videoWidth/videoHeight`が1:1から相対5%以内なら開く。初期frameがこの比率になる。
- * - B02「四隅の枠」: 動画を4:3のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが4:3から相対5%以内なら開く。
- * - B03「四隅の枠」: 動画を16:9のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが16:9から相対5%以内なら開く。
- * - B04「四隅の枠」: 動画を9:20のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが9:20から相対5%以内なら開く。寸法未確定時は次のvideo frame callbackで判定する。
+ * - B01「枠」: 動画の初期停止frameを表示する。pausedかつ非seeking frameの`videoWidth/videoHeight`が1:1から相対5%以内なら開く。初期frameがこの比率になる。
+ * - B02「枠」: 動画を4:3のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが4:3から相対5%以内なら開く。
+ * - B03「枠」: 動画を16:9のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが16:9から相対5%以内なら開く。
+ * - B04「枠」: 動画を9:20のsegmentへseekしてpauseする。停止中frameのnative aspect ratioが9:20から相対5%以内なら開く。寸法未確定時は次のvideo frame callbackで判定する。
  * 使用API: Media Source Extensions/SourceBuffer segments、HTMLVideoElement native dimensions/events、`requestVideoFrameCallback()`、Blob URL、AbortSignal。
  * 権限・privacy: 権限・外部mediaを使わず、Git管理済み固定assetと現在frame寸法だけを扱う。視聴操作を保存・送信しない。
  * 対応環境: MSE WebM VP8と提示frameのnative寸法、video frame callbackを提供するbrowser。
@@ -271,22 +289,22 @@ function S810Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
-      icon: AspectRatioOutlined,
+      icon: SquareFrame,
       color: "#84cc16",
       label: locale.B01,
     },
     [manifest.box.B02]: {
-      icon: AspectRatioOutlined,
+      icon: FourThreeFrame,
       color: "#65a30d",
       label: locale.B02,
     },
     [manifest.box.B03]: {
-      icon: AspectRatioOutlined,
+      icon: SixteenNineFrame,
       color: "#4d7c0f",
       label: locale.B03,
     },
     [manifest.box.B04]: {
-      icon: AspectRatioOutlined,
+      icon: NineTwentyFrame,
       color: "#3f6212",
       label: locale.B04,
     },

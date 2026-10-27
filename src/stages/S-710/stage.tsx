@@ -1,8 +1,8 @@
 import "./styles.css";
-import DevicesOutlined from "@mui/icons-material/DevicesOutlined";
-import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
-import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";
-import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
+import BrokenImageOutlined from "@mui/icons-material/BrokenImageOutlined";
+import DarkModeOutlined from "@mui/icons-material/DarkModeOutlined";
+import LoopOutlined from "@mui/icons-material/LoopOutlined";
+import QrCodeOutlined from "@mui/icons-material/QrCodeOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -28,12 +28,12 @@ const flagKinds = Object.keys(s710Flags) as S710FlagKind[];
  * S-710
  *
  * 目的: same-origin iframe内の動画圧縮toolで入力・録画mediaを変換し、dark frame・decode破損・QR置換・二回目metadata overlayのflagを見つける。
- * 最初の一手: iframe toolへ動画を選ぶか10秒camera録画を行い、変換後videoを再生・downloadしてframeとmetadata表示を調べる。
+ * 最初の一手: 圧縮toolで短いsample A/B/Cか手元の動画を選び、変換後の映像と出力を調べる。camera録画は明示操作でだけ始める。
  * 箱ごとの解法:
- * - B01「斜線入りの目」: 変換結果の暗黒frameから得る固定flag`busycube{dark_frame}`を共通欄へtrim・小文字化完全一致で入力すると開く。
- * - B02「紙と下向き矢印」: decode不能inputの結果から得る固定flag`busycube{broken_input}`を完全一致で入力すると開く。
- * - B03「画面と携帯端末」: 検出QR四辺形の差替え結果から得る固定flag`busycube{qr_replaced}`を完全一致で入力すると開く。
- * - B04「紙と上向き矢印」: metadata overlayを含むsecond passから得る固定flag`busycube{second_pass}`を完全一致で入力すると開く。
+ * - B01「暗い月」: 暗いframeを含む素材（sample A等）を変換して結果から読む固定flag`busycube{dark_frame}`を共通欄へtrim・小文字化完全一致で入力すると開く。
+ * - B02「割れた画像」: decode不能input（sample C等）の復旧結果から読む固定flag`busycube{broken_input}`を完全一致で入力すると開く。
+ * - B03「QRコード」: QRを含む素材（sample B等）の差替え結果から読む固定flag`busycube{qr_replaced}`を完全一致で入力すると開く。
+ * - B04「循環する矢印」: 変換済み出力を戻し矢印または保存fileから再入力し、metadata付きsecond passの結果から読む固定flag`busycube{second_pass}`を完全一致で入力すると開く。変換履歴や経路は追加の開箱条件にしない。
  * 使用API: sandboxed same-origin iframe、MediaBunny、MediaRecorder、Canvas、jsQR、camera capture、session付き`postMessage()`によるlayout調整。
  * 権限・privacy: cameraはtool内で録画を選んだ時だけ使用し、入力/録画/変換mediaはclient memoryとobject URLだけで扱う。mediaと回答をserverへ送信しない。
  * 対応環境: MediaRecorder、HTMLVideoElement、Canvas、iframe downloadを実装し、必要ならcamera permissionを提供するbrowser。
@@ -133,22 +133,22 @@ function S710Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
-      icon: VisibilityOffOutlined,
+      icon: DarkModeOutlined,
       color: "#f8fafc",
       label: locale.B01,
     },
     [manifest.box.B02]: {
-      icon: FileDownloadOutlined,
+      icon: BrokenImageOutlined,
       color: "#94a3b8",
       label: locale.B02,
     },
     [manifest.box.B03]: {
-      icon: DevicesOutlined,
+      icon: QrCodeOutlined,
       color: "#64748b",
       label: locale.B03,
     },
     [manifest.box.B04]: {
-      icon: FileUploadOutlined,
+      icon: LoopOutlined,
       color: "#475569",
       label: locale.B04,
     },
