@@ -62,7 +62,31 @@ function S610Stage(props: Props) {
     if (!dialog) return;
     dialog.setAttribute("closedby", "any");
     const handleCancel = () => {
-      closeKind.current = "cancel";
+      if (closeKind.current !== "dismiss") closeKind.current = "cancel";
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!event.isTrusted || event.target !== dialog) return;
+      closeKind.current = undefined;
+      const rect = dialog.getBoundingClientRect();
+      if (
+        event.clientX < rect.left ||
+        event.clientX > rect.right ||
+        event.clientY < rect.top ||
+        event.clientY > rect.bottom
+      )
+        closeKind.current = "dismiss";
+    };
+    const clearAbortedPointer = (event: PointerEvent) => {
+      const rect = dialog.getBoundingClientRect();
+      if (
+        event.type === "pointercancel" ||
+        (event.clientX >= rect.left &&
+          event.clientX <= rect.right &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom)
+      ) {
+        if (closeKind.current === "dismiss") closeKind.current = undefined;
+      }
     };
     const handleClose = () => {
       const kind = closeKind.current;
@@ -73,14 +97,23 @@ function S610Stage(props: Props) {
     };
     dialog.addEventListener("cancel", handleCancel);
     dialog.addEventListener("close", handleClose);
+    dialog.addEventListener("pointerdown", handlePointerDown);
+    dialog.addEventListener("pointerup", clearAbortedPointer);
+    dialog.addEventListener("pointercancel", clearAbortedPointer);
     return () => {
       dialog.removeEventListener("cancel", handleCancel);
       dialog.removeEventListener("close", handleClose);
+      dialog.removeEventListener("pointerdown", handlePointerDown);
+      dialog.removeEventListener("pointerup", clearAbortedPointer);
+      dialog.removeEventListener("pointercancel", clearAbortedPointer);
       if (dialog.open) dialog.close();
     };
   }, [button.solve, cancel.solve, lightDismiss.solve]);
 
-  const open = () => dialogRef.current?.showModal();
+  const open = () => {
+    closeKind.current = undefined;
+    dialogRef.current?.showModal();
+  };
 
   return (
     <div className="puzzle puzzle--centered">
@@ -101,10 +134,6 @@ function S610Stage(props: Props) {
         ref={dialogRef}
         className="close-path-dialog"
         aria-label={stageText(props.locale, locale.dialog)}
-        onClick={(event) => {
-          if (event.target !== event.currentTarget) return;
-          closeKind.current = "dismiss";
-        }}
         onKeyDown={(event) => {
           if (event.key === "Escape") closeKind.current = "cancel";
         }}

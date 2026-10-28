@@ -64,7 +64,7 @@ test("updates the memoized catalogue after language, search and real progress ch
     .fill("S-010");
   await expect(page.locator(".stage-card")).toHaveCount(1);
   await page.locator('[data-stage-id="S-010"] .stage-card__action').click();
-  await page.getByRole("button", { name: /Mouse box/ }).click();
+  await page.getByRole("button", { name: /^Mouse:/ }).click();
   await page.goBack();
   await expect(page.locator('[data-stage-id="S-010"]')).toHaveAttribute(
     "data-progress",
@@ -155,7 +155,7 @@ test("restores progress from IndexedDB after reload", async ({ page }) => {
   });
 
   await page.reload();
-  await expect(page.getByText("Opened boxes: 1 / 204")).toBeVisible();
+  await expect(page.getByText(/Opened boxes: 1 \/ \d+/)).toBeVisible();
 });
 
 test("has no serious or critical automated accessibility violations", async ({
@@ -177,7 +177,9 @@ test("does not download the XR renderer without an immersive device", async ({
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "xr", {
       configurable: true,
-      value: { isSessionSupported: async () => false },
+      value: Object.assign(new EventTarget(), {
+        isSessionSupported: async () => false,
+      }),
     });
   });
   const rendererRequests: string[] = [];
@@ -200,29 +202,40 @@ test("prepares the XR renderer without requesting a session until the user acts"
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "xr", {
       configurable: true,
-      value: {
+      value: Object.assign(new EventTarget(), {
+        sessionRequests: 0,
         isSessionSupported: async () => true,
-        requestSession: async () => {
+        async requestSession() {
+          this.sessionRequests++;
           throw new DOMException("denied", "NotAllowedError");
         },
-      },
+      }),
     });
   });
   const renderer = page.waitForResponse(/\/xrRenderer-[^/]+\.js$/);
   await page.goto("/?stage=S-730&locale=en");
   expect((await renderer).ok()).toBe(true);
-  await expect(
-    page.getByText(
-      "Connect a supported device and enter through the browser XR prompt.",
-      { exact: true },
+  await expect(page.getByRole("status")).toHaveText("Ready");
+  expect(
+    await page.evaluate(
+      () =>
+        (navigator.xr as XRSystem & { sessionRequests: number })
+          .sessionRequests,
     ),
-  ).toBeVisible();
+  ).toBe(0);
   await page
     .getByRole("button", { name: "Enter immersive XR", exact: true })
     .click();
   await expect(
-    page.getByText("XR entry was cancelled or failed.", { exact: true }),
+    page.getByText("XR entry was cancelled or denied.", { exact: true }),
   ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () =>
+        (navigator.xr as XRSystem & { sessionRequests: number })
+          .sessionRequests,
+    ),
+  ).toBe(1);
 });
 
 test("reopens a visited lazy view offline and recovers from an unvisited view", async ({

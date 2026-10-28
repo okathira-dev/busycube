@@ -83,6 +83,9 @@ export function ProofLine({
     };
     const syncSelection = () => {
       if (document.activeElement !== element) return;
+      // Native text changes precede React's DOM update. The old DOM selection
+      // must not overwrite the selection accompanying that edit.
+      if (composing || element.textContent !== context.text) return;
       const selection = document.getSelection();
       if (
         !selection?.anchorNode ||
