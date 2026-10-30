@@ -1,0 +1,14 @@
+{
+  "page": {
+    "filename": "stage-drag-page.png",
+    "sha256": "60dcef1481e6d0cbfbde56bf5935050c49615b2fa364921e54931ecc25a4d6d9"
+  },
+  "file": {
+    "filename": "stage-drag-file.png",
+    "sha256": "08c3d2b84f209f04777accc2c37bdb3161a854047f4e4d3a23e348016d78a199"
+  },
+  "window": {
+    "filename": "stage-drag-window.png",
+    "sha256": "b7a08e16727833eac3e0c4aad988dbe6aaf7aca8e62f44296a3f16eecb90e925"
+  }
+}

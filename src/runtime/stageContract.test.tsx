@@ -50,6 +50,7 @@ describe("stage contract", () => {
     expect(stage.Component).toBe(ContractStage);
   });
 
+  // Registry completeness imports every lazy module; this is not a startup SLA.
   it("publishes exactly the stage directories and derives totals from local box IDs", async () => {
     const stageDirectory = join(process.cwd(), "src", "stages");
     const stageDirectoryIds = readdirSync(stageDirectory)
@@ -70,5 +71,5 @@ describe("stage contract", () => {
         [...manifest.boxIds].sort(),
       );
     }
-  });
+  }, 15_000);
 });

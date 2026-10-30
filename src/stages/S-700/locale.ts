@@ -3,9 +3,9 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "外部文字の箱", en: "Remote text box" },
-  B02: { ja: "外部QRの箱", en: "Remote QR box" },
-  B03: { ja: "外部画面の箱", en: "Presentation display box" },
+  B01: { ja: "二つの画面", en: "Two screens" },
+  B02: { ja: "画面と携帯端末", en: "Screen and phone" },
+  B03: { ja: "二つの画面", en: "Two screens" },
   idle: {
     ja: "二種類の外部表示を試します。",
     en: "Try two kinds of external display.",

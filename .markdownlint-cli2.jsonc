@@ -8,7 +8,14 @@
     "MD033": false
   },
   "globs": ["**/*.md", "**/*.mdc"],
-  "ignores": ["node_modules/**", "dist/**", "coverage/**", "skills/**"],
+  "ignores": [
+    "node_modules/**",
+    "dist/**",
+    "coverage/**",
+    "skills/**",
+    "test-results/**",
+    "playwright-report/**"
+  ],
   "overrides": [
     {
       // The ledger intentionally repeats a heading for each dated consultation.

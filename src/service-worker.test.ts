@@ -1,6 +1,75 @@
 import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 
+describe("S-090 notification click fixtures", () => {
+  const nonce = "12345678-1234-4321-8765-123456789abc";
+  it("waits for the matching trusted click receipt transaction before navigating", async () => {
+    const worker = createWorker("https://example.test/service-worker.js", {
+      nonce,
+      state: "pending",
+    });
+    let completion: Promise<unknown> | undefined;
+    const close = vi.fn();
+    worker.listeners.get("notificationclick")?.({
+      isTrusted: true,
+      notification: { close, data: { stage: "S-090", nonce, locale: "en" } },
+      waitUntil: (promise: Promise<unknown>) => {
+        completion = promise;
+      },
+    });
+    await worker.notificationReady;
+    expect(worker.clients.openWindow).not.toHaveBeenCalled();
+    expect(worker.notificationRecord()).toEqual({ nonce, state: "pending" });
+    worker.commitNotification();
+    await completion;
+    expect(worker.notificationRecord()).toEqual({ nonce, state: "clicked" });
+    expect(worker.clients.openWindow).toHaveBeenCalledOnce();
+    const target = new URL(worker.clients.openWindow.mock.calls[0]?.[0] ?? "");
+    expect(target.searchParams.get("notification-receipt")).toBe(nonce);
+    expect(target.searchParams.get("stage")).toBe("S-090");
+    expect(target.searchParams.get("locale")).toBe("en");
+    expect(close).toHaveBeenCalledOnce();
+  });
+  it.each([
+    { nonce: "other", state: "pending" },
+    { nonce, state: "clicked" },
+  ])("does not navigate for a mismatch or replay: %j", async (record) => {
+    const worker = createWorker(
+      "https://example.test/service-worker.js",
+      record,
+    );
+    let completion: Promise<unknown> | undefined;
+    worker.listeners.get("notificationclick")?.({
+      isTrusted: true,
+      notification: { close: vi.fn(), data: { stage: "S-090", nonce } },
+      waitUntil: (promise: Promise<unknown>) => {
+        completion = promise;
+      },
+    });
+    await worker.notificationReady;
+    worker.commitNotification();
+    await completion;
+    expect(worker.clients.openWindow).not.toHaveBeenCalled();
+    expect(worker.notificationRecord()).toEqual(record);
+  });
+  it("ignores synthetic or unrelated notifications instead of sending them to a fixed success URL", () => {
+    const worker = createWorker("https://example.test/service-worker.js");
+    const waitUntil = vi.fn();
+    worker.listeners.get("notificationclick")?.({
+      isTrusted: false,
+      notification: { close: vi.fn(), data: { stage: "S-090", nonce } },
+      waitUntil,
+    });
+    worker.listeners.get("notificationclick")?.({
+      isTrusted: true,
+      notification: { close: vi.fn(), data: {} },
+      waitUntil,
+    });
+    expect(waitUntil).not.toHaveBeenCalled();
+    expect(worker.clients.openWindow).not.toHaveBeenCalled();
+  });
+});
+
 type WorkerEventHandler = (event: Record<string, unknown>) => void;
 
 const workerSource = readFileSync(
@@ -8,7 +77,49 @@ const workerSource = readFileSync(
   "utf8",
 );
 
-function createWorker(scriptUrl: string) {
+function createWorker(scriptUrl: string, initialNotificationRecord?: unknown) {
+  let notificationRecord = initialNotificationRecord;
+  let pendingWrite: unknown;
+  let notificationTransaction: { oncomplete?: () => void } | undefined;
+  let resolveNotificationReady = () => {};
+  const notificationReady = new Promise<void>((resolve) => {
+    resolveNotificationReady = resolve;
+  });
+  const notificationStore = {
+    get: () => {
+      const request: { result?: unknown; onsuccess?: () => void } = {};
+      queueMicrotask(() => {
+        request.result = notificationRecord;
+        request.onsuccess?.();
+        resolveNotificationReady();
+      });
+      return request;
+    },
+    put: (value: unknown) => {
+      pendingWrite = value;
+    },
+  };
+  const notificationDatabase = {
+    transaction: () => {
+      const transaction: {
+        oncomplete?: () => void;
+        objectStore: () => typeof notificationStore;
+      } = { objectStore: () => notificationStore };
+      notificationTransaction = transaction;
+      return transaction;
+    },
+    close: vi.fn(),
+  };
+  const indexedDB = {
+    open: () => {
+      const request: {
+        result: typeof notificationDatabase;
+        onsuccess?: () => void;
+      } = { result: notificationDatabase };
+      queueMicrotask(() => request.onsuccess?.());
+      return request;
+    },
+  };
   const listeners = new Map<string, WorkerEventHandler>();
   const shellHtml = `
     <script type="module" src="../assets/busycube-AbCdEf12.js"></script>
@@ -31,7 +142,7 @@ function createWorker(scriptUrl: string) {
       name.includes("shell") ? shellCache : assetCache,
     ),
     keys: vi.fn(async () => ["busycube-shell-v1"]),
-    delete: vi.fn(async () => true),
+    delete: vi.fn(async (_name: string) => true),
   };
   const skipWaiting = vi.fn(async () => undefined);
   const claim = vi.fn(async () => undefined);
@@ -46,7 +157,7 @@ function createWorker(scriptUrl: string) {
     clients: {
       claim,
       matchAll: vi.fn(async () => []),
-      openWindow: vi.fn(async () => undefined),
+      openWindow: vi.fn(async (_url: string) => undefined),
     },
     skipWaiting,
     addEventListener: (type: string, handler: WorkerEventHandler) => {
@@ -63,6 +174,7 @@ function createWorker(scriptUrl: string) {
     URL,
     caches,
     fetch: fetcher,
+    indexedDB,
     self,
   });
 
@@ -74,6 +186,13 @@ function createWorker(scriptUrl: string) {
     shellCache,
     showNotification,
     skipWaiting,
+    clients: self.clients,
+    notificationReady,
+    notificationRecord: () => notificationRecord,
+    commitNotification: () => {
+      if (pendingWrite !== undefined) notificationRecord = pendingWrite;
+      notificationTransaction?.oncomplete?.();
+    },
   };
 }
 
@@ -112,6 +231,45 @@ describe("Busycube service worker strategy", () => {
     expect(worker.skipWaiting).toHaveBeenCalledTimes(1);
     expect(worker.caches.open).not.toHaveBeenCalled();
   });
+
+  it.each([false, true])(
+    "activation preserves stage and other caches while deleting only owned shell/assets generations (development=%s)",
+    async (development) => {
+      const worker = createWorker(
+        `https://example.test/service-worker.js${development ? "?mode=development" : ""}`,
+      );
+      worker.caches.keys.mockResolvedValue([
+        "busycube-shell-v1",
+        "busycube-assets-v2",
+        "busycube-shell-v7",
+        "busycube-assets-v7",
+        "busycube-s960-download-v1",
+        "busycube-s740-bloom-v2",
+        "busycube-s970-state-v1",
+        "other-app",
+      ]);
+      let activation: Promise<unknown> | undefined;
+      worker.listeners.get("activate")?.({
+        waitUntil: (value: Promise<unknown>) => {
+          activation = value;
+        },
+      });
+      await activation;
+      expect(
+        worker.caches.delete.mock.calls.map(([name]) => name).sort(),
+      ).toEqual(
+        (development
+          ? [
+              "busycube-shell-v1",
+              "busycube-assets-v2",
+              "busycube-shell-v7",
+              "busycube-assets-v7",
+            ]
+          : ["busycube-shell-v1", "busycube-assets-v2"]
+        ).sort(),
+      );
+    },
+  );
 
   it("precaches only the production shell and its hashed entry assets", async () => {
     const worker = createWorker("https://example.test/service-worker.js");
@@ -183,7 +341,7 @@ describe("Busycube service worker strategy", () => {
     expect(sourceResponse).not.toHaveBeenCalled();
   });
 
-  it("keeps notification action state in the replacement notification", async () => {
+  it("ignores legacy maze notifications instead of continuing a fixed-answer flow", async () => {
     const worker = createWorker("https://example.test/service-worker.js");
     let completion: Promise<unknown> | undefined;
     worker.listeners.get("notificationclick")?.({
@@ -200,11 +358,7 @@ describe("Busycube service worker strategy", () => {
       },
     });
     await completion;
-    expect(worker.showNotification).toHaveBeenCalledWith(
-      "Busycube",
-      expect.objectContaining({
-        data: expect.objectContaining({ sequence: "L" }),
-      }),
-    );
+    expect(worker.showNotification).not.toHaveBeenCalled();
+    expect(worker.clients.openWindow).not.toHaveBeenCalled();
   });
 });

@@ -1,25 +1,17 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  intro: {
-    ja: "3つの荷物はそれぞれ異なる封印形式です。形式を選んで、実際にストリーム展開してください。",
-    en: "The three parcels each use a different seal. Choose a format and actually stream-decompress it.",
-  },
-  chooseFormat: { ja: "封印形式", en: "Seal format" },
-  open: { ja: "荷物を開く", en: "Open parcel" },
-  waiting: { ja: "ストリームを展開中…", en: "Decompressing stream…" },
-  opened: { ja: "荷物の中身を照合しました。", en: "Parcel contents matched." },
-  failed: {
-    ja: "この形式では開けません。別の封印を選べます。",
-    en: "That format could not open it. Choose another seal.",
-  },
+  B04: { ja: "紙と下向き矢印", en: "File with downward arrow" },
+  confirm: { ja: "確定", en: "Confirm" },
+  newQuestion: { ja: "問題を更新しました", en: "Question regenerated" },
+  preparing: { ja: "生成中…", en: "Generating…" },
   unsupported: {
-    ja: "このブラウザはDecompressionStreamを提供していません。",
-    en: "This browser has no DecompressionStream.",
+    ja: "このブラウザは必要な三形式の圧縮・展開に対応していません。",
+    en: "This browser does not support all three compression and decompression formats.",
   },
-  B01: { ja: "青い荷物", en: "Blue parcel" },
-  B02: { ja: "紫の荷物", en: "Purple parcel" },
-  B03: { ja: "赤い荷物", en: "Red parcel" },
+  failed: {
+    ja: "問題を生成できませんでした。",
+    en: "Question generation failed.",
+  },
 });

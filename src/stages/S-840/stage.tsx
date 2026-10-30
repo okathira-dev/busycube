@@ -20,18 +20,18 @@ const threshold = 0.98;
  * S-840
  *
  * 目的: 大きな二次元scroll plane内のtargetを縦横とも合わせ、実IntersectionObserver可視率を98%以上にする。
- * 最初の一手: scroll areaを上下左右へ動かして淡い大窓を探し、四辺がroot内へほぼ完全に収まるよう微調整する。
+ * 最初の一手: 初期位置で見える長方形の一部へ向けて縦横scrollし、実可視率を98%以上へ合わせる。
  * 箱ごとの解法:
- * - B01「交差率の箱」: rootの実client sizeより縦横24 px小さいtargetについて、IntersectionObserver entryの`intersectionRatio >= 0.98`になると開く。
+ * - B01「点線の四角」: 上下左右にscrollしてtargetをroot内へほぼ完全に重ねる。rootの実client sizeより縦横24 px小さいtargetについて、IntersectionObserver entryの`intersectionRatio >= 0.98`になると開く。
  * 使用API: scroll container、ResizeObserverによるtarget size調整、root指定IntersectionObserverとintersectionRatio。
  * 権限・privacy: 権限・外部dataを使わず、現在layoutのintersection ratioだけを表示・判定する。scroll位置や履歴を保存・送信しない。
  * 対応環境: 二軸scroll、ResizeObserver、root付きIntersectionObserverを実装するbrowser。
  */
 function S840Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];
-  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
-  const [ratio, setRatio] = useState(0);
+  const [ratio, setRatio] = useState<number | null>(null);
   const [targetSize, setTargetSize] = useState({ width: 616, height: 396 });
 
   useEffect(() => {
@@ -53,15 +53,27 @@ function S840Stage(props: Props) {
     const root = rootRef.current;
     const target = targetRef.current;
     if (!root || !target) return;
+    let solved = false;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry || props.signal.aborted) return;
+        if (
+          !entry ||
+          props.signal.aborted ||
+          !Number.isFinite(entry.intersectionRatio) ||
+          entry.intersectionRatio < 0 ||
+          entry.intersectionRatio > 1
+        )
+          return;
         setRatio(entry.intersectionRatio);
-        if (entry.intersectionRatio >= threshold) {
+        if (!solved && entry.intersectionRatio >= threshold) {
+          solved = true;
           problem.solve();
         }
       },
-      { root, threshold: [0, 0.5, 0.9, threshold, 1] },
+      {
+        root,
+        threshold: Array.from({ length: 1001 }, (_, index) => index / 1000),
+      },
     );
     observer.observe(target);
     const disconnect = () => observer.disconnect();
@@ -77,23 +89,30 @@ function S840Stage(props: Props) {
       <div className="problem-row">
         <StageProblemGiftBox box={problem} locale={props.locale} />
       </div>
-      <p>{stageText(props.locale, locale.intro)}</p>
-      <div ref={rootRef} className="s840-scroll-root">
+      <section
+        ref={rootRef}
+        className="s840-scroll-root"
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: 二軸scroll領域を矢印キーでも操作するため。
+        tabIndex={0}
+        aria-label={stageText(props.locale, locale.plane)}
+      >
         <div className="s840-plane">
           <div
             ref={targetRef}
             className="s840-target"
-            style={{ width: targetSize.width, height: targetSize.height }}
+            style={{
+              width: targetSize.width,
+              height: targetSize.height,
+              left: targetSize.width - 56,
+              top: targetSize.height - 56,
+            }}
             aria-hidden="true"
           />
         </div>
-      </div>
-      <p className="measurement" aria-live="polite">
-        {stageText(props.locale, locale.ratio)}: {(ratio * 100).toFixed(1)}%
-        {ratio >= threshold
-          ? ` — ${stageText(props.locale, locale.aligned)}`
-          : ""}
-      </p>
+      </section>
+      <output className="measurement" aria-live="polite">
+        {ratio === null ? "—" : `${(ratio * 100).toFixed(1)}%`} / 98%
+      </output>
     </div>
   );
 }

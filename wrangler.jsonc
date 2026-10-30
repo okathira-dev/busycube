@@ -11,7 +11,10 @@
       "/payment/method",
       "/poc/payment/method",
       "/poc/payment/decoy-method",
-      "/offline-beacon/network-probe"
+      "/offline-beacon/network-probe",
+      "/share-target",
+      "/poc/background-fetch/slow.bin",
+      "/background-fetch/parcel.bin"
     ]
   }
 }

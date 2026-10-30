@@ -1,0 +1,13 @@
+.s970-archive {
+  color: #a5ddff;
+  font-size: 4rem;
+}
+.s970-save {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+.s970-stage small {
+  max-width: 28rem;
+  color: #c7badc;
+}

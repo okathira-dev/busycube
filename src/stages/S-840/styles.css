@@ -27,8 +27,6 @@
 }
 .s840-target {
   position: absolute;
-  top: 1100px;
-  left: 1500px;
   border: 2px solid #d5fff7;
   border-radius: 0.75rem;
   background: repeating-linear-gradient(

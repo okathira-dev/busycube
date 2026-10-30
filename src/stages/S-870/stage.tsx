@@ -2,189 +2,202 @@ import "./styles.css";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";
 import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { type CommonStatus, statusText } from "../../ui/statusLocale";
+import { stageText } from "../locale";
+import { prepareDirectory, scanDirectory } from "./files";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
+import { ReferenceArchive } from "./ReferenceArchive";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useEffect, useRef, useState } from "react";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
-const replacementText = "busycube{edited_outside_the_page}\n";
-
-async function directoryIsEmpty(directory: FileSystemDirectoryHandle) {
-  for await (const _entry of directory.values()) return false;
-  return true;
-}
-
-async function writeText(
-  directory: FileSystemDirectoryHandle,
-  name: string,
-  text: string,
-) {
-  const file = await directory.getFileHandle(name, { create: true });
-  const writable = await file.createWritable();
-  await writable.write(`\uFEFF${text}`);
-  await writable.close();
-}
-
-async function isMissing(directory: FileSystemDirectoryHandle, name: string) {
-  try {
-    await directory.getFileHandle(name);
-    return false;
-  } catch (error: unknown) {
-    return (error as DOMException).name === "NotFoundError";
+function failure(error: unknown): CommonStatus {
+  if (error instanceof DOMException) {
+    if (error.name === "AbortError") return "cancelled";
+    if (error.name === "NotAllowedError" || error.name === "SecurityError")
+      return "denied";
+    if (error.name === "NotSupportedError") return "unavailable";
   }
+  return "error";
 }
 
 /**
- * S-870 — OSで書き換わるフォルダー
+ * S-870
  *
- * 目的: 選択した空フォルダーへゲームが用意したファイルを、ページ外のファイル管理・編集操作で変化させ、その実体を再読込する。
- * 最初の一手: 「空のフォルダーを選ぶ」を押し、削除してよい新規の空フォルダーを読み書き可能として選ぶ。ゲームが`rewrite-me.txt`と`delete-me.txt`を作った後、OS側で操作する。
+ * 目的: 仮想書庫の一覧/内容を調査し、選択した空の実フォルダーをページ外の操作で同じ状態へ変える。
+ * 最初の一手: 見本の書庫のfolder/fileを開いて調査し、読み書きの案内を読んで使い捨ての空フォルダーを選ぶ。
  * 箱ごとの解法:
- * - B01: OSのテキストエディターで`rewrite-me.txt`を開き、内容を`busycube{edited_outside_the_page}`と末尾改行だけにして保存する。画面へ戻った時の`File.text()`がその文字列と完全一致すると開く。
- * - B02: OSのファイル管理画面で`delete-me.txt`を削除する。画面へ戻った再走査で`getFileHandle("delete-me.txt")`が`NotFoundError`になると開く。
- * - B03: 同じフォルダーへ`create-me.txt`という通常ファイルを新規作成し、1 byte以上の内容を保存する。再走査した`File.size`が0より大きいと開く。
- * 使用API: File System Access APIの`showDirectoryPicker({mode:"readwrite"})`、`FileSystemDirectoryHandle`、`getFileHandle()`、`createWritable()`、`File.text()`、`File.size`。
- * 権限・privacy: 空であることを確認した選択フォルダーだけへseedファイルを書き、handleはmemory内だけに保持する。ファイル内容やhandleを保存・送信しない。
- * 対応環境: secure contextでFile System Access APIのdirectory pickerとread/write handleを提供するChromium系browser。
+ * - B01「鉛筆」: 実フォルダーのrewrite-me.txtを外部エディターで見本の内容へ変更する。File.text()がbusycube{edited_outside_the_page}と末尾LF一個に完全一致すれば開く。UTF-8 BOMはFile.text()の復号に従って許容し、CRLF/末尾改行なし/追加文字は一致しない。
+ * - B02「斜線入りの目」: 実フォルダーのdelete-me.txtを外部のファイル管理で削除し、再走査のgetFileHandleでNotFoundErrorになれば開く。権限エラーや同名directoryを削除成功と扱わない。
+ * - B03「紙と上向き矢印」: 実フォルダーにcreate-me.txtという通常ファイルを外部で作成し、File.size>0なら開く。見本の作成ファイル内容への完全一致は要求しない。
+ * 使用API: showDirectoryPicker({mode:readwrite})、directory.values/getFileHandle、getFile/createWritable、File.text/size。見本は調査だけのReact UIで実フォルダーを操作せず、実状態を表示中の一秒間隔とfocus/visibility復帰で再読込する。
+ * 権限・privacy: 空を確認した選択フォルダーへだけ二つのseedをUTF-8 BOM/LFで書く。handleと照合用内容は一時memoryのみで保存・送信せず、実ファイルの変更/削除をゲームから代行しない。使い捨てfolderの読み書き同意/OSでの後片付け案内を維持する。
+ * 対応環境: secure contextでFile System Accessのdirectory pickerとreadwrite handleを提供するbrowser。
  */
 function S870Stage(props: Props) {
-  const rewriteProblem = props.boxes[manifest.box.B01];
-  const deleteProblem = props.boxes[manifest.box.B02];
-  const createProblem = props.boxes[manifest.box.B03];
-  const directoryRef = useRef<FileSystemDirectoryHandle | null>(null);
+  const directory = useRef<FileSystemDirectoryHandle | null>(null);
+  const lifetime = useRef<AbortController | null>(null);
+  const choosing = useRef(false);
+  const opened = useRef(new Set<string>());
+  const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState("");
-
+  const rewrite = props.boxes[manifest.box.B01].solve;
+  const remove = props.boxes[manifest.box.B02].solve;
+  const create = props.boxes[manifest.box.B03].solve;
   useEffect(() => {
-    let interval: number | undefined;
+    const controller = new AbortController();
+    lifetime.current = controller;
+    const stop = () => {
+      controller.abort();
+      directory.current = null;
+    };
+    props.signal.addEventListener("abort", stop, { once: true });
+    if (props.signal.aborted) stop();
+    return () => {
+      props.signal.removeEventListener("abort", stop);
+      stop();
+      if (lifetime.current === controller) lifetime.current = null;
+    };
+  }, [props.signal]);
+  useEffect(() => {
+    const owner = lifetime.current;
+    let active = true;
     let checking = false;
     const check = async () => {
-      const directory = directoryRef.current;
-      if (!directory || document.visibilityState !== "visible" || checking)
+      const folder = directory.current;
+      if (
+        !owner ||
+        owner.signal.aborted ||
+        !active ||
+        !folder ||
+        document.visibilityState !== "visible" ||
+        checking ||
+        choosing.current
+      )
         return;
       checking = true;
       try {
-        const [rewriteResult, createdResult, deleted] = await Promise.all([
-          directory
-            .getFileHandle("rewrite-me.txt")
-            .then((handle) => handle.getFile())
-            .catch(() => undefined),
-          directory
-            .getFileHandle("create-me.txt")
-            .then((handle) => handle.getFile())
-            .catch(() => undefined),
-          isMissing(directory, "delete-me.txt"),
-        ]);
-        if (rewriteResult && (await rewriteResult.text()) === replacementText) {
-          rewriteProblem.solve();
+        const result = await scanDirectory(folder, owner.signal);
+        if (
+          !active ||
+          owner.signal.aborted ||
+          folder !== directory.current ||
+          choosing.current
+        )
+          return;
+        let changed = false;
+        for (const [id, hit, solve] of [
+          [manifest.box.B01, result.rewrite, rewrite],
+          [manifest.box.B02, result.deleted, remove],
+          [manifest.box.B03, result.created, create],
+        ] as const) {
+          if (hit && !opened.current.has(id)) {
+            opened.current.add(id);
+            solve();
+            changed = true;
+          }
         }
-        if (deleted) deleteProblem.solve();
-        if (createdResult && createdResult.size > 0) createProblem.solve();
-        setStatus(stageText(props.locale, locale.checking));
-      } catch {
-        // A partially completed external edit is expected; keep the watcher alive.
+        if (result.error)
+          setStatus(statusText(props.locale, failure(result.error)));
+        else if (changed)
+          setStatus(
+            statusText(
+              props.locale,
+              opened.current.size === 3 ? "success" : "matched",
+            ),
+          );
+      } catch (error) {
+        if (active && !owner.signal.aborted)
+          setStatus(statusText(props.locale, failure(error)));
       } finally {
         checking = false;
       }
     };
     const resume = () => void check();
+    const timer = ready ? setInterval(resume, 1000) : undefined;
     if (ready) {
-      interval = window.setInterval(() => void check(), 1000);
       window.addEventListener("focus", resume);
       document.addEventListener("visibilitychange", resume);
-      void check();
+      resume();
     }
     const stop = () => {
-      if (interval !== undefined) window.clearInterval(interval);
+      active = false;
+      if (timer !== undefined) clearInterval(timer);
       window.removeEventListener("focus", resume);
       document.removeEventListener("visibilitychange", resume);
     };
-    props.signal.addEventListener("abort", stop, { once: true });
+    owner?.signal.addEventListener("abort", stop, { once: true });
+    if (owner?.signal.aborted) stop();
     return () => {
-      props.signal.removeEventListener("abort", stop);
+      owner?.signal.removeEventListener("abort", stop);
       stop();
     };
-  }, [
-    createProblem.solve,
-    deleteProblem.solve,
-    props.locale,
-    props.signal,
-    ready,
-    rewriteProblem.solve,
-  ]);
-
-  const chooseDirectory = async () => {
-    if (!window.showDirectoryPicker) return;
-    setStatus(stageText(props.locale, locale.choosing));
+  }, [props.locale, ready, rewrite, remove, create]);
+  const choose = async () => {
+    const owner = lifetime.current;
+    if (!owner || owner.signal.aborted || choosing.current) return;
+    choosing.current = true;
+    setBusy(true);
+    setStatus(statusText(props.locale, "waiting"));
     try {
-      const directory = await window.showDirectoryPicker({ mode: "readwrite" });
-      if (!(await directoryIsEmpty(directory))) {
+      if (!window.showDirectoryPicker) {
+        setStatus(statusText(props.locale, "unavailable"));
+        return;
+      }
+      const selected = await window.showDirectoryPicker({ mode: "readwrite" });
+      if (owner.signal.aborted) return;
+      const empty = await prepareDirectory(selected, owner.signal);
+      if (owner.signal.aborted) return;
+      if (!empty) {
         setStatus(stageText(props.locale, locale.nonEmpty));
         return;
       }
-      await Promise.all([
-        writeText(directory, "rewrite-me.txt", "replace this line\n"),
-        writeText(directory, "delete-me.txt", "delete this file\n"),
-      ]);
-      directoryRef.current = directory;
+      directory.current = selected;
       setReady(true);
       setStatus(stageText(props.locale, locale.ready));
-    } catch (error: unknown) {
-      if ((error as DOMException).name === "AbortError") {
-        setStatus(stageText(props.locale, locale.cancelled));
-      } else {
-        setStatus(stageText(props.locale, locale.unsupported));
-      }
+    } catch (error) {
+      if (!owner.signal.aborted)
+        setStatus(statusText(props.locale, failure(error)));
+    } finally {
+      choosing.current = false;
+      if (!owner.signal.aborted) setBusy(false);
     }
   };
-
   return (
     <div className="puzzle s870-stage">
       <div className="problem-row">
-        <StageProblemGiftBox box={rewriteProblem} locale={props.locale} />
-        <StageProblemGiftBox box={deleteProblem} locale={props.locale} />
-        <StageProblemGiftBox box={createProblem} locale={props.locale} />
+        {manifest.boxIds.map((id) => (
+          <StageProblemGiftBox
+            key={id}
+            box={props.boxes[id]}
+            locale={props.locale}
+          />
+        ))}
       </div>
+      <ReferenceArchive language={props.locale} />
       <p>{stageText(props.locale, locale.intro)}</p>
       <button
         type="button"
         className="stage-action"
-        onClick={() => void chooseDirectory()}
+        disabled={busy}
+        onClick={() => void choose()}
       >
         {stageText(props.locale, locale.choose)}
       </button>
-      {ready ? (
-        <ol className="s870-jobs">
-          <li>
-            <strong>{stageText(props.locale, locale.rewrite)}</strong>
-            <code>{stageText(props.locale, locale.rewriteInstruction)}</code>
-          </li>
-          <li>
-            <strong>{stageText(props.locale, locale.remove)}</strong>
-          </li>
-          <li>
-            <strong>{stageText(props.locale, locale.create)}</strong>
-            <span>{stageText(props.locale, locale.createInstruction)}</span>
-          </li>
-        </ol>
-      ) : null}
-      <output className="interaction-status" aria-live="polite">
+      <p className="interaction-status" role="status">
         {status}
-      </output>
-      {ready ? <small>{stageText(props.locale, locale.cleanup)}</small> : null}
+      </p>
+      <small>{stageText(props.locale, locale.cleanup)}</small>
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {

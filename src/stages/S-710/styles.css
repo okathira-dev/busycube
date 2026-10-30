@@ -21,3 +21,8 @@
   box-shadow: 0 0.8rem 2rem #090611aa;
   backdrop-filter: blur(8px);
 }
+@media (max-width: 600px) {
+  .s710-answer {
+    position: static;
+  }
+}

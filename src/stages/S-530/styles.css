@@ -1,0 +1,35 @@
+.s530-axes {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.s530-axis {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.s530-diagram {
+  width: 11rem;
+  height: 10rem;
+  overflow: visible;
+}
+.s530-phone {
+  fill: #211a35;
+  stroke: #d8d0e5;
+  stroke-width: 2;
+}
+.s530-screen {
+  fill: #302640;
+  stroke: #81758f;
+}
+.s530-direction {
+  stroke: #8a7d9d;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.s530-direction[data-reached="true"] {
+  stroke: #34d399;
+  filter: drop-shadow(0 0 4px #34d39980);
+}

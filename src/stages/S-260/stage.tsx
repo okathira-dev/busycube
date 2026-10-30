@@ -1,103 +1,120 @@
 import "./styles.css";
 import ColorizeOutlined from "@mui/icons-material/ColorizeOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { statusText } from "../../ui/statusLocale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useState } from "react";
-import { statusText } from "../../ui/statusLocale";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
-type PeripheralStatus = "idle" | "read" | "cancelled" | "unavailable";
-
-interface EyeDropperResult {
-  sRGBHex: string;
-}
-
-interface EyeDropperInstance {
-  open(options?: { signal?: AbortSignal }): Promise<EyeDropperResult>;
-}
-
-interface EyeDropperWindow extends Window {
-  EyeDropper: new () => EyeDropperInstance;
-}
-
-const EYEDROPPER_TARGET = "#a78bfa";
+type EyeDropperApi = new () => {
+  open(options: { signal: AbortSignal }): Promise<{ sRGBHex: string }>;
+};
+const target = "#a78bfa";
 
 /**
  * S-260
  *
- * 目的: browser標準のeyedropperで画面上の実pixelを選び、stageが示す紫色と完全一致するsRGB値を得る。
- * 最初の一手: 紫色の丸または「一滴を採る」を押してeyedropperを起動し、画面内の紫色target中央を選ぶ。
+ * 目的: 色コードを手掛かりに、画面から実EyeDropperで同じ色を持ち帰る。
+ * 最初の一手: 箱の近くの目標コードを読み、箱を押してスポイトを起動する。
  * 箱ごとの解法:
- * - B01「色を採る箱」: EyeDropperが返した`sRGBHex`を小文字化した値がtarget色`#a78bfa`と完全一致すると開く。
- * 使用API: EyeDropper APIの`new EyeDropper().open()`とAbortSignal。
- * 権限・privacy: eyedropperは利用者操作時だけ起動し、選択した1 pixelのsRGB hexだけを現在表示する。screen画像や選択位置を保存・送信しない。
- * 対応環境: secure contextでEyeDropper APIとbrowser所有のcolor picker UIを提供するbrowser。
+ * - B01「スポイト」: 目標#a78bfaの色を別ページや外部ツール等に表示し、箱から起動した実EyeDropperで採る。返ったsRGBHexの小文字化した値が#a78bfaへ完全一致すると開く。選択位置は制限しない。
+ * 使用API: EyeDropper.open、AbortSignal。
+ * 権限・privacy: 明示操作だけで標準pickerを開き、選択した色コードと小さな見本だけを表示する。画面画像/座標を保存・送信しない。
+ * 対応環境: secure contextでEyeDropperとbrowser所有のpickerを提供するbrowser。
  */
 function S260Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];
-  const [picked, setPicked] = useState("—");
-  const [status, setStatus] = useState<PeripheralStatus>("idle");
-
+  const [picked, setPicked] = useState<string>();
+  const [status, setStatus] = useState("");
+  const controller = useRef<AbortController | null>(null);
+  const busy = useRef(false);
+  const solved = useRef(false);
+  useEffect(() => {
+    const current = new AbortController();
+    controller.current = current;
+    const abort = () => current.abort();
+    props.signal.addEventListener("abort", abort, { once: true });
+    if (props.signal.aborted) abort();
+    return () => {
+      props.signal.removeEventListener("abort", abort);
+      abort();
+    };
+  }, [props.signal]);
   const pick = async () => {
+    const signal = controller.current?.signal;
+    if (!signal || signal.aborted || busy.current || solved.current) return;
+    if (!("EyeDropper" in window) || typeof window.EyeDropper !== "function") {
+      setStatus("unavailable");
+      return;
+    }
+    busy.current = true;
     try {
-      const EyeDropperApi = (window as unknown as EyeDropperWindow).EyeDropper;
-      const result = await new EyeDropperApi().open({ signal: props.signal });
-      if (props.signal.aborted) return;
-      const normalized = result.sRGBHex.toLowerCase();
-      setPicked(normalized);
+      // lib.dom does not yet declare this browser-owned API.
+      const Api = window.EyeDropper as EyeDropperApi;
+      const result = await new Api().open({ signal });
+      if (signal.aborted) return;
+      const value = result.sRGBHex.toLowerCase();
+      if (!/^#[a-f0-9]{6}$/.test(value)) {
+        setStatus("invalid");
+        return;
+      }
+      setPicked(value);
       setStatus("read");
-      if (normalized === EYEDROPPER_TARGET) {
+      if (value === target) {
+        solved.current = true;
         problem.solve();
       }
     } catch (error) {
-      if (props.signal.aborted) return;
+      if (signal.aborted) return;
       setStatus(
         error instanceof DOMException && error.name === "AbortError"
           ? "cancelled"
-          : "unavailable",
+          : error instanceof DOMException && error.name === "NotAllowedError"
+            ? "denied"
+            : error instanceof DOMException &&
+                error.name === "NotSupportedError"
+              ? "unavailable"
+              : "error",
       );
+    } finally {
+      busy.current = false;
     }
   };
-
   return (
     <div className="puzzle puzzle--centered">
-      <button
-        type="button"
-        className="eyedropper-target"
-        style={{ background: EYEDROPPER_TARGET }}
+      <StageProblemGiftBox
+        box={problem}
+        locale={props.locale}
         onClick={() => void pick()}
-        aria-label={stageText(props.locale, locale.purpleTarget)}
       />
-      <button
-        type="button"
-        className="stage-action"
-        onClick={() => void pick()}
-      >
-        {stageText(props.locale, locale.pickDrop)}
-      </button>
-      <p className="measurement">{picked}</p>
+      <code className="measurement s260-target">{target}</code>
+      {picked && (
+        <output className="s260-picked">
+          <span
+            className="s260-swatch"
+            style={{ backgroundColor: picked }}
+            aria-hidden="true"
+          />
+          <code>{picked}</code>
+        </output>
+      )}
       <p className="interaction-status" role="status">
         {statusText(props.locale, status)}
       </p>
-      <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
       icon: ColorizeOutlined,
-      color: "#a78bfa",
+      color: "#22d3ee",
       label: locale.B01,
     },
   },

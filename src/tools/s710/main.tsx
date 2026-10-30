@@ -1,3 +1,4 @@
+import KeyboardReturnOutlined from "@mui/icons-material/KeyboardReturnOutlined";
 import {
   BlobSource,
   BufferTarget,
@@ -21,6 +22,30 @@ import { toolCopy } from "./locale";
 import "./styles.css";
 
 class DecodeFailure extends Error {}
+
+const samples = [
+  {
+    name: "A",
+    url: new URL(
+      "../../fixtures/s710/assets/dark-frame-input.webm",
+      import.meta.url,
+    ).href,
+  },
+  {
+    name: "B",
+    url: new URL(
+      "../../fixtures/s710/assets/qr-frame-input.webm",
+      import.meta.url,
+    ).href,
+  },
+  {
+    name: "C",
+    url: new URL(
+      "../../fixtures/s710/assets/incomplete-input.webm?no-inline",
+      import.meta.url,
+    ).href,
+  },
+] as const;
 
 function drawMessage(
   context: CanvasRenderingContext2D,
@@ -82,6 +107,12 @@ function Tool() {
   const [recordingStream, setRecordingStream] = useState<MediaStream>();
   const recordingVideoRef = useRef<HTMLVideoElement>(null);
   const recorderRef = useRef<MediaRecorder | undefined>(undefined);
+  const alive = useRef(true);
+  const streamRef = useRef<MediaStream | undefined>(undefined);
+  const conversionRef = useRef<Conversion | undefined>(undefined);
+  const inputRef = useRef<Input | undefined>(undefined);
+  const loadingRef = useRef<AbortController | undefined>(undefined);
+  const outputBlob = useRef<Blob | undefined>(undefined);
   const recordingTimerRef = useRef<number | undefined>(undefined);
   const recordingIntervalRef = useRef<number | undefined>(undefined);
   const session = useMemo(
@@ -89,7 +120,7 @@ function Tool() {
     [],
   );
   const brokenOutput = new URL(
-    "../../fixtures/s710/assets/decode-failure-output.webm",
+    "../../fixtures/s710/assets/decode-failure-output.webm?no-inline",
     import.meta.url,
   ).href;
   const sourceUrl = useMemo(
@@ -132,6 +163,34 @@ function Tool() {
   useEffect(() => () => revoke(sourceUrl), [sourceUrl]);
   useEffect(() => () => revoke(outputUrl), [outputUrl]);
   useEffect(() => {
+    alive.current = true;
+    const release = () => {
+      alive.current = false;
+      loadingRef.current?.abort();
+      const recorder = recorderRef.current;
+      if (recorder) {
+        recorder.onstop = null;
+        recorder.ondataavailable = null;
+        if (recorder.state !== "inactive") recorder.stop();
+      }
+      streamRef.current?.getTracks().forEach((track) => {
+        track.stop();
+      });
+      streamRef.current = undefined;
+      void conversionRef.current?.cancel().catch(() => undefined);
+      inputRef.current?.dispose();
+      outputBlob.current = undefined;
+      if (recordingTimerRef.current) clearTimeout(recordingTimerRef.current);
+      if (recordingIntervalRef.current)
+        clearInterval(recordingIntervalRef.current);
+    };
+    window.addEventListener("pagehide", release);
+    return () => {
+      release();
+      window.removeEventListener("pagehide", release);
+    };
+  }, []);
+  useEffect(() => {
     const video = recordingVideoRef.current;
     if (!video) return;
     video.srcObject = recordingStream ?? null;
@@ -155,6 +214,8 @@ function Tool() {
   };
 
   const record = async () => {
+    if (busy || !alive.current) return;
+    setBusy(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -164,6 +225,13 @@ function Tool() {
         },
         audio: false,
       });
+      if (!alive.current) {
+        stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        return;
+      }
+      streamRef.current = stream;
       const recorder = new MediaRecorder(stream);
       recorderRef.current = recorder;
       const chunks: Blob[] = [];
@@ -174,6 +242,8 @@ function Tool() {
         stream.getTracks().forEach((track) => {
           track.stop();
         });
+        streamRef.current = undefined;
+        if (!alive.current) return;
         setSource(
           new File(chunks, "camera.webm", {
             type: recorder.mimeType || "video/webm",
@@ -185,6 +255,7 @@ function Tool() {
         if (recordingIntervalRef.current)
           window.clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = undefined;
+        if (recordingTimerRef.current) clearTimeout(recordingTimerRef.current);
         recordingTimerRef.current = undefined;
         recorderRef.current = undefined;
         setBusy(false);
@@ -206,6 +277,11 @@ function Tool() {
         10_000,
       );
     } catch {
+      streamRef.current?.getTracks().forEach((track) => {
+        track.stop();
+      });
+      streamRef.current = undefined;
+      if (!alive.current) return;
       setBusy(false);
       setRecording(false);
       setCountdown(undefined);
@@ -214,7 +290,7 @@ function Tool() {
   };
 
   const transform = async () => {
-    if (!source) return;
+    if (!source || busy || !alive.current) return;
     setBusy(true);
     setStatus(copy.compressing);
     let conversion: Conversion | undefined;
@@ -224,9 +300,18 @@ function Tool() {
         // video trackは必須だが、HLSのsegment読込に必要な音声形式は保持する。
         formats: [MP4, QTFF, MATROSKA, WEBM, OGG, ...HLS_FORMATS],
       });
-      if (!(await input.canRead()) || !(await input.getPrimaryVideoTrack()))
+      inputRef.current = input;
+      let readable = false;
+      try {
+        readable =
+          (await input.canRead()) &&
+          Boolean(await input.getPrimaryVideoTrack());
+      } catch {
         throw new DecodeFailure("input cannot be decoded");
+      }
+      if (!readable) throw new DecodeFailure("input cannot be decoded");
       const tags = await input.getMetadataTags().catch(() => undefined);
+      if (!alive.current) return;
       const secondPass = tags?.raw?.BUSYCUBE_TRANSFORMER === "S710_V1";
       const target = new BufferTarget();
       const output = new Output({ format: new WebMOutputFormat(), target });
@@ -305,6 +390,8 @@ function Tool() {
         audio: { discard: true },
         tags: { raw: { BUSYCUBE_TRANSFORMER: "S710_V1" } },
       });
+      conversionRef.current = conversion;
+      if (!alive.current) return;
       const decodeDiscarded = conversion.discardedTracks.some(
         ({ reason }) =>
           reason === "unknown_source_codec" ||
@@ -315,25 +402,36 @@ function Tool() {
       if (!conversion.isValid)
         throw new Error("compatible encoder unavailable");
       await conversion.execute();
+      if (!alive.current) return;
       if (!target.buffer) throw new Error("output buffer unavailable");
       const blob = new Blob([target.buffer], { type: "video/webm" });
+      outputBlob.current = blob;
       const nextUrl = URL.createObjectURL(blob);
-      setOutputUrl((previous) => {
-        revoke(previous);
-        return nextUrl;
-      });
+      setOutputUrl(nextUrl);
       setOutputSize(blob.size);
       setStatus(
         `${copy.done}: ${(blob.size / Math.max(1, source.size)).toFixed(2)}×.`,
       );
     } catch (error) {
+      if (!alive.current) return;
       if (error instanceof DecodeFailure) {
-        const size = await fetch(brokenOutput)
-          .then((response) => response.blob())
-          .then((blob) => blob.size);
-        setOutputUrl(brokenOutput);
-        setOutputSize(size);
-        setStatus(copy.inputDecodeFailed);
+        const rescue = new AbortController();
+        loadingRef.current = rescue;
+        try {
+          const response = await fetch(brokenOutput, { signal: rescue.signal });
+          if (!response.ok) throw new Error("Recovery unavailable");
+          const blob = await response.blob();
+          if (!alive.current || rescue.signal.aborted) return;
+          setOutputUrl(brokenOutput);
+          outputBlob.current = blob;
+          setOutputSize(blob.size);
+          setStatus(copy.inputDecodeFailed);
+        } catch {
+          if (alive.current && !rescue.signal.aborted)
+            setStatus(copy.conversionFailed);
+        } finally {
+          if (loadingRef.current === rescue) loadingRef.current = undefined;
+        }
       } else {
         setStatus(
           `${copy.conversionFailed}: ${error instanceof Error ? error.message : copy.unknownError}`,
@@ -341,8 +439,46 @@ function Tool() {
       }
     } finally {
       await conversion?.cancel().catch(() => undefined);
-      setBusy(false);
+      inputRef.current?.dispose();
+      inputRef.current = undefined;
+      conversionRef.current = undefined;
+      if (alive.current) setBusy(false);
     }
+  };
+
+  const loadInput = async (url: string, name: string) => {
+    if (busy || !alive.current) return;
+    const controller = new AbortController();
+    loadingRef.current?.abort();
+    loadingRef.current = controller;
+    setBusy(true);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) throw new Error("Input unavailable");
+      const blob = await response.blob();
+      if (!alive.current || controller.signal.aborted) return;
+      setSource(new File([blob], name, { type: "video/webm" }));
+      setStatus(copy.inputReady);
+    } catch {
+      if (alive.current && !controller.signal.aborted)
+        setStatus(copy.conversionFailed);
+    } finally {
+      if (loadingRef.current === controller) {
+        loadingRef.current = undefined;
+        if (alive.current) setBusy(false);
+      }
+    }
+  };
+  const reuseOutput = () => {
+    if (busy || !alive.current || !outputBlob.current) return;
+    // Reuse the actual generated bytes directly; fetching a blob URL would
+    // unnecessarily depend on connect-src permissions.
+    setSource(
+      new File([outputBlob.current], "clippress-compressed.webm", {
+        type: "video/webm",
+      }),
+    );
+    setStatus(copy.inputReady);
   };
 
   return (
@@ -357,10 +493,37 @@ function Tool() {
       <div className="workspace">
         <section className="pane">
           <h1>{copy.input}</h1>
+          <fieldset className="samples">
+            <legend>{copy.samples}</legend>
+            {samples.map((sample) => (
+              <span key={sample.name}>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() =>
+                    void loadInput(
+                      sample.url,
+                      `clip-${sample.name.toLowerCase()}.webm`,
+                    )
+                  }
+                >
+                  {sample.name}
+                </button>
+                <a
+                  href={sample.url}
+                  download={`clip-${sample.name.toLowerCase()}.webm`}
+                  aria-label={`${copy.download} ${sample.name}`}
+                >
+                  ↓
+                </a>
+              </span>
+            ))}
+          </fieldset>
           <label className="dropzone">
             <span>{copy.chooseVideo}</span>
             <input
               type="file"
+              disabled={busy}
               onChange={(event) => {
                 const file = event.currentTarget.files?.[0];
                 if (!file) return;
@@ -428,13 +591,23 @@ function Tool() {
             {outputSize?.toLocaleString() ?? "—"} B
           </p>
           {outputUrl ? (
-            <a
-              className="download"
-              href={outputUrl}
-              download="clippress-compressed.webm"
-            >
-              {copy.download}
-            </a>
+            <div className="output-actions">
+              <button
+                type="button"
+                disabled={busy}
+                aria-label={copy.reuseOutput}
+                onClick={reuseOutput}
+              >
+                <KeyboardReturnOutlined aria-hidden="true" />
+              </button>
+              <a
+                className="download"
+                href={outputUrl}
+                download="clippress-compressed.webm"
+              >
+                {copy.download}
+              </a>
+            </div>
           ) : null}
         </section>
       </div>

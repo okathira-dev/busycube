@@ -1,4 +1,6 @@
 import "./styles.css";
+import PauseOutlined from "@mui/icons-material/PauseOutlined";
+import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
 import ScheduleOutlined from "@mui/icons-material/ScheduleOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
@@ -17,62 +19,80 @@ import { locale } from "./locale";
 /**
  * S-170
  *
- * 目的: browserが動かす往復animationを利用者のtimingでpauseし、timeline中央付近の実進捗を読み取る。
- * 最初の一手: 横へ往復するmarkerを見て、中央へ来た瞬間に「止める／動かす」を押してpauseする。
+ * 目的: browserが動かす縦型の往復メーターを利用者のtimingでpauseし、上端の目標帯へ合わせる。
+ * 最初の一手: 上下するメーターが上端の目標帯へ入った瞬間に停止アイコンを押す。
  * 箱ごとの解法:
- * - B01「時間の箱」: pause直後の`getComputedTiming().progress`が0.5±0.1、すなわち0.4〜0.6なら開く。pause中の再押下は再生するだけで判定しない。
+ * - B02「時計」: メーターが上端の目標帯へ入ったときに停止アイコンを押す。実WAAPIをpauseした直後のgetComputedTiming().progressが0.95以上1以下なら開く。再開で再挑戦できる。
  * 使用API: Web Animations APIの`Element.animate()`、`Animation.playState` / `pause()` / `play()`、`getComputedTiming()`。
  * 権限・privacy: 権限を要求せず、animation進捗は現在表示と開箱判定にだけ使い、操作timingを保存・送信しない。
  * 対応環境: Element.animateとWeb Animations APIのtiming情報を実装するbrowser。
  */
 function S170Stage(props: Props) {
-  const problem = props.boxes[manifest.box.B01];
+  const problem = props.boxes[manifest.box.B02];
   const markerRef = useRef<HTMLSpanElement>(null);
   const animationRef = useRef<Animation | null>(null);
-  const [progress, setProgress] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     const marker = markerRef.current;
-    if (!marker) return;
+    if (!marker || typeof marker.animate !== "function") return;
     const animation = marker.animate(
-      [{ transform: "translateX(0)" }, { transform: "translateX(16rem)" }],
+      [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }],
       {
         duration: 2400,
         iterations: Number.POSITIVE_INFINITY,
         direction: "alternate",
+        easing: "linear",
       },
     );
     animationRef.current = animation;
-    return () => animation.cancel();
-  }, []);
+    const cleanup = () => {
+      animation.cancel();
+      animationRef.current = null;
+    };
+    props.signal.addEventListener("abort", cleanup, { once: true });
+    return () => {
+      props.signal.removeEventListener("abort", cleanup);
+      cleanup();
+    };
+  }, [props.signal]);
 
   const toggle = () => {
     const animation = animationRef.current;
-    if (!animation) return;
+    if (!animation || props.signal.aborted) return;
     if (animation.playState === "paused") {
       animation.play();
-      setProgress(null);
+      setPaused(false);
       return;
     }
     animation.pause();
     const value = animation.effect?.getComputedTiming().progress;
-    const nextProgress = typeof value === "number" ? value : 0;
-    setProgress(nextProgress);
-    if (Math.abs(nextProgress - 0.5) <= 0.1) {
+    setPaused(true);
+    if (typeof value === "number" && value >= 0.95 && value <= 1) {
       problem.solve();
     }
   };
 
   return (
     <div className="puzzle puzzle--centered">
-      <div className="timeline-clue" aria-hidden="true">
-        <span ref={markerRef} />
+      <div className="timing-meter" aria-hidden="true">
+        <span ref={markerRef} className="timing-meter__fill" />
+        <span className="timing-meter__target" />
       </div>
-      <p className="measurement" aria-live="polite">
-        {progress === null ? "…" : `${Math.round(progress * 100)}%`}
-      </p>
-      <button type="button" className="stage-action" onClick={toggle}>
-        {stageText(props.locale, locale.pausePlay)}
+      <button
+        type="button"
+        className="stage-action"
+        onClick={toggle}
+        aria-label={stageText(
+          props.locale,
+          paused ? locale.play : locale.pause,
+        )}
+      >
+        {paused ? (
+          <PlayArrowOutlined aria-hidden="true" />
+        ) : (
+          <PauseOutlined aria-hidden="true" />
+        )}
       </button>
       <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
@@ -81,10 +101,10 @@ function S170Stage(props: Props) {
 
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B02]: {
       icon: ScheduleOutlined,
       color: "#fbbf24",
-      label: locale.B01,
+      label: locale.B02,
     },
   },
   probe: () =>

@@ -1,4 +1,39 @@
-.return-clue {
-  font-size: clamp(6rem, 25vw, 10rem);
-  line-height: 1;
+.beacon-path {
+  position: relative;
+  width: min(28rem, 75vw);
+  height: 9rem;
+  border: 2px solid #6f5a91;
+  border-radius: 1rem;
+}
+.beacon-path__receiver {
+  position: absolute;
+  top: 3rem;
+  right: 2rem;
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid #22d3ee;
+  border-radius: 50%;
+}
+.beacon-path__point {
+  position: absolute;
+  top: 3rem;
+  left: 1rem;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #22d3ee 0 25%, transparent 28%);
+  cursor: pointer;
+  transition: left 0.6s ease-in-out;
+}
+.beacon-path__point:focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 3px;
+}
+.beacon-path[data-motion="inside"] .beacon-path__point,
+.beacon-path[data-motion="received"] .beacon-path__point {
+  left: calc(100% - 5rem);
+}
+.beacon-path[data-motion="outside"] .beacon-path__point {
+  left: calc(100% + 6rem);
 }

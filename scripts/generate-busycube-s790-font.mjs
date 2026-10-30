@@ -47,12 +47,12 @@ function checksum(buffer) {
 
 function makeNameTable() {
   const names = [
-    [1, "Busycube Key"],
+    [1, "Busycube Key Two"],
     [2, "Regular"],
-    [3, "Busycube Key 1.0"],
-    [4, "Busycube Key Regular"],
-    [5, "Version 1.000"],
-    [6, "BusycubeKey-Regular"],
+    [3, "Busycube Key Two 2.0"],
+    [4, "Busycube Key Two Regular"],
+    [5, "Version 2.000"],
+    [6, "BusycubeKeyTwo-Regular"],
   ];
   const strings = names.map(([, value]) =>
     Buffer.from(value, "utf16le").swap16(),
@@ -84,62 +84,62 @@ function makeNameTable() {
   ]);
 }
 
+const patterns = [
+  ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+];
 function makeCmapTable() {
-  const endCodes = [0x0020, 0xe000, 0xffff];
-  const startCodes = [...endCodes];
-  const deltas = [1 - 0x0020, 2 - 0xe000, 1];
+  const codes = [0x20, 0xe001, 0xe002, 0xe003, 0xe004, 0xffff];
+  const count = codes.length;
+  const search = 2 ** Math.floor(Math.log2(count));
   const format4 = Buffer.concat([
     u16(4),
-    u16(40),
+    u16(16 + count * 8),
     u16(0),
-    u16(6),
-    u16(4),
-    u16(1),
-    u16(2),
-    ...endCodes.map(u16),
+    u16(count * 2),
+    u16(search * 2),
+    u16(Math.log2(search)),
+    u16(count * 2 - search * 2),
+    ...codes.map(u16),
     u16(0),
-    ...startCodes.map(u16),
-    ...deltas.map(u16),
-    u16(0),
-    u16(0),
-    u16(0),
+    ...codes.map(u16),
+    ...codes.map((code, index) =>
+      u16((index === count - 1 ? 0 : index + 1) - code),
+    ),
+    ...codes.map(() => u16(0)),
   ]);
   return Buffer.concat([u16(0), u16(1), u16(3), u16(1), u32(12), format4]);
 }
-
-function makeGlyph() {
-  const points = [
-    [100, 350],
-    [430, 350],
-    [430, 250],
-    [850, 250],
-    [850, 400],
-    [700, 400],
-    [700, 550],
-    [850, 550],
-    [850, 700],
-    [430, 700],
-    [430, 600],
-    [100, 600],
-  ];
-  const xDeltas = points.map(([x], index) => x - (points[index - 1]?.[0] ?? 0));
-  const yDeltas = points.map(
-    ([, y], index) => y - (points[index - 1]?.[1] ?? 0),
-  );
+function makeGlyph(pattern) {
+  const points = [];
+  for (let y = 0; y < 7; y++)
+    for (let x = 0; x < 5; x++) {
+      if (pattern[y][x] !== "1") continue;
+      const left = 100 + x * 140,
+        bottom = 100 + (6 - y) * 100;
+      // Clockwise outer contours. Adjacent cells meet to form block letters.
+      points.push(
+        [left, bottom],
+        [left, bottom + 100],
+        [left + 140, bottom + 100],
+        [left + 140, bottom],
+      );
+    }
   return Buffer.concat([
-    i16(1),
+    i16(points.length / 4),
     i16(100),
-    i16(250),
-    i16(850),
-    i16(700),
-    u16(points.length - 1),
+    i16(100),
+    i16(800),
+    i16(800),
+    ...Array.from({ length: points.length / 4 }, (_, i) => u16(i * 4 + 3)),
     u16(0),
-    Buffer.alloc(points.length, 0x01),
-    ...xDeltas.map(i16),
-    ...yDeltas.map(i16),
+    Buffer.alloc(points.length, 1),
+    ...points.map(([x], i) => i16(x - (points[i - 1]?.[0] ?? 0))),
+    ...points.map(([, y], i) => i16(y - (points[i - 1]?.[1] ?? 0))),
   ]);
 }
-
 function makeOs2Table() {
   const panose = Buffer.from([2, 0, 5, 3, 0, 0, 0, 0, 0, 0]);
   return Buffer.concat([
@@ -177,7 +177,10 @@ function makeOs2Table() {
 }
 
 function buildFont() {
-  const glyph = makeGlyph();
+  const glyphs = patterns.map((pattern) => pad4(makeGlyph(pattern)));
+  const glyph = Buffer.concat(glyphs);
+  const offsets = [0, 0, 0];
+  for (const part of glyphs) offsets.push(offsets.at(-1) + part.length);
   const head = Buffer.concat([
     fixed(1),
     fixed(1),
@@ -210,13 +213,13 @@ function buildFont() {
     i16(0),
     Buffer.alloc(8),
     i16(0),
-    u16(3),
+    u16(6),
   ]);
   const maxp = Buffer.concat([
     fixed(1),
-    u16(3),
-    u16(12),
-    u16(1),
+    u16(6),
+    u16(140),
+    u16(35),
     u16(0),
     u16(0),
     u16(2),
@@ -248,9 +251,11 @@ function buildFont() {
     ["hhea", hhea],
     [
       "hmtx",
-      Buffer.concat([u16(1000), i16(0), u16(500), i16(0), u16(1000), i16(0)]),
+      Buffer.concat(
+        Array.from({ length: 6 }, () => Buffer.concat([u16(900), i16(0)])),
+      ),
     ],
-    ["loca", Buffer.concat([u16(0), u16(0), u16(0), u16(glyph.length / 2)])],
+    ["loca", Buffer.concat(offsets.map((offset) => u16(offset / 2)))],
     ["maxp", maxp],
     ["name", makeNameTable()],
     ["post", post],
@@ -303,12 +308,16 @@ await writeFile(
   resolve(assetRoot, "font-contract.json"),
   `${JSON.stringify(
     {
-      postscriptName: "BusycubeKey-Regular",
-      glyph: "U+E000",
+      postscriptName: "BusycubeKeyTwo-Regular",
+      glyphs: ["U+E001", "U+E002", "U+E003", "U+E004"],
+      text: "\uE001\uE002\uE003\uE004",
+      answer: "CUBE",
       sha256,
     },
     null,
     2,
   )}\n`,
 );
-console.log(`Generated Busycube Key font (${font.length} bytes, ${sha256}).`);
+console.log(
+  `Generated Busycube Key Two font (${font.length} bytes, ${sha256}).`,
+);

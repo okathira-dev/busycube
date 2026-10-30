@@ -3,15 +3,10 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  keepAwake: { ja: "灯りを保つ", en: "Keep the light awake" },
-  returnAfterAcquire: {
-    ja: "取得後にタブを隠し、戻る。",
-    en: "After acquiring, hide the tab and return.",
-  },
+  release: { ja: "解除", en: "Release" },
+  waiting: { ja: "待機", en: "Waiting" },
   holding: { ja: "保持中", en: "Holding" },
-  reacquired: { ja: "再取得済み", en: "Reacquired" },
   released: { ja: "解放済み", en: "Released" },
   unavailable: { ja: "Wake Lockを利用できません", en: "Wake Lock unavailable" },
-  B01: { ja: "灯りを保つ箱", en: "Wake-lock box" },
-  B02: { ja: "灯りを戻す箱", en: "Wake-lock return box" },
+  B03: { ja: "日差し", en: "Sun rays" },
 });

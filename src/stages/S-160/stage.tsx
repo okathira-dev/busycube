@@ -35,7 +35,7 @@ function pointOnCanvas(canvas: HTMLCanvasElement, event: PointerEvent) {
  * 目的: 一続きのpointer軌跡から距離・所要時間・区間速度を計算し、遅い部分と速い部分を両方含むgestureを作る。
  * 最初の一手: canvas内を押したまま、途中でゆっくり動かす区間と素早く動かす区間を作り、十分長く線を引いて離す。
  * 箱ごとの解法:
- * - B01「入力軌跡の箱」: pointerup/cancel時に総距離240 canvas px以上、総時間450 ms以上、0.25 px/ms未満の区間と0.75 px/ms超の区間が同じstroke内にあれば開く。
+ * - B01「点を結ぶ道」: canvas内で遅い区間と速い区間を含む線を描いて離す。pointerup/cancel時に総距離240 canvas px以上、総時間450 ms以上、0.25 px/ms未満の区間と0.75 px/ms超の区間が同じstroke内にあれば開く。
  * 使用API: Pointer Events、pointer capture、event座標と`timeStamp`、Canvas 2D描画、距離計算。
  * 権限・privacy: 権限を要求せず、座標と時刻は現在strokeの描画・計算にだけ使い、軌跡や入力特性を保存・送信しない。
  * 対応環境: Pointer Eventsとpointer capture、Canvas 2Dを実装し、drag入力を行えるbrowserとpointer device。

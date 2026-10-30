@@ -1,20 +1,8 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  intro: {
-    ja: "この額縁だけを画面いっぱいにしてください。箱はその中でだけ触れます。",
-    en: "Make only this frame fill the screen. The box can be touched only inside it.",
-  },
-  fullscreen: {
-    ja: "額縁を画面いっぱいにする",
-    en: "Fill the screen with this frame",
-  },
-  waiting: {
-    ja: "額縁を画面いっぱいにしてください。",
-    en: "Make the frame fullscreen.",
-  },
-  ready: { ja: "箱に触れられます。", en: "The box is now reachable." },
-  B01: { ja: "画面いっぱいの箱", en: "Fullscreen box" },
+  fullscreen: { ja: "全画面", en: "Fullscreen" },
+  exit: { ja: "全画面を閉じる", en: "Exit fullscreen" },
+  B01: { ja: "外向きの四隅", en: "Outward corners" },
 });

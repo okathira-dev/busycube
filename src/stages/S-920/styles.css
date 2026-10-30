@@ -19,12 +19,6 @@
   gap: 1rem;
   margin-inline: auto;
 }
-.s920-stage > p {
-  max-width: 42rem;
-  margin: 0;
-  color: #d8cfdf;
-  text-align: center;
-}
 .s920-frame-shell {
   position: relative;
   width: 100%;
@@ -42,24 +36,6 @@
   box-shadow:
     inset 0 0 0 1px #c4a8eb55,
     0 1rem 2.5rem #08060e99;
-}
-.s920-frame-shell__label {
-  position: absolute;
-  z-index: 1;
-  top: 0.18rem;
-  left: 50%;
-  border-radius: 999px;
-  padding-inline: 0.55rem;
-  color: #eadfff;
-  background: #171121e6;
-  font:
-    700 0.62rem / 1.35 ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
-  letter-spacing: 0.12em;
-  pointer-events: none;
-  transform: translateX(-50%);
 }
 .s920-frame {
   display: block;
@@ -87,7 +63,13 @@
 }
 .s920-start {
   min-width: 11rem;
+  color: #f5efff;
   anchor-name: --s920-start-anchor;
+}
+.s920-frame-content svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: currentColor;
 }
 .s920-popover,
 .s920-shadow-room {

@@ -1,0 +1,30 @@
+.s590-field {
+  position: relative;
+  width: min(100%, 36rem);
+  aspect-ratio: 1;
+}
+.s590-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.s590-ring {
+  fill: none;
+  stroke: #8a7d9d;
+  stroke-width: 2;
+}
+.s590-indicator {
+  fill: #f3e8ff;
+  stroke: #a855f7;
+  stroke-width: 3;
+}
+.s590-overflow {
+  fill: none;
+  stroke: #f3e8ff;
+  stroke-width: 3;
+}
+.s590-box {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(0.65);
+}

@@ -1,105 +1,151 @@
 import "./styles.css";
 import SportsEsportsOutlined from "@mui/icons-material/SportsEsportsOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
+import {
+  completedGamepadGroups,
+  gamepadGroups,
+  type PadInput,
+  readGamepadInputs,
+} from "./functions";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
-import { useEffect, useState } from "react";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
-interface GamepadGesture {
-  pressed: number;
-  axis: number;
-  complete: boolean;
-}
-
-export function readGamepadGesture(
-  gamepads: readonly (Gamepad | null)[],
-): GamepadGesture {
-  const gamepad = gamepads.find((candidate) => candidate?.connected);
-  if (!gamepad) return { pressed: 0, axis: 0, complete: false };
-  const pressed = gamepad.buttons.filter(
-    (button) => button.pressed || button.value > 0.75,
-  ).length;
-  const axis = Math.max(0, ...gamepad.axes.map((value) => Math.abs(value)));
-  return { pressed, axis, complete: pressed >= 2 && axis >= 0.65 };
-}
+const inputGlyph: Record<PadInput, string> = {
+  up: "↑",
+  left: "←",
+  down: "↓",
+  right: "→",
+  "ls-up": "↑",
+  "ls-left": "←",
+  "ls-down": "↓",
+  "ls-right": "→",
+  "rs-up": "↑",
+  "rs-left": "←",
+  "rs-down": "↓",
+  "rs-right": "→",
+  "face-top": "△",
+  "face-left": "□",
+  "face-bottom": "×",
+  "face-right": "○",
+  L: "L",
+  R: "R",
+  ZL: "ZL",
+  ZR: "ZR",
+  L3: "L3",
+  R3: "R3",
+  select: "▱",
+  start: "▷",
+};
 
 /**
  * S-200
  *
- * 目的: 接続済みgamepadの複数buttonとanalog axisを同じpoll frameで組み合わせた同時入力を観測する。
- * 最初の一手: gamepadを接続して任意のbuttonを2個以上押したまま、stickまたはtrigger相当のaxisを大きく倒す。
+ * 目的: 標準gamepadの各部位を実操作し、画面の対応する印をそろえる。
+ * 最初の一手: 接続したgamepadのbuttonやstickを動かし、図の反応を調べる。
  * 箱ごとの解法:
- * - B01「同時入力の箱」: 最初に見つかったconnected gamepadで、pressedまたはvalue 0.75超のbuttonが2個以上かつ最大絶対axis値が0.65以上の同時状態になると開く。
- * 使用API: Gamepad APIの`navigator.getGamepads()`、GamepadButton状態、axis値、`requestAnimationFrame()` polling。
- * 権限・privacy: 権限を要求せず、button数と最大axis絶対値だけを現在表示に使い、device ID・mapping・入力履歴を保存・送信しない。
- * 対応環境: Gamepad APIを実装し、利用者操作後の接続gamepadとanalog axisをpageへ公開するbrowser。
+ * - B02「ゲームパッド」: 十字キーの上下左右をそれぞれ押す。standard mappingのbuttons 12〜15を同じ挑戦中にすべて観測すると開く。
+ * - B03「ゲームパッド」: 左stickを上下左右へ倒す。axes 0/1の各正負0.65以上をすべて観測すると開く。
+ * - B04「ゲームパッド」: 右stickを上下左右へ倒す。axes 2/3の各正負0.65以上をすべて観測すると開く。
+ * - B05「ゲームパッド」: 右手の四buttonをそれぞれ押す。buttons 0〜3の全押下を観測すると開く。
+ * - B06「ゲームパッド」: LとRの肩buttonをそれぞれ押す。buttons 4/5の両押下を観測すると開く。
+ * - B07「ゲームパッド」: ZLとZRのtriggerをそれぞれ押す。buttons 6/7の両押下を観測すると開く。
+ * - B08「ゲームパッド」: 左右のstickをそれぞれ押し込む。buttons 10/11の両押下を観測すると開く。
+ * - B09「ゲームパッド」: 中央の選択・開始buttonをそれぞれ押す。buttons 8/9の両押下を観測すると開く。全button共通でpressedまたはvalue>0.75を押下とする。
+ * 使用API: navigator.getGamepads、standard mappingのbuttons/axes、requestAnimationFrame。
+ * 権限・privacy: 権限を要求せず、入力の印だけを挑戦中に保持する。機器ID・生入力履歴を保存・送信しない。
+ * 対応環境: Gamepad APIでstandard mappingのcontrollerを公開するブラウザー。home/captureは必須にしない。
  */
 function S200Stage(props: Props) {
-  const problem = props.boxes[manifest.box.B01];
-  const [gesture, setGesture] = useState<GamepadGesture>({
-    pressed: 0,
-    axis: 0,
-    complete: false,
-  });
-
+  const boxes = useRef(props.boxes);
+  boxes.current = props.boxes;
+  const [seen, setSeen] = useState<ReadonlySet<PadInput>>(new Set());
+  const [active, setActive] = useState<ReadonlySet<PadInput>>(new Set());
   useEffect(() => {
     let frame = 0;
-    let previousUpdate = 0;
-    const poll = (now: number) => {
-      const next = readGamepadGesture(navigator.getGamepads());
-      if (now - previousUpdate >= 80 || next.complete) {
-        setGesture(next);
-        previousUpdate = now;
+    let previous = "";
+    const observed = new Set<PadInput>();
+    const solved = new Set<string>();
+    const poll = () => {
+      if (props.signal.aborted) return;
+      const inputs = readGamepadInputs(navigator.getGamepads());
+      let changed = false;
+      for (const input of inputs) {
+        if (!observed.has(input)) {
+          observed.add(input);
+          changed = true;
+        }
       }
-      if (next.complete) {
-        problem.solve();
-        return;
+      const signature = [...inputs].sort().join(",");
+      if (signature !== previous) {
+        setActive(inputs);
+        previous = signature;
       }
-      frame = window.requestAnimationFrame(poll);
+      if (changed) {
+        setSeen(new Set(observed));
+        for (const box of completedGamepadGroups(observed)) {
+          if (!solved.has(box)) {
+            solved.add(box);
+            boxes.current[box].solve();
+          }
+        }
+      }
+      frame = requestAnimationFrame(poll);
     };
-    frame = window.requestAnimationFrame(poll);
-    const cleanup = () => window.cancelAnimationFrame(frame);
-    props.signal.addEventListener("abort", cleanup, { once: true });
+    if (typeof navigator.getGamepads === "function")
+      frame = requestAnimationFrame(poll);
+    const stop = () => cancelAnimationFrame(frame);
+    props.signal.addEventListener("abort", stop, { once: true });
     return () => {
-      props.signal.removeEventListener("abort", cleanup);
-      cleanup();
+      props.signal.removeEventListener("abort", stop);
+      stop();
     };
-  }, [problem.solve, props.signal]);
+  }, [props.signal]);
 
   return (
     <div className="puzzle puzzle--centered">
-      <div className="gamepad-meter" aria-hidden="true">
-        <span style={{ width: `${Math.min(100, gesture.pressed * 40)}%` }} />
-        <span style={{ width: `${Math.round(gesture.axis * 100)}%` }} />
+      <div className="gamepad-diagram">
+        {gamepadGroups.map((group) => (
+          <div key={group.box} className="gamepad-group" data-part={group.name}>
+            <div className="gamepad-inputs" aria-hidden="true">
+              {group.inputs.map((input) => (
+                <span
+                  key={input}
+                  data-seen={seen.has(input)}
+                  data-active={active.has(input)}
+                >
+                  {inputGlyph[input]}
+                </span>
+              ))}
+            </div>
+            <StageProblemGiftBox
+              box={props.boxes[group.box]}
+              locale={props.locale}
+            />
+          </div>
+        ))}
       </div>
-      <p className="measurement">
-        {stageText(props.locale, locale.pressed)} {gesture.pressed} ·{" "}
-        {stageText(props.locale, locale.axis)} {gesture.axis.toFixed(2)}
-      </p>
-      <p className="interaction-status" role="status">
-        {stageText(props.locale, locale.gestureHint)}
-      </p>
-      <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
   );
 }
 
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
-      icon: SportsEsportsOutlined,
-      color: "#fb7185",
-      label: locale.B01,
-    },
+    B02: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
+    B03: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
+    B04: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
+    B05: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
+    B06: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
+    B07: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
+    B08: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
+    B09: { icon: SportsEsportsOutlined, tone: "rose", label: locale.box },
   },
   probe: () =>
     safeCapabilityProbe(() =>

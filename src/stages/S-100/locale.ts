@@ -1,8 +1,7 @@
 import { defineStageLocale } from "../locale";
 import { stageName } from "./name";
-
 export const locale = defineStageLocale({
   stageName,
-  senseOrientation: { ja: "姿勢を感じる", en: "Sense orientation" },
-  B01: { ja: "端末姿勢の箱", en: "Orientation box" },
+  phone: { ja: "スマートフォン", en: "Smartphone" },
+  B02: { ja: "画面の回転", en: "Screen rotation" },
 });

@@ -61,7 +61,9 @@ export const messages = {
     japanese: "日本語",
     english: "English",
     privacy:
-      "権限は必要な箱を操作したときだけ求めます。カメラやマイクの生データは保存・送信しません。",
+      "権限は必要な箱を操作したときだけ求めます。ゲーム自身はカメラやマイクの生データを保存・送信しません。ブラウザーやOSの組み込み機能によるデータの扱いは、各提供元の方針と設定に従います。",
+    contactsNotice:
+      "連絡先を使う場合は、実在の連絡先ではなく架空の連絡先で遊んでください。作成した連絡先は、遊び終えたら端末の連絡先アプリから削除してください。",
     aboutBody:
       "画面の中だけでなく、タブ、端末、権限、ファイルなども手掛かりになるパズルです。",
     aboutPlayTitle: "遊び方",
@@ -198,7 +200,9 @@ export const messages = {
     japanese: "日本語",
     english: "English",
     privacy:
-      "Permissions are requested only after you interact with a box that needs them. Raw camera and microphone data is never stored or sent.",
+      "Permissions are requested only after you interact with a box that needs them. The game itself does not store or transmit raw camera or microphone data. Data handled by built-in browser and OS features follows each provider's policies and settings.",
+    contactsNotice:
+      "Use fictional contacts instead of real contacts when playing. Delete any contacts you created from your device's contacts app when you finish.",
     aboutBody:
       "The clues extend beyond the page into tabs, devices, permissions, files, and the browser itself.",
     aboutPlayTitle: "How to play",

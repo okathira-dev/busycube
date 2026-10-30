@@ -4,5 +4,5 @@
 export {
   type UnicodeFixture,
   unicodeExpressionText,
-  unicodeFixtures,
 } from "./unicode/data";
+export { unicodeFixtures } from "./unicode/product";

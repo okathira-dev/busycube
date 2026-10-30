@@ -1,0 +1,25 @@
+.s560-axes {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.s560-axis {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.s560-diagram {
+  width: 12rem;
+  height: 12rem;
+  color: #b8a7d5;
+}
+.s560-progress {
+  fill: none;
+  stroke: #c084fc;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.s560-axis[data-reached="true"] .s560-progress {
+  stroke: #34d399;
+}

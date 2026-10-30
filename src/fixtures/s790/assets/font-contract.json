@@ -1,5 +1,7 @@
 {
-  "postscriptName": "BusycubeKey-Regular",
-  "glyph": "U+E000",
-  "sha256": "2447489196e5eee305a40fde1731bbb35b22de0d73c34e64894e1112ce9c90cb"
+  "postscriptName": "BusycubeKeyTwo-Regular",
+  "glyphs": ["U+E001", "U+E002", "U+E003", "U+E004"],
+  "text": "",
+  "answer": "CUBE",
+  "sha256": "77b51e79d8fbc3913580d7c77c647166da25da12ec0541301b6cc9a11f6c65f8"
 }

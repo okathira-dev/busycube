@@ -1,207 +1,196 @@
 import "./styles.css";
+import CheckOutlined from "@mui/icons-material/CheckOutlined";
 import FileDownloadOutlined from "@mui/icons-material/FileDownloadOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
-import { manifest } from "./manifest";
-
-type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useState } from "react";
 import { stageText } from "../locale";
 import { locale } from "./locale";
+import { manifest } from "./manifest";
+import {
+  compressionFormats,
+  createParcels,
+  type ParcelFormat,
+  UnsupportedCompressionError,
+} from "./parcels";
 
-type CompressionFormat = "gzip" | "deflate" | "deflate-raw";
-
-const parcels = [
-  {
-    boxId: manifest.box.B01,
-    url: new URL("../../fixtures/s880/assets/parcel-a.gz", import.meta.url)
-      .href,
-    format: "gzip",
-    marker: "pocket compass",
-    length: 65_536,
-  },
-  {
-    boxId: manifest.box.B02,
-    url: new URL("../../fixtures/s880/assets/parcel-b.deflate", import.meta.url)
-      .href,
-    format: "deflate",
-    marker: "violet ledger",
-    length: 65_536,
-  },
-  {
-    boxId: manifest.box.B03,
-    url: new URL("../../fixtures/s880/assets/parcel-c.raw", import.meta.url)
-      .href,
-    format: "deflate-raw",
-    marker: "ember receipt",
-    length: 65_536,
-  },
-] as const satisfies readonly {
-  boxId: (typeof manifest.boxIds)[number];
-  url: string;
-  format: CompressionFormat;
-  marker: string;
-  length: number;
-}[];
-
-async function readDecompressed(url: string, format: CompressionFormat) {
-  const response = await fetch(url);
-  if (!response.ok || !response.body) throw new Error("fixture unavailable");
-  const reader = response.body
-    .pipeThrough(new DecompressionStream(format))
-    .getReader();
-  const chunks: Uint8Array[] = [];
-  let length = 0;
-  for (;;) {
-    const result = await reader.read();
-    if (result.done) break;
-    chunks.push(result.value);
-    length += result.value.byteLength;
-  }
-  const output = new Uint8Array(length);
-  let offset = 0;
-  for (const chunk of chunks) {
-    output.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return output;
-}
+type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
+type ReadyRound = {
+  formats: readonly ParcelFormat[];
+  files: readonly { name: string; url: string }[];
+};
+type Status = "preparing" | "ready" | "unsupported" | "failed";
+const formatNames = {
+  gzip: "gzip",
+  deflate: "zlib (DEFLATE)",
+  "deflate-raw": "raw DEFLATE",
+};
 
 /**
- * S-880 — 3形式の圧縮荷物
+ * S-880
  *
- * 目的: 同梱された圧縮byte streamを、選択した実`DecompressionStream`形式で展開し、形式ごとの違いを突き止める。
- * 最初の一手: 青い荷物の形式で`gzip`を選び、「荷物を開く」を押す。失敗表示になった荷物は形式を変えて再挑戦できる。
+ * 目的: 外部で三ファイルの圧縮形式を調べ、一括回答で一箱を開ける。
+ * 最初の一手: 紙と下向き矢印の箱を押し、三つの.compressedファイルを取得して調べる。
  * 箱ごとの解法:
- * - B01: 青い荷物で`gzip`を選ぶ。展開結果が65,536 byteで、復号textに`pocket compass`を含むと開く。
- * - B02: 紫の荷物で`deflate`を選ぶ。展開結果が65,536 byteで、復号textに`violet ledger`を含むと開く。
- * - B03: 赤い荷物で`deflate-raw`を選ぶ。展開結果が65,536 byteで、復号textに`ember receipt`を含むと開く。
- * 使用API: Fetch APIの`Response.body`、`DecompressionStream`、`ReadableStream.pipeThrough()`とreader、`TextDecoder`。
- * 権限・privacy: 権限・端末入力・保存・外部送信は使わず、同梱された3つの固定binary assetだけをfetchする。
- * 対応環境: `DecompressionStream`が`gzip`、`deflate`、`deflate-raw`を実装するbrowser。
+ * - B04「紙と下向き矢印」: 三ファイルをダウンロードし、各ファイルの実形式をgzip / zlib (DEFLATE) / raw DEFLATEから選び確定する。実CompressionStream生成とDecompressionStream完全往復検証が成功した同じ世代の三割当すべてに一致すると開く。途中選択では判定しない。誤答では割当と本文を更新して未選択へ戻す。
+ * 使用API: CompressionStream/DecompressionStream三形式、ReadableStream、crypto.getRandomValues、Blob URL、native download。
+ * 権限・privacy: 権限不要。無作為な問題本文/byte列/回答を訪問中memoryだけで扱い、外部送信や端末入力の取得はしない。プレイヤーが明示操作で問題ファイルを保存する。
+ * 対応環境: 三形式すべてを圧縮/展開できるbrowser。複数ダウンロードが制限される場合も、同じ世代の各ファイルを個別リンクから再取得できる。拡張子は圧縮形式を示さない。
  */
 function S880Stage(props: Props) {
-  const [formats, setFormats] = useState<Record<string, CompressionFormat>>({
-    [manifest.box.B01]: "gzip",
-    [manifest.box.B02]: "gzip",
-    [manifest.box.B03]: "gzip",
-  });
-  const [states, setStates] = useState<
-    Record<string, "idle" | "waiting" | "opened" | "failed">
-  >({});
-  const unsupported = !window.DecompressionStream;
-
-  const open = async (parcel: (typeof parcels)[number]) => {
-    const selected = formats[parcel.boxId] ?? "gzip";
-    setStates((current) => ({ ...current, [parcel.boxId]: "waiting" }));
-    try {
-      const bytes = await readDecompressed(parcel.url, selected);
-      const text = new TextDecoder().decode(bytes);
-      if (
-        selected !== parcel.format ||
-        bytes.byteLength !== parcel.length ||
-        !text.includes(parcel.marker)
-      ) {
-        throw new Error("parcel did not match");
-      }
-      props.boxes[parcel.boxId].solve();
-      setStates((current) => ({ ...current, [parcel.boxId]: "opened" }));
-    } catch {
-      setStates((current) => ({ ...current, [parcel.boxId]: "failed" }));
+  const [generation, setGeneration] = useState(1);
+  const [round, setRound] = useState<ReadyRound | null>(null);
+  const [status, setStatus] = useState<Status>("preparing");
+  const [answers, setAnswers] = useState<string[]>(["", "", ""]);
+  const [retried, setRetried] = useState(false);
+  const previous = useRef<readonly ParcelFormat[] | undefined>(undefined);
+  useEffect(() => {
+    const controller = new AbortController();
+    const urls: string[] = [];
+    const stop = () => {
+      controller.abort();
+      for (const url of urls.splice(0)) URL.revokeObjectURL(url);
+    };
+    props.signal.addEventListener("abort", stop, { once: true });
+    if (props.signal.aborted) controller.abort();
+    setRound(null);
+    setStatus("preparing");
+    void createParcels(controller.signal, previous.current)
+      .then((created) => {
+        if (controller.signal.aborted) return;
+        const files = created.parcels.map((blob, index) => {
+          const url = URL.createObjectURL(blob);
+          urls.push(url);
+          return {
+            name: `parcel-${generation}-${["a", "b", "c"][index]}.compressed`,
+            url,
+          };
+        });
+        previous.current = created.formats;
+        setRound({ formats: created.formats, files });
+        setStatus("ready");
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        for (const url of urls.splice(0)) URL.revokeObjectURL(url);
+        setStatus(
+          error instanceof UnsupportedCompressionError
+            ? "unsupported"
+            : "failed",
+        );
+      });
+    return () => {
+      props.signal.removeEventListener("abort", stop);
+      stop();
+    };
+  }, [generation, props.signal]);
+  const downloadAll = () => {
+    if (!round || props.signal.aborted) return;
+    for (const file of round.files) {
+      const anchor = document.createElement("a");
+      anchor.href = file.url;
+      anchor.download = file.name;
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
     }
   };
-
+  const submit = () => {
+    if (!round || props.signal.aborted || answers.some((answer) => !answer))
+      return;
+    if (round.formats.every((format, index) => answers[index] === format)) {
+      props.boxes[manifest.box.B04].solve();
+    } else {
+      setRound(null);
+      setAnswers(["", "", ""]);
+      setRetried(true);
+      setGeneration((current) => current + 1);
+    }
+  };
   return (
     <div className="puzzle s880-stage">
-      <div className="problem-row">
-        {parcels.map((parcel) => (
-          <StageProblemGiftBox
-            key={parcel.boxId}
-            box={props.boxes[parcel.boxId]}
-            locale={props.locale}
-          />
-        ))}
-      </div>
-      <p>{stageText(props.locale, locale.intro)}</p>
-      <div className="s880-parcels">
-        {parcels.map((parcel) => {
-          const state = states[parcel.boxId] ?? "idle";
-          return (
-            <section
-              className="s880-parcel"
-              key={parcel.boxId}
-              data-state={state}
-            >
-              <h2>{stageText(props.locale, locale[parcel.boxId])}</h2>
-              <label>
-                {stageText(props.locale, locale.chooseFormat)}
+      <StageProblemGiftBox
+        box={props.boxes[manifest.box.B04]}
+        locale={props.locale}
+        onClick={round ? downloadAll : undefined}
+      />
+      {round ? (
+        <form
+          className="s880-answer"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit();
+          }}
+        >
+          <div className="s880-parcels">
+            {round.files.map((file, index) => (
+              <section className="s880-parcel" key={file.name}>
+                <a href={file.url} download={file.name}>
+                  {file.name}
+                </a>
                 <select
-                  value={formats[parcel.boxId] ?? "gzip"}
+                  aria-label={file.name}
+                  value={answers[index] ?? ""}
                   onChange={(event) =>
-                    setFormats((current) => ({
-                      ...current,
-                      [parcel.boxId]: event.target.value as CompressionFormat,
-                    }))
+                    setAnswers((current) =>
+                      current.map((answer, i) =>
+                        i === index ? event.target.value : answer,
+                      ),
+                    )
                   }
-                  disabled={unsupported || state === "waiting"}
                 >
-                  <option value="gzip">gzip</option>
-                  <option value="deflate">deflate</option>
-                  <option value="deflate-raw">deflate-raw</option>
+                  <option value="">—</option>
+                  {compressionFormats.map((format) => (
+                    <option key={format} value={format}>
+                      {formatNames[format]}
+                    </option>
+                  ))}
                 </select>
-              </label>
-              <button
-                type="button"
-                onClick={() => void open(parcel)}
-                disabled={unsupported || state === "waiting"}
-              >
-                {stageText(props.locale, locale.open)}
-              </button>
-              <output aria-live="polite">
-                {unsupported
-                  ? stageText(props.locale, locale.unsupported)
-                  : state === "waiting"
-                    ? stageText(props.locale, locale.waiting)
-                    : state === "opened"
-                      ? stageText(props.locale, locale.opened)
-                      : state === "failed"
-                        ? stageText(props.locale, locale.failed)
-                        : ""}
-              </output>
-            </section>
-          );
-        })}
-      </div>
+              </section>
+            ))}
+          </div>
+          <button
+            type="submit"
+            className="stage-action"
+            aria-label={stageText(props.locale, locale.confirm)}
+            disabled={answers.some((answer) => !answer)}
+          >
+            <CheckOutlined />
+          </button>
+        </form>
+      ) : (
+        <p role="status">
+          {stageText(
+            props.locale,
+            locale[status === "ready" ? "preparing" : status],
+          )}
+        </p>
+      )}
+      {retried ? (
+        <output aria-label={stageText(props.locale, locale.newQuestion)}>
+          ↻
+        </output>
+      ) : null}
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B04]: {
       icon: FileDownloadOutlined,
       color: "#c084fc",
-      label: locale.B01,
-    },
-    [manifest.box.B02]: {
-      icon: FileDownloadOutlined,
-      color: "#a855f7",
-      label: locale.B02,
-    },
-    [manifest.box.B03]: {
-      icon: FileDownloadOutlined,
-      color: "#7e22ce",
-      label: locale.B03,
+      label: locale.B04,
     },
   },
   probe: () =>
     safeCapabilityProbe(() =>
-      "DecompressionStream" in window ? "available" : "unsupported",
+      "CompressionStream" in window && "DecompressionStream" in window
+        ? "available"
+        : "unsupported",
     ),
   Component: S880Stage,
 });

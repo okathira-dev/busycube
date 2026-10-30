@@ -5,6 +5,7 @@ import type {
   ProblemBoxVisualState,
 } from "../domain/stageRuntime";
 import type { Locale } from "../i18n";
+import type { StageArrival } from "./navigationJourney";
 
 /** A stable identity used by routing, persistence, and the stage catalogue. */
 export type StageIdFormat = `S-${number}`;
@@ -117,6 +118,8 @@ export interface StageProgressApi {
 }
 
 export interface StageServices {
+  installationId?: string;
+  arrival?: StageArrival;
   drive?: {
     configured: boolean;
     sync(): Promise<DriveStageSyncResult>;

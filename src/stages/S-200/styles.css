@@ -1,18 +1,101 @@
-.gamepad-meter {
+.gamepad-diagram {
   display: grid;
-  gap: 0.6rem;
-  width: min(100%, 20rem);
+  grid-template-areas: "shoulders triggers triggers" "dpad center face" "left-stick clicks right-stick";
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  width: min(100%, 48rem);
+  padding: 1rem;
+  border: 3px solid #6f5a91;
+  border-radius: 5rem 5rem 8rem 8rem;
+  background: #211a32;
 }
-.gamepad-meter::before,
-.gamepad-meter::after {
-  color: #a9a0b8;
-  font-size: 0.72rem;
+.gamepad-group {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 0.5rem;
 }
-.gamepad-meter span {
-  display: block;
-  min-width: 0.25rem;
-  height: 0.8rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #fb7185, #fbbf24);
-  transition: width 80ms linear;
+.gamepad-group[data-part="dpad"] {
+  grid-area: dpad;
+}
+.gamepad-group[data-part="left-stick"] {
+  grid-area: left-stick;
+}
+.gamepad-group[data-part="right-stick"] {
+  grid-area: right-stick;
+}
+.gamepad-group[data-part="face"] {
+  grid-area: face;
+}
+.gamepad-group[data-part="shoulders"] {
+  grid-area: shoulders;
+}
+.gamepad-group[data-part="triggers"] {
+  grid-area: triggers;
+}
+.gamepad-group[data-part="clicks"] {
+  grid-area: clicks;
+}
+.gamepad-group[data-part="center"] {
+  grid-area: center;
+}
+.gamepad-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+}
+.gamepad-inputs span {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #6f5a91;
+  border-radius: 50%;
+  background: #181329;
+  color: #d8cfdf;
+}
+.gamepad-inputs [data-seen="true"] {
+  border-color: #34d399;
+  color: #34d399;
+}
+.gamepad-inputs [data-active="true"] {
+  background: #34d399;
+  color: #181329;
+  transform: scale(0.9);
+}
+.gamepad-group[data-part$="stick"] .gamepad-inputs {
+  border: 2px solid #6f5a91;
+  border-radius: 50%;
+  padding: 0.4rem;
+}
+.gamepad-group:is([data-part="dpad"], [data-part="face"], [data-part$="stick"])
+  .gamepad-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: repeat(3, auto);
+}
+.gamepad-inputs:has(> :nth-child(4)) > :nth-child(1) {
+  grid-area: 1 / 2;
+}
+.gamepad-inputs:has(> :nth-child(4)) > :nth-child(2) {
+  grid-area: 2 / 1;
+}
+.gamepad-inputs:has(> :nth-child(4)) > :nth-child(3) {
+  grid-area: 3 / 2;
+}
+.gamepad-inputs:has(> :nth-child(4)) > :nth-child(4) {
+  grid-area: 2 / 3;
+}
+@media (width <= 540px) {
+  .gamepad-diagram {
+    gap: 0.5rem;
+    padding: 0.75rem 0.25rem;
+    border-radius: 2rem;
+  }
+  .gamepad-inputs span {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.8rem;
+  }
 }

@@ -1,5 +1,9 @@
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
+import { createPocDownload } from "./pocBackgroundFetch";
 import { securityHeaders } from "./securityHeaders";
+import { extractSharedMarks, sharedMarksPlaceholder } from "./shareTarget";
+import { createSlowDownload } from "./slowDownload";
 
 type AssetBinding = {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
@@ -31,6 +35,32 @@ app.use("*", async (context, next) => {
   }
 });
 
+app.use("/share-target", bodyLimit({ maxSize: 64 * 1024 }));
+app.post("/share-target", async (context) => {
+  if (
+    context.req.header("Content-Type")?.split(";")[0]?.trim().toLowerCase() !==
+    "application/x-www-form-urlencoded"
+  )
+    return context.text("Unsupported share encoding", 415);
+  const form = new URLSearchParams(await context.req.text());
+  const marks = extractSharedMarks(form.getAll("text").join("\n"));
+  if (!marks.length) return context.text("No game mark", 400);
+  const assetUrl = new URL("/share-target/receive.html", context.req.url);
+  const template = await context.env.ASSETS.fetch(assetUrl);
+  if (!template.ok) return context.text("Share receiver unavailable", 503);
+  const html = await template.text();
+  if (!html.includes(sharedMarksPlaceholder))
+    return context.text("Share receiver unavailable", 503);
+  return context.html(
+    html.replace(sharedMarksPlaceholder, marks.join(",")),
+    200,
+    { "Cache-Control": "no-store" },
+  );
+});
+app.all("/share-target", (context) =>
+  context.body(null, 405, { Allow: "POST" }),
+);
+
 for (const [route, manifestPath] of Object.entries(paymentManifestRoutes)) {
   // このendpointはmetadataを公開するだけで、credentialを受け取らず、状態も
   // 変更しない。CORS headerを付けてcross-origin readを許可することもない。
@@ -47,6 +77,21 @@ for (const [route, manifestPath] of Object.entries(paymentManifestRoutes)) {
 // cache済みapplication responseを区別する。
 app.get("/offline-beacon/network-probe", (context) =>
   context.body(null, 204, { "Cache-Control": "no-store" }),
+);
+
+// 固定64KiBを約90秒で流す隔離PoC。待ち時間・サイズは外から変更できない。
+app.on(["GET", "HEAD"], "/poc/background-fetch/slow.bin", (context) =>
+  createPocDownload(context.req.raw),
+);
+app.all("/poc/background-fetch/slow.bin", (context) =>
+  context.body(null, 405, { Allow: "GET, HEAD" }),
+);
+
+app.on(["GET", "HEAD"], "/background-fetch/parcel.bin", (context) =>
+  createSlowDownload(context.req.raw),
+);
+app.all("/background-fetch/parcel.bin", (context) =>
+  context.body(null, 405, { Allow: "GET, HEAD" }),
 );
 
 // 本番routingはrun_worker_firstのpathだけでHonoを呼ぶ。binding fallbackを

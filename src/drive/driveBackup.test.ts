@@ -77,7 +77,33 @@ describe("Drive replica backup sync", () => {
       "S-020": { solvedBoxIds: ["B01"] },
     });
     expect(result.remoteInstallationId).toBe("remote");
+    expect(result.document.installationId).toBe("local");
+    expect(result.document.settings.locale).toBe("ja");
   });
+
+  it.each([undefined, null, "", "  "])(
+    "rejects missing installation identity (%s) without uploading",
+    async (installationId) => {
+      const broken = replica("missing-id", "busycube-progress-missing.json");
+      const fetcher: typeof fetch = vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ files: [broken] }))
+        .mockResolvedValueOnce(
+          jsonResponse({
+            ...createProgressDocument("en", "remote"),
+            installationId,
+          }),
+        );
+      await expect(
+        syncDriveBackup(
+          "token",
+          createProgressDocument("ja", "local"),
+          fetcher,
+        ),
+      ).rejects.toMatchObject({ code: "corrupt" });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    },
+  );
 
   it("retries the complete merge after an ETag conflict", async () => {
     const local = createProgressDocument("ja", "local");

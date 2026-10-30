@@ -8,8 +8,8 @@ export const locale = defineStageLocale({
     ja: "作成したpasskeyは端末のpasskey管理画面に残る。遊び終えたらBusycube用passkeyをそこで削除できる。",
     en: "The created passkey remains in your device's passkey manager. You can remove the Busycube passkey there after playing.",
   },
-  browserError: { ja: "ブラウザエラー", en: "Browser error" },
-  B01: { ja: "保存の箱", en: "Create box" },
-  B02: { ja: "利用成功の箱", en: "Use-success box" },
-  B03: { ja: "利用失敗の箱", en: "Use-failure box" },
+  waitingEnded: { ja: "待機を終了しました", en: "Waiting ended" },
+  B01: { ja: "鍵と＋", en: "Key with plus" },
+  B02: { ja: "開いた錠前", en: "Open padlock" },
+  B04: { ja: "斜線付きの鍵", en: "Key with slash" },
 });

@@ -116,7 +116,7 @@ self.addEventListener("activate", (event) => {
           keys
             .filter(
               (key) =>
-                key.startsWith(cachePrefix) &&
+                /^busycube-(?:shell|assets)-v\d+$/.test(key) &&
                 (developmentMode || !currentCaches.has(key)),
             )
             .map((key) => caches.delete(key)),
@@ -219,41 +219,177 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
+async function markS090NotificationClicked(nonce) {
+  const database = await new Promise((resolve, reject) => {
+    let abandoned = false;
+    const request = indexedDB.open("busycube-notification-receipts", 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains("attempts")) request.result.createObjectStore("attempts");
+    };
+    request.onsuccess = () => { if (abandoned) request.result.close(); else resolve(request.result); };
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => { abandoned = true; reject(new Error("Notification storage blocked")); };
+  });
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction("attempts", "readwrite");
+    const store = transaction.objectStore("attempts");
+    let accepted = false;
+    const request = store.get("S-090");
+    request.onsuccess = () => {
+      const value = request.result;
+      if (value?.nonce !== nonce || value.state !== "pending") return;
+      store.put({ nonce, state: "clicked" }, "S-090");
+      accepted = true;
+    };
+    transaction.oncomplete = () => { database.close(); resolve(accepted); };
+    transaction.onerror = transaction.onabort = () => { database.close(); reject(transaction.error); };
+  });
+}
+
+const vaultChannel = "busycube-vault-v1";
+const vaultTag = "busycube-S-420-v1";
+let vaultQueue = Promise.resolve();
+function queueVault(action) {
+  const pending = vaultQueue.then(action);
+  vaultQueue = pending.catch(() => {});
+  return pending;
+}
+function validVaultNonce(value) { return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value); }
+async function vaultDatabase() {
+  return new Promise((resolve, reject) => {
+    let abandoned = false;
+    const request = indexedDB.open("busycube-notification-vault-v1", 1);
+    request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains("attempts")) request.result.createObjectStore("attempts"); };
+    request.onsuccess = () => { if (abandoned) request.result.close(); else resolve(request.result); };
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => { abandoned = true; reject(new Error("Vault storage blocked")); };
+  });
+}
+async function vaultStore(value) {
+  const database = await vaultDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction("attempts", "readwrite");
+    const store = transaction.objectStore("attempts");
+    let result;
+    if (value !== undefined) { store.put(value, "current"); result = value; }
+    else { const read = store.get("current"); read.onsuccess = () => { result = read.result; }; }
+    transaction.oncomplete = () => { database.close(); resolve(result); };
+    transaction.onerror = transaction.onabort = () => { database.close(); reject(transaction.error); };
+  });
+}
+async function vaultTarget(installationId) {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`busycube:notification-vault:S-420:1\0${installationId}`)));
+  return Array.from({ length: 5 }, (_, index) => (digest[0] & (1 << index)) ? "R" : "L").join("");
+}
+function vaultSnapshot(record, claim = false) {
+  if (!record) return null;
+  return { nonce: record.nonce, revision: record.revision, input: record.input, phase: record.phase, verdict: record.phase === "ended" ? record.verdict : null, won: claim && record.won === true && record.credited !== true };
+}
+async function closeVaultNotifications() {
+  for (const tag of [vaultTag, "busycube-S-410", "busycube-S-420"]) {
+    for (const notification of await self.registration.getNotifications({ tag })) notification.close();
+  }
+}
+async function showVaultNotification(record) {
+  await self.registration.showNotification("Busycube · 🔒", {
+    body: record.locale === "en" ? "Try" : "試す",
+    tag: vaultTag,
+    renotify: true,
+    actions: [{ action: "left", title: "←" }, { action: "right", title: "→" }],
+    data: { kind: vaultChannel, stage: "S-420", nonce: record.nonce, step: record.input.length },
+  });
+}
+async function hintVaultOwner(record) {
+  const owner = await self.clients.get(record.owner);
+  owner?.postMessage({ type: vaultChannel, nonce: record.nonce });
+}
+function vaultOwnedSource(source) {
+  if (source?.type !== "window" || typeof source.id !== "string") return false;
+  try { const url = new URL(source.url); return url.origin === scopeUrl.origin && url.href.startsWith(self.registration.scope); } catch { return false; }
+}
+async function vaultMessage(data, source) {
+  if (!validVaultNonce(data.nonce) || !vaultOwnedSource(source) || typeof data.installationId !== "string" || !data.installationId.trim()) throw new Error("Invalid vault request");
+  let record = await vaultStore();
+  if (data.action === "start") {
+    record = { nonce: data.nonce, installationId: data.installationId, owner: source.id, locale: data.locale === "en" ? "en" : "ja", input: "", revision: 0, phase: "starting" };
+    await vaultStore(record);
+    try { await closeVaultNotifications(); await showVaultNotification(record); record.phase = "active"; }
+    catch { record.phase = "error"; }
+    record.revision++;
+    await vaultStore(record);
+    return vaultSnapshot(record);
+  }
+  if (!record || record.nonce !== data.nonce || record.installationId !== data.installationId) return null;
+  if (data.action === "consume") {
+    if (record.phase !== "ended") return null;
+    const snapshot = vaultSnapshot(record, true);
+    record.credited = true;
+    await vaultStore(record);
+    return snapshot;
+  }
+  if (record.owner !== source.id) return null;
+  if (data.action === "cancel") {
+    if (["starting", "updating", "active"].includes(record.phase)) {
+      record.phase = "cancelled"; record.revision++; await vaultStore(record); await closeVaultNotifications();
+    }
+    return vaultSnapshot(record);
+  }
+  return data.action === "read" ? vaultSnapshot(record) : null;
+}
+async function vaultNotificationClick(data, action) {
+  if (!validVaultNonce(data.nonce) || !Number.isSafeInteger(data.step) || data.step < 0 || !["left", "right", ""].includes(action)) return;
+  const record = await vaultStore();
+  if (!record || record.nonce !== data.nonce || record.phase !== "active" || record.input.length !== data.step) return;
+  if (action === "left" || action === "right") {
+    record.input += action === "left" ? "L" : "R";
+    record.phase = "updating";
+    record.revision++;
+    await vaultStore(record);
+    try { await showVaultNotification(record); record.phase = "active"; }
+    catch { record.phase = "error"; }
+    record.revision++;
+    await vaultStore(record);
+    await hintVaultOwner(record);
+    return;
+  }
+  const target = await vaultTarget(record.installationId);
+  record.verdict = Array.from(record.input, (value, index) => value === target[index]);
+  record.won = record.input === target;
+  record.phase = "ended";
+  record.revision++;
+  record.credited = false;
+  await vaultStore(record);
+  const url = new URL("./", self.registration.scope);
+  url.searchParams.set("stage", "S-420");
+  url.searchParams.set("locale", record.locale);
+  url.searchParams.set("vault-receipt", record.nonce);
+  const owner = await self.clients.get(record.owner);
+  if (owner && vaultOwnedSource(owner)) { const navigated = await owner.navigate(url.href); if (navigated) await navigated.focus(); }
+  else await self.clients.openWindow(url.href);
+}
 self.addEventListener("notificationclick", (event) => {
   const data = event.notification.data;
-  if (data?.stage === "S-410" || data?.stage === "S-420") {
-    const actionCode = event.action === "left" ? "L" : event.action === "right" ? "R" : "";
+  if (data?.stage === "S-090") {
     event.notification.close();
-    if (actionCode) {
-      let sequence = `${data.sequence || ""}${actionCode}`;
-      if (data.stage === "S-410" && !String(data.target).startsWith(sequence)) sequence = "";
-      if (data.stage === "S-410" && sequence === data.target) {
-        const target = new URL("./?stage=S-410&notification-sequence=S-410-ok", self.registration.scope).href;
-        event.waitUntil(openOrFocus(target));
-        return;
-      }
-      if (data.stage === "S-420" && sequence.length > String(data.target).length) sequence = actionCode;
-      event.waitUntil(self.registration.showNotification(event.notification.title, {
-        body: event.notification.body,
-        tag: event.notification.tag,
-        renotify: true,
-        actions: [{ action: "left", title: "←" }, { action: "right", title: "→" }],
-        data: { ...data, sequence },
-      }));
-      return;
-    }
-    if (data.stage === "S-420") {
-      const target = new URL(`./?stage=S-420&vault-attempt=${encodeURIComponent(data.sequence || "")}`, self.registration.scope).href;
-      event.waitUntil(openOrFocus(target));
-      return;
-    }
+    if (event.isTrusted !== true || typeof data.nonce !== "string" || !/^[0-9a-f-]{36}$/i.test(data.nonce)) return;
+    event.waitUntil((async () => {
+      if (!await markS090NotificationClicked(data.nonce)) return;
+      const target = new URL("./", self.registration.scope);
+      target.searchParams.set("stage", "S-090");
+      target.searchParams.set("locale", data.locale === "en" ? "en" : "ja");
+      target.searchParams.set("notification-receipt", data.nonce);
+      await openOrFocus(target.href);
+    })().catch(() => {}));
+    return;
   }
+  if (data?.kind === vaultChannel && data.stage === "S-420") {
+    event.notification.close();
+    if (event.isTrusted !== true) return;
+    event.waitUntil(queueVault(() => vaultNotificationClick(data, event.action)).catch(() => {}));
+    return;
+  }
+  if (data?.stage === "S-410" || data?.stage === "S-420") { event.notification.close(); return; }
   event.notification.close();
-  const target = new URL(
-    "./?stage=S-090&notification=1",
-    self.registration.scope,
-  ).href;
-  event.waitUntil(openOrFocus(target));
 });
 
 async function openOrFocus(target) {
@@ -264,5 +400,12 @@ async function openOrFocus(target) {
 }
 
 self.addEventListener("message", (event) => {
-  if (event.data === "SKIP_WAITING") void self.skipWaiting();
+  if (event.data === "SKIP_WAITING") { void self.skipWaiting(); return; }
+  if (event.data?.type !== vaultChannel || event.isTrusted !== true) return;
+  const port = event.ports?.[0];
+  event.waitUntil(queueVault(() => vaultMessage(event.data, event.source)).then(snapshot => {
+    port?.postMessage({ type: vaultChannel, nonce: event.data.nonce, snapshot });
+  }).catch(() => {
+    port?.postMessage({ type: vaultChannel, nonce: event.data.nonce, error: true });
+  }));
 });

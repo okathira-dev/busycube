@@ -1,169 +1,198 @@
 import "./styles.css";
 import MouseOutlined from "@mui/icons-material/MouseOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
+  resolveStageBoxColor,
   type StageComponentProps,
 } from "../../runtime/stageContract";
-import { StageProblemGiftBox } from "../../ui/GiftBox";
+import { GiftBox, StageProblemGiftBox } from "../../ui/GiftBox";
+import { stageText } from "../locale";
+import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { stageText } from "../locale";
-import { locale } from "./locale";
-
-const targetDefinitions = [
+const targets = [
   { boxId: manifest.box.B01, x: 800, y: -600 },
   { boxId: manifest.box.B02, x: -3000, y: 4000 },
   { boxId: manifest.box.B03, x: 6000, y: 8000 },
-] as const satisfies readonly { boxId: string; x: number; y: number }[];
-
-const hitRadius = 64;
-
-function distanceBetween(
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-) {
-  return Math.hypot(to.x - from.x, to.y - from.y);
-}
-
+] as const;
 function directionArrow(dx: number, dy: number) {
-  const angle = Math.atan2(dy, dx);
-  const index = Math.round(angle / (Math.PI / 4) + 8) % 8;
-  return ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"][index] ?? "•";
+  return (
+    ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"][
+      Math.round(Math.atan2(dy, dx) / (Math.PI / 4) + 8) % 8
+    ] ?? "•"
+  );
 }
 
 /**
  * S-820
  *
- * 目的: pointer lockの相対`movementX/Y`だけで無限平面を移動し、遠方三座標の64 px以内へreticleを合わせて箱をclickする。
- * 最初の一手: 「ポインターを固定する」を押し、画面下の矢印と距離を見ながらmouseを動かして最初の(800,-600)へ近づく。
+ * 目的: Pointer Lockの実相対移動で仮想平面を探索し、三箱を照準へ合わせる。
+ * 最初の一手: 格子の平面をクリックして固定し、流れる背景と方向・距離を見て箱へ近づく。
  * 箱ごとの解法:
- * - B01「近い座標の箱」: lock中の累積位置を(800,-600)の64 px以内へ入れ、中央に現れた箱をtrusted clickすると開く。
- * - B02「遠い座標の箱」: 同じ累積位置を(-3000,4000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
- * - B03「最遠座標の箱」: 同じ累積位置を(6000,8000)の64 px以内へ移し、lockを維持したtrusted clickで開く。
- * 使用API: Pointer Lock APIのrequest/exit/change/error、MouseEvent `movementX` / `movementY` / isTrusted、window blur。
- * 権限・privacy: pointer lockはbutton操作で要求し、現在の累積x/yだけを訪問memoryに持つ。mouse pathやdevice情報を保存・送信しない。
- * 対応環境: desktop mouseとPointer Lock APIを提供し、長い相対移動を継続取得できるbrowser。
+ * - B01「マウス」: ロック中の実movementX/Yで累積位置を(800,-600)の半径64以内へ動かすと自動で開く。
+ * - B02「マウス」: 同じ平面を(-3000,4000)の半径64以内へ動かすと自動で開く。
+ * - B03「マウス」: 同じ平面を(6000,8000)の半径64以内へ動かすと自動で開く。
+ * 使用API: Pointer Lockのrequest/exit/change/error、trusted MouseEventのmovementX/Y、window blur。
+ * 権限・privacy: 平面の明示操作でPointer Lockを要求する。位置は訪問中memoryだけで扱い、移動履歴や端末情報は保存・送信しない。
+ * 対応環境: 長い相対mouse移動を取得できるdesktop browser。平面の再クリック・標準Esc・focus喪失・離脱で解除する。
  */
 function S820Stage(props: Props) {
-  const planeRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const planeRef = useRef<HTMLButtonElement>(null);
+  const boxesRef = useRef(props.boxes);
+  boxesRef.current = props.boxes;
+  const positionRef = useRef({ x: 0, y: 0 });
+  const [position, setPosition] = useState(positionRef.current);
   const [locked, setLocked] = useState(false);
-  const problems = targetDefinitions.map((target) => ({
-    ...target,
-    problem: props.boxes[target.boxId],
-  }));
-  const nearby = useMemo(
-    () =>
-      problems.find((target) => distanceBetween(position, target) <= hitRadius),
-    [position, problems],
-  );
-
+  const [error, setError] = useState(false);
   useEffect(() => {
-    const handleChange = () =>
-      setLocked(document.pointerLockElement === planeRef.current);
-    const handleMove = (event: MouseEvent) => {
-      if (document.pointerLockElement !== planeRef.current) return;
-      setPosition((current) => ({
-        x: current.x + event.movementX,
-        y: current.y + event.movementY,
-      }));
+    let active = true;
+    const solved = new Set<string>();
+    const plane = planeRef.current;
+    const ownsLock = () =>
+      plane !== null && document.pointerLockElement === plane;
+    const unlock = () => {
+      if (ownsLock()) document.exitPointerLock();
     };
-    const handleError = () => setLocked(false);
-    const handleBlur = () => {
-      if (document.pointerLockElement === planeRef.current) {
-        document.exitPointerLock();
+    const change = () => {
+      if (active) setLocked(ownsLock());
+    };
+    const fail = () => {
+      if (active) {
+        setLocked(false);
+        setError(true);
       }
     };
-    document.addEventListener("pointerlockchange", handleChange);
-    document.addEventListener("pointerlockerror", handleError);
-    document.addEventListener("mousemove", handleMove);
-    window.addEventListener("blur", handleBlur);
-    props.signal.addEventListener("abort", handleBlur, { once: true });
+    const move = (event: MouseEvent) => {
+      if (
+        !active ||
+        props.signal.aborted ||
+        !ownsLock() ||
+        !event.isTrusted ||
+        !Number.isFinite(event.movementX) ||
+        !Number.isFinite(event.movementY)
+      )
+        return;
+      const next = {
+        x: positionRef.current.x + event.movementX,
+        y: positionRef.current.y + event.movementY,
+      };
+      if (!Number.isFinite(next.x) || !Number.isFinite(next.y)) return;
+      positionRef.current = next;
+      setPosition(next);
+      for (const target of targets) {
+        if (
+          !solved.has(target.boxId) &&
+          Math.hypot(target.x - next.x, target.y - next.y) <= 64
+        ) {
+          solved.add(target.boxId);
+          boxesRef.current[target.boxId].solve();
+        }
+      }
+    };
+    document.addEventListener("pointerlockchange", change);
+    document.addEventListener("pointerlockerror", fail);
+    document.addEventListener("mousemove", move);
+    window.addEventListener("blur", unlock);
+    props.signal.addEventListener("abort", unlock, { once: true });
     return () => {
-      document.removeEventListener("pointerlockchange", handleChange);
-      document.removeEventListener("pointerlockerror", handleError);
-      document.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("blur", handleBlur);
-      props.signal.removeEventListener("abort", handleBlur);
-      handleBlur();
+      active = false;
+      document.removeEventListener("pointerlockchange", change);
+      document.removeEventListener("pointerlockerror", fail);
+      document.removeEventListener("mousemove", move);
+      window.removeEventListener("blur", unlock);
+      props.signal.removeEventListener("abort", unlock);
+      unlock();
     };
   }, [props.signal]);
-
+  const toggle = async () => {
+    const plane = planeRef.current;
+    if (!plane || props.signal.aborted) return;
+    if (document.pointerLockElement === plane) {
+      document.exitPointerLock();
+      return;
+    }
+    setError(false);
+    try {
+      await plane.requestPointerLock();
+      if (props.signal.aborted && document.pointerLockElement === plane)
+        document.exitPointerLock();
+    } catch {
+      if (!props.signal.aborted) setError(true);
+    }
+  };
   return (
-    <div className="puzzle puzzle--centered s820-stage">
+    <div className="puzzle s820-stage">
       <div className="problem-row">
-        {problems.map(({ boxId, problem }) => (
+        {targets.map(({ boxId }) => (
           <StageProblemGiftBox
             key={boxId}
-            box={problem}
+            box={props.boxes[boxId]}
             locale={props.locale}
           />
         ))}
       </div>
-      <p>{stageText(props.locale, locale.intro)}</p>
-      <button
-        type="button"
-        className="stage-action"
-        onClick={() => planeRef.current?.requestPointerLock()}
-      >
-        {stageText(props.locale, locale.begin)}
-      </button>
-      <section
-        ref={planeRef}
+      <div
         className="s820-plane"
-        data-locked={locked ? "true" : "false"}
-        aria-label={stageText(
-          props.locale,
-          locked ? locale.locked : locale.unlocked,
-        )}
+        data-locked={locked}
+        style={{
+          backgroundPosition: `${-position.x % 80}px ${-position.y % 80}px`,
+        }}
       >
-        <span className="s820-reticle" aria-hidden={!nearby}>
-          {nearby ? (
-            <StageProblemGiftBox
-              box={nearby.problem}
-              locale={props.locale}
-              onClick={(event) => {
-                if (
-                  event.isTrusted &&
-                  document.pointerLockElement === planeRef.current &&
-                  distanceBetween(position, nearby) <= hitRadius
-                ) {
-                  nearby.problem.solve();
-                }
-              }}
+        <button
+          ref={planeRef}
+          type="button"
+          className="s820-control"
+          aria-label={stageText(props.locale, locale.plane)}
+          onClick={() => void toggle()}
+        />
+        {targets.map((target) => (
+          <span
+            className="s820-world-box"
+            key={target.boxId}
+            style={{
+              left: `calc(50% + ${target.x - position.x}px)`,
+              top: `calc(50% + ${target.y - position.y}px)`,
+            }}
+          >
+            <GiftBox
+              state={props.boxes[target.boxId].state}
+              color={resolveStageBoxColor(props.boxes[target.boxId].definition)}
+              label=""
+              size="compact"
+              decorative
             />
-          ) : (
-            "+"
-          )}
+          </span>
+        ))}
+        <span className="s820-reticle" aria-hidden="true">
+          +
         </span>
-      </section>
-      <output className="s820-position" aria-live="polite">
-        {stageText(props.locale, locale.position)}: ({Math.round(position.x)},{" "}
-        {Math.round(position.y)})
-      </output>
+      </div>
       <ul className="s820-targets">
-        {problems.map((target) => {
-          const dx = target.x - position.x;
-          const dy = target.y - position.y;
-          return (
-            <li key={target.boxId}>
-              {directionArrow(dx, dy)} {stageText(props.locale, locale.target)}{" "}
-              {Math.round(Math.hypot(dx, dy))}px
-            </li>
-          );
-        })}
+        {targets.map((target) => (
+          <li
+            key={target.boxId}
+            style={{
+              color: resolveStageBoxColor(props.boxes[target.boxId].definition),
+            }}
+          >
+            {directionArrow(target.x - position.x, target.y - position.y)}{" "}
+            {Math.round(
+              Math.hypot(target.x - position.x, target.y - position.y),
+            )}
+            px
+          </li>
+        ))}
       </ul>
-      <p className="interaction-status">
-        {stageText(props.locale, nearby ? locale.nearby : locale.noBox)}
-      </p>
+      {error ? (
+        <p role="status">{stageText(props.locale, locale.failed)}</p>
+      ) : null}
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {

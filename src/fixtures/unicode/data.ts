@@ -164,6 +164,13 @@ function formatOperand(system: NumeralSystem, value: number): string {
   }
 }
 
+export function formatUnicodeOperand(
+  fixture: UnicodeFixture,
+  value: number,
+): string {
+  return formatOperand(fixture.system, value);
+}
+
 export function parseUnicodeOperand(
   fixture: UnicodeFixture,
   text: string,

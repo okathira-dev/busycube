@@ -176,6 +176,7 @@ interface DocumentPictureInPictureEvent extends Event {
 }
 
 interface DocumentPictureInPicture extends EventTarget {
+  readonly window: Window | null;
   requestWindow(options?: { width?: number; height?: number }): Promise<Window>;
 }
 
@@ -201,7 +202,7 @@ declare class EditContext extends EventTarget {
   updateText(start: number, end: number, text: string): void;
   updateSelection(start: number, end: number): void;
   updateControlBounds(bounds: DOMRect): void;
-  updateSelectionBounds(anchor: DOMRect, focus: DOMRect): void;
+  updateSelectionBounds(bounds: DOMRect): void;
   updateCharacterBounds(
     rangeStart: number,
     characterBounds: readonly DOMRect[],

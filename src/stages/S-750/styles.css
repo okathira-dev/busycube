@@ -9,3 +9,28 @@
   text-align: left;
   white-space: pre-wrap;
 }
+.s750-journey {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  color: #f9a8d4;
+}
+.s750-journey > svg,
+.s750-journey > span > svg:first-child {
+  width: 3rem;
+  height: 3rem;
+}
+.s750-journey > span {
+  position: relative;
+}
+.s750-journey > span > svg:last-child {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.s750-puzzle[data-waiting="true"] .s750-sms {
+  border-color: #f9a8d4;
+  box-shadow: 0 0 1.5rem #f472b622;
+}
