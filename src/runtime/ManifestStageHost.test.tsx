@@ -8,6 +8,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import { StrictMode } from "react";
 import { createProgressDocument } from "../domain/progress";
 import type { ProgressController } from "../hooks/useProgress";
 import { StageProblemGiftBox } from "../ui/GiftBox";
@@ -56,6 +57,51 @@ const progress: ProgressController = {
 
 describe("ManifestStageHost navigation preload", () => {
   afterEach(() => cleanup());
+  it("keeps stage actions live after StrictMode replay and aborts them on departure", async () => {
+    window.scrollTo = vi.fn();
+    const current = createStage("S-994", "Lifetime fixture");
+    const loaded = await current.manifest.load();
+    let observed: AbortSignal | undefined;
+    const action = vi.fn();
+    const manifest: StageManifest = {
+      ...current.manifest,
+      load: async () => ({
+        ...loaded,
+        Component: ({ signal }) => {
+          observed = signal;
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                if (!signal.aborted) action();
+              }}
+            >
+              Kick fixture
+            </button>
+          );
+        },
+      }),
+    };
+    const view = render(
+      <StrictMode>
+        <ManifestStageHost
+          manifest={manifest}
+          displayCode="D-000"
+          locale="en"
+          progress={progress}
+          services={{}}
+          onBack={vi.fn()}
+        />
+      </StrictMode>,
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Kick fixture" }),
+    );
+    expect(action).toHaveBeenCalledOnce();
+    expect(observed?.aborted).toBe(false);
+    view.unmount();
+    expect(observed?.aborted).toBe(true);
+  });
   it("initializes replay history after persistent progress loads, while keeping this attempt separate", async () => {
     window.scrollTo = vi.fn();
     const current = createStage("S-995", "Replay fixture");

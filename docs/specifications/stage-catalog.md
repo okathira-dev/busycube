@@ -2,18 +2,18 @@
 
 このファイルは各stageのmanifest、locale、日本語JSDocから生成される。手作業で編集せず、ステージ追加・削除・説明変更時に`pnpm run busycube:catalog:update`を実行する。個別ステージの厳密な解法、privacy、対応環境は、IDからリンクした`stage.tsx`のJSDocを正本とする。negative case、cleanup、人手確認、UI・アクセシビリティ観点は`docs/notes/stage-review.md`で管理する。
 
-- ステージ数: 84
+- ステージ数: 85
 - 問題箱数: 226
 
 | ID | ステージ | 箱数 | ギミック | API・権限 | 対応環境 |
 | --- | --- | ---: | --- | --- | --- |
 | [S-000](../../src/stages/S-000/stage.tsx) | 最初の箱 / The first box | 1 | 最初のギフトボックスを通常のUI操作で開き、箱を直接操作する基本ルールを理解する。 | HTML button相当のクリック操作とReactの`onClick` handler。 | 広く対応・権限要求なし |
 | [S-010](../../src/stages/S-010/stage.tsx) | 三つの手 / Three hands | 3 | 同じpointer操作を、端末が報告する`pointerType`ごとにmouse・touch・penへ識別する。 | Pointer Eventsの`pointerdown` eventと`PointerEvent.pointerType`。 | 広く対応・権限要求なし |
-| [S-020](../../src/stages/S-020/stage.tsx) | 枠に合わせる / Fit the frame | 1 | stage入場時のviewport幅から80 CSS px離れた目標へ、実際のbrowser viewportをresizeして合わせる。 | `window.innerWidth`、Windowの`resize` event。capability判定では`ResizeObserver`の有無も確認する。 | 広く対応・権限要求なし |
+| [S-020](../../src/stages/S-020/stage.tsx) | 枠に合わせる / Fit the frame | 1 | stage入場時のviewport幅に応じた倍率の目標へ、実際のbrowser viewportをresizeして合わせる。 | `window.innerWidth`、Windowの`resize` event。capability判定では`ResizeObserver`の有無も確認する。 | 広く対応・権限要求なし |
 | [S-030](../../src/stages/S-030/stage.tsx) | 選ばれた範囲 / The selected range | 1 | 入力欄へ回答する代わりに、文章内の指定語そのものをnative text selectionとして観測する。 | Selection APIの`document.getSelection()`とDocumentの`selectionchange` event。 | 広く対応・権限要求なし |
 | [S-040](../../src/stages/S-040/stage.tsx) | 見ない時間 / Time unseen | 2 | このpageがhiddenになってからvisibleへ戻るまでの実経過時間を測り、短い不在と長い不在を区別する。 | Page Visibility APIの`document.visibilityState`と`visibilitychange`、単調増加時計`performance.now()`。 | 広く対応・権限要求なし |
 | [S-050](../../src/stages/S-050/stage.tsx) | 二つの窓 / Two windows | 1 | 同一originで同じstageを開いた二つの独立したwindow/tabが、互いの存在をchannel越しに確認する。 | Web Cryptoの`crypto.randomUUID()`、Broadcast Channel APIのmessage送受信。 | 広く対応・権限要求なし |
-| [S-060](../../src/stages/S-060/stage.tsx) | 戻る箱と留守番箱 / Return and offline boxes | 2 | 初回訪問とは別の再入場と、offline中に送ったbeaconをService Workerが受領した事実をそれぞれ確認する。 | ゲーム内stage移動履歴、`navigator.onLine`、online/offline event、Service Worker controller、`navigator.sendBeacon()`、IndexedDB、`location.assign()`、`crypto.randomUUID()`。 | 広く対応・権限要求なし |
+| [S-060](../../src/stages/S-060/stage.tsx) | 戻って / Come back | 1 | 別ステージから戻るという再訪を一箱で発見する。 | ゲーム内stage移動履歴、React effect。 | 広く対応・権限要求なし |
 | [S-070](../../src/stages/S-070/stage.tsx) | 通信のない返事 / An offline reply | 1 | network requestの成否ではなく、browserが報告する端末のonline/offline状態を直接観測する。 | `navigator.onLine`、Windowの`online` / `offline` event。capability判定ではService WorkerとCache APIも確認する。 | 広く対応・権限要求なし |
 | [S-080](../../src/stages/S-080/stage.tsx) | 別の入口 / Another entrance | 6 | インストールしたBusycubeの表示・外側の数字・OS連携の入口を六箱で調べる。 | matchMedia、App Badging、Notification.requestPermission、getInstalledRelatedApps、manifest shortcuts/note_taking/launch_handler、LaunchQueue、Window Controls Overlay。 | 限定対応・権限要求あり |
 | [S-090](../../src/stages/S-090/stage.tsx) | 外からの呼び声 / A call from outside | 1 | ベルの箱で発行した通知をOS/browserの通知面から開き、実Service Worker通知クリックを確認する。 | Notifications permission/showNotification、Service Worker notificationclick/clients、IndexedDB、crypto.randomUUID、URL/History。 | 広く対応・権限要求あり |
@@ -91,3 +91,4 @@
 | [S-950](../../src/stages/S-950/stage.tsx) | ギター / Guitar | 6 | 太さの違う六弦に対応する主音高を、実マイクから単音ずつ認識する。 | getUserMedia、AudioContext/MediaStreamAudioSourceNode/AnalyserNodeの実Float time-domain 8192 samples、実audio clockとrequestAnimationFrame。 | 広く対応・権限要求あり |
 | [S-960](../../src/stages/S-960/stage.tsx) | ダウンロード / Download | 2 | browserの実Background Fetchを最後まで受信する操作と、外部UIで取り消す操作を二箱に分ける。 | BackgroundFetchManager.fetch/get/getIds、実progress、専用Service Workerのnative backgroundfetchsuccess/abort/fail、Cache、Web Crypto、MessageChannel。 | 限定対応・権限要求なし |
 | [S-970](../../src/stages/S-970/stage.tsx) | オフラインコンテンツ / Offline content | 2 | 保存した専用ページをbrowserの一覧から発見し、ページ内の箱操作と実一覧削除を二箱に分ける。 | ContentIndex.add/getAll/delete、native contentdelete、専用Service Worker/Cache/MessageChannel、専用ページのtrusted click。 | 限定対応・権限要求なし |
+| [S-980](../../src/stages/S-980/stage.tsx) | ゴースティング / Ghosting | 1 | ゲーム内の組込み配信表示とともにPKを遊び、配信を見て先回りする相手と切断中のシュートの謎へ進む。 | requestAnimationFrame、navigator.onLineとonline/offline、sessionStorage、crypto.getRandomValues、実pointer/keyboard click。 | 広く対応・権限要求なし |

@@ -156,8 +156,7 @@ export function ManifestStageHost({
   );
   const [loadError, setLoadError] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [abortController] = useState(() => new AbortController());
-  const signal = abortController.signal;
+  const [signal, setSignal] = useState<AbortSignal | null>(null);
   const { solved, solvedCount } = stageProgress(manifest, progress);
   // 入場前のクリアと今回のクリアを分け、再訪時にも箱の開封演出を成立させる。
   const [solvedBeforeEntry, setSolvedBeforeEntry] =
@@ -209,10 +208,12 @@ export function ManifestStageHost({
     };
   }, [attempt, manifest]);
 
-  useEffect(() => {
-    // ステージ配下のlistener・timer・streamを離脱時に一括して停止する契約。
-    return () => abortController.abort();
-  }, [abortController]);
+  useLayoutEffect(() => {
+    // StrictModeのcleanup/setupでも、停止済みsignalを次の生存期間へ渡さない。
+    const controller = new AbortController();
+    setSignal(controller.signal);
+    return () => controller.abort();
+  }, []);
 
   const solve = useCallback(
     (boxId: string) => {
@@ -322,7 +323,7 @@ export function ManifestStageHost({
         >
           {uiText(locale, "stageCrashed")}
         </Alert>
-      ) : progress.storageState === "loading" || !module ? (
+      ) : progress.storageState === "loading" || !module || !signal ? (
         <div className="stage-loading" role="status">
           <CircularProgress aria-hidden="true" size={28} />
           <span className="sr-only">{uiText(locale, "stageLoading")}</span>

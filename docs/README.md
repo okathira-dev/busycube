@@ -32,6 +32,7 @@
 2026-10-28時点で、合意済みのステージ改修・追加は実装と自動検証を終えている。実機・人手の未確認と、未合意・保留の項目は分けて管理する。
 
 - [残作業](./notes/remaining-work.md)
+- [新規ステージ・ギミック案](./notes/stage-gimmick-ideas.md)
 - [全ステージ・人手確認台帳](./notes/stage-review.md)
 - [実装作業表・検証記録](./notes/stage-review-implementation.md): 実装状態、人手未確認、最終照合
 

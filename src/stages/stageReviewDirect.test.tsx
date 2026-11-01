@@ -198,25 +198,39 @@ it("separates fair from serious and accepts serious without requiring critical",
   expect(props.boxes.B01?.solve).toHaveBeenCalledOnce();
 });
 
-it("shows a single monitor-wide gauge and opens only inside the resize target band", () => {
-  vi.spyOn(window, "innerWidth", "get").mockReturnValue(1000);
-  vi.spyOn(window.screen, "width", "get").mockReturnValue(1920);
-  const props = stageProps(resizeStage);
-  render(<resizeStage.Component {...props} />);
-  const meter = screen.getByRole("meter");
-  expect(meter.getAttribute("min")).toBe("0");
-  expect(meter.getAttribute("max")).toBe("1920");
-  expect(meter.getAttribute("low")).toBe("902");
-  expect(meter.getAttribute("high")).toBe("938");
-  expect(meter.getAttribute("optimum")).toBe("920");
-  expect(screen.queryByText(/1000.*920/)).toBeNull();
-  vi.spyOn(window, "innerWidth", "get").mockReturnValue(939);
-  act(() => window.dispatchEvent(new Event("resize")));
-  expect(props.boxes.B01?.solve).not.toHaveBeenCalled();
-  vi.spyOn(window, "innerWidth", "get").mockReturnValue(938);
-  act(() => window.dispatchEvent(new Event("resize")));
-  expect(props.boxes.B01?.solve).toHaveBeenCalledOnce();
-});
+it.each([
+  [400, 440],
+  [420, 462],
+  [421, 336.8],
+  [1000, 800],
+])(
+  "shows the fixed resize target band for initial width %i",
+  (initial, target) => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(initial);
+    vi.spyOn(window.screen, "width", "get").mockReturnValue(1920);
+    const props = stageProps(resizeStage);
+    render(<resizeStage.Component {...props} />);
+    const meter = screen.getByRole("meter");
+    expect(meter.getAttribute("min")).toBe("0");
+    expect(meter.getAttribute("max")).toBe("1920");
+    expect(Number(meter.getAttribute("low"))).toBeCloseTo(target - 18);
+    expect(Number(meter.getAttribute("high"))).toBeCloseTo(target + 18);
+    expect(Number(meter.getAttribute("optimum"))).toBeCloseTo(target);
+    expect(screen.queryByText(new RegExp(`${initial}.*${target}`))).toBeNull();
+    expect(props.boxes.B01?.solve).not.toHaveBeenCalled();
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(
+      Math.ceil(target + 19),
+    );
+    act(() => window.dispatchEvent(new Event("resize")));
+    expect(props.boxes.B01?.solve).not.toHaveBeenCalled();
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(
+      Math.floor(target + 18),
+    );
+    act(() => window.dispatchEvent(new Event("resize")));
+    expect(props.boxes.B01?.solve).toHaveBeenCalledOnce();
+    expect(Number(meter.getAttribute("optimum"))).toBeCloseTo(target);
+  },
+);
 
 it("keeps the bracketed sentence as the only visible selection clue", () => {
   render(<selectionStage.Component {...stageProps(selectionStage)} />);
@@ -281,7 +295,7 @@ it("opens S-060 only for an observed game-stage revisit, even with old saved mar
     />,
   );
   expect(props.boxes.B03?.solve).toHaveBeenCalledOnce();
-  expect(props.boxes.B02?.solve).not.toHaveBeenCalled();
+  expect(props.boxes.B02).toBeUndefined();
 });
 
 it.each([

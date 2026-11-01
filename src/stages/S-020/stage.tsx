@@ -16,10 +16,10 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 /**
  * S-020
  *
- * 目的: stage入場時のviewport幅から80 CSS px離れた目標へ、実際のbrowser viewportをresizeして合わせる。
+ * 目的: stage入場時のviewport幅に応じた倍率の目標へ、実際のbrowser viewportをresizeして合わせる。
  * 最初の一手: ゲージの目標帯を見て、browser windowの端をdragする。
  * 箱ごとの解法:
- * - B01「縦横の枠」: ゲージの目標帯へブラウザーの窓端をドラッグする。`resize`後の`window.innerWidth`を目標値の±18 px以内にすると開く。初期幅420 px以下では+80 px、それ以外では-80 pxが目標になる。
+ * - B01「縦横の枠」: ゲージの目標帯へブラウザーの窓端をドラッグする。`resize`後の`window.innerWidth`を目標値の±18 CSS px以内にすると開く。初期幅420 CSS px以下では1.1倍、それ以外では0.8倍が目標になり、入場中は固定する。
  * 使用API: `window.innerWidth`、Windowの`resize` event。capability判定では`ResizeObserver`の有無も確認する。
  * 権限・privacy: 権限を要求せず、現在幅と入場時に算出した目標幅は画面内の判定にだけ使い、保存・送信しない。
  * 対応環境: `ResizeObserver`を備え、windowまたはviewport幅を利用者が変更できるdesktop browser等。
@@ -29,8 +29,8 @@ function S020Stage(props: Props) {
   const targetWidth = useMemo(
     () =>
       initialWidth.current <= 420
-        ? initialWidth.current + 80
-        : initialWidth.current - 80,
+        ? initialWidth.current * 1.1
+        : initialWidth.current * 0.8,
     [],
   );
   const [width, setWidth] = useState(window.innerWidth);

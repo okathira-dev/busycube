@@ -24,7 +24,8 @@ manifestの `start_url`、`id`、`scope` とアイコンはroot-relative URLに�
 
 ## ステージとの接続
 
-- S-060-B02は最初にonlineで制御中Service Workerとsender / receiver / receipt assetのcacheを準備する。offline中の明示link操作で実`sendBeacon()`を専用same-origin virtual POSTへ送り、`true`の場合だけreceiverへfull-document navigationする。workerはPOSTを検証し、`respondWith()`内で専用IndexedDB receiptをcommitして204を返す。receiverはcacheから開き、listener設置後のstore照会でmatching receiptを確認する。外部networkやbackendへは送らない。
+- S-060は別stage経由の再訪一箱。「戻って」とし、分離したS-980は現在「ゴースティング」として残す。旧B02進捗を新stageへコピーしない。
+- S-980「ゴースティング」は端末内のWeb謎で、Beacon・専用SW受領・network probe・受領DBを使わない。navigator.onLineとonline/offlineで接続状態を観測する。全レート（1000/1500/2000）で切断中に蹴った球は0〜20%の飛翔を繰り返し、同画面の接続復帰で1500相当のkeeper反応と飛翔を再開する。2000で切断中に蹴り、復帰後の到達時にkeeperを抜いた場合だけ開箱する。切断だけ・セーブ・1000/1500の得点では開かない。sessionStorageのbusycube-ghosting-pending-v1には未完了試行の部屋・架空対戦名・横座標（高さ0.5固定）だけを保存する。再開時に削除し、離脱後の再訪では未完了試行を復元できる。保存拒否時も同画面の操作は継続するが、再訪時の復元はできない。旧Beacon形式のpending/受領は採用せず、既存の永続進捗や旧storeは削除しない。再訪は解法の条件にせず、待機中の取消ボタンも置かない。旧PoCの受け口・storeは別用途として保持する。
 - S-070は `navigator.onLine` とonline/offlineイベントを観測する。ネットワーク疎通の完全な保証には使わない。
 - S-080は旧S-210/S-310/S-460の入口を統合した六箱。standalone表示、実setAppBadge後の数字入力、shortcut/noteの専用起動URL、通常tabでのgetInstalledRelatedApps一致、実Window Controls Overlay内のクリックをそれぞれ判定する。起動URLは対応するアプリ表示とLaunchQueue能力を確認し、初期URLまたは実callbackから受ける。OS操作経路そのものを証明するものではない。
 - S-090は箱から通知権限を要求し、同じ試行の実Service Worker notification clickと受取記録を照合する。URLへ戻っただけでは開かない。
