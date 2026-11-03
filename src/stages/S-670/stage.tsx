@@ -20,7 +20,7 @@ import { consoleBoard, generateMaze, move, type Point } from "./maze";
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
 /**
  * S-670
- * 目的: installationIdとstage/versionから再現する分岐迷路をConsoleで読み、画面の方向buttonで出口へ進む。
+ * 目的: progressEpochとstage/versionから再現する分岐迷路をConsoleで読み、画面の方向buttonで出口へ進む。
  * 最初の一手: >_を連想する箱と方向キーから、Consoleに出ている盤面と現在地@を見つける。
  * 箱ごとの解法:
  * - B01「山括弧と下線」: Consoleの21×21文字（通路cellは10×10）の生成迷路を読み、上下左右buttonで壁#を避けて実座標を移動しEへ到達すると開く。初期位置は左上の通路、出口は右下の通路で、道順は環境IDにより変わる。移動/壁衝突/回転矢印resetで同じ盤面の実現在地をConsoleへ反映する。Consoleを開いた検出やコード入力は要求しない。
@@ -28,10 +28,10 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 権限・privacy: 共通のローカルゲームIDは生成seedだけに使い、IDそのものをConsoleに出さず、物理端末を識別しない。生成迷路/現在地だけを表示し、操作履歴を保存/外部送信しない。
  * 対応環境: Consoleを参照しながらHTML buttonを操作できるbrowser。生成は全通路の到達可能性と分岐を保ち、同じID/versionならreload/resetしても同じ盤面になる。
  */
-function MazePuzzle(props: Props & { installationId: string }) {
+function MazePuzzle(props: Props & { progressEpoch: string }) {
   const maze = useMemo(
-    () => generateMaze(props.installationId),
-    [props.installationId],
+    () => generateMaze(props.progressEpoch),
+    [props.progressEpoch],
   );
   const [position, setPosition] = useState<Point>(maze.start);
   const current = useRef(maze.start);
@@ -145,13 +145,9 @@ function MazePuzzle(props: Props & { installationId: string }) {
   );
 }
 function S670Stage(props: Props) {
-  const installationId = props.services.installationId;
-  return installationId ? (
-    <MazePuzzle
-      {...props}
-      key={installationId}
-      installationId={installationId}
-    />
+  const progressEpoch = props.services.progressEpoch;
+  return progressEpoch ? (
+    <MazePuzzle {...props} key={progressEpoch} progressEpoch={progressEpoch} />
   ) : (
     <p role="status">{statusText(props.locale, "waiting")}</p>
   );

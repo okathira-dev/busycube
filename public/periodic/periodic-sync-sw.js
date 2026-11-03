@@ -46,8 +46,9 @@ async function unregister() {
     return true;
   } catch { return false; }
 }
-async function view() {
-  const state = await readState();
+async function view(epoch) {
+  const previous = await readState();
+  const state = previous?.epoch === epoch ? previous : null;
   if (state?.phase !== "bloom") {
     if (state?.phase === "seed") await unregister();
     return { nonce: state?.nonce ?? null, phase: state?.phase ?? "empty", image: null, cleanupPending: false };
@@ -72,7 +73,7 @@ async function grow() {
   await cache.put(IMAGE, response);
   // A persisted image precedes the durable completion record. Neither alone is
   // accepted by the page, and registration cleanup comes only after both.
-  await writeState({ key: "plant", nonce: state.nonce, phase: "bloom" });
+  await writeState({ ...state, phase: "bloom" });
   await unregister();
 }
 self.addEventListener("install", (event) => { event.waitUntil(self.skipWaiting()); });
@@ -96,14 +97,14 @@ self.addEventListener("message", (event) => {
       if (source?.type !== "window" || url.origin !== self.location.origin || url.pathname !== "/" || url.searchParams.get("stage") !== "S-740") throw new Error("Invalid client");
       if (data.action === "prepare") {
         if (!validNonce(data.nonce)) throw new Error("Invalid trial");
-        await writeState({ key: "plant", nonce: data.nonce, phase: "seed" });
+        await writeState({ key: "plant", nonce: data.nonce, phase: "seed", epoch: data.epoch });
         await caches.delete(CACHE);
       } else if (data.action === "arm") {
         const current = await readState();
-        if (!current || current.nonce !== data.nonce || current.phase !== "seed") throw new Error("Trial replaced");
+        if (!current || current.epoch !== data.epoch || current.nonce !== data.nonce || current.phase !== "seed") throw new Error("Trial replaced");
         await writeState({ ...current, phase: "armed" });
       } else if (data.action !== "read") throw new Error("Unknown action");
-      port.postMessage({ channel: CHANNEL, ok: true, value: await view() });
+      port.postMessage({ channel: CHANNEL, ok: true, value: await view(data.epoch) });
     } catch { port.postMessage({ channel: CHANNEL, ok: false }); }
     finally { port.close(); }
   }));

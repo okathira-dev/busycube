@@ -1,94 +1,112 @@
-import type { ProgressDocument } from "../domain/progress";
-
-// Pre-release schema reset: old development saves intentionally stay untouched.
-const databaseName = "busycube-progress-v1";
-const objectStoreName = "documents";
-const progressKey = "current";
+import {
+  applyPlayerOperation,
+  createPlayerState,
+  InvalidPlayerStateError,
+  isPlayerState,
+  type PlayerOperation,
+  type PlayerState,
+} from "../domain/playerState";
+import type { Locale } from "../i18n";
 
 export interface ProgressStore {
-  load(): Promise<unknown | null>;
-  save(document: ProgressDocument): Promise<void>;
-  clear(): Promise<void>;
+  read(locale: Locale): Promise<PlayerState>;
+  commit(
+    locale: Locale,
+    operations: readonly PlayerOperation[],
+  ): Promise<PlayerState>;
 }
-
-function requestResult<T>(request: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    request.addEventListener("success", () => resolve(request.result), {
-      once: true,
-    });
-    request.addEventListener("error", () => reject(request.error), {
-      once: true,
-    });
-  });
-}
-
-function transactionDone(transaction: IDBTransaction): Promise<void> {
-  return new Promise((resolve, reject) => {
-    transaction.addEventListener("complete", () => resolve(), { once: true });
-    transaction.addEventListener("abort", () => reject(transaction.error), {
-      once: true,
-    });
-    transaction.addEventListener("error", () => reject(transaction.error), {
-      once: true,
-    });
-  });
-}
-
 export class IndexedDbProgressStore implements ProgressStore {
   private databasePromise?: Promise<IDBDatabase>;
-
   private open(): Promise<IDBDatabase> {
-    if (!this.databasePromise) {
-      this.databasePromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open(databaseName, 1);
-        request.addEventListener(
-          "upgradeneeded",
-          () => {
-            if (!request.result.objectStoreNames.contains(objectStoreName)) {
-              request.result.createObjectStore(objectStoreName);
-            }
-          },
-          { once: true },
+    if (this.databasePromise) return this.databasePromise;
+    const promise = new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("busycube-player-v2", 1);
+      let abandoned = false;
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("state");
+      };
+      request.onerror = () => reject(request.error);
+      request.onblocked = () => {
+        abandoned = true;
+        reject(new Error("IndexedDB blocked"));
+      };
+      request.onsuccess = () => {
+        const database = request.result;
+        if (abandoned) {
+          database.close();
+          return;
+        }
+        const invalidate = () => {
+          if (this.databasePromise === promise)
+            this.databasePromise = undefined;
+        };
+        database.onversionchange = () => {
+          database.close();
+          invalidate();
+        };
+        database.onclose = invalidate;
+        resolve(database);
+      };
+    });
+    this.databasePromise = promise;
+    void promise.catch(() => {
+      if (this.databasePromise === promise) this.databasePromise = undefined;
+    });
+    return promise;
+  }
+  read(locale: Locale) {
+    return this.commit(locale, []);
+  }
+  async commit(
+    locale: Locale,
+    operations: readonly PlayerOperation[],
+  ): Promise<PlayerState> {
+    const database = await this.open();
+    return new Promise((resolve, reject) => {
+      let transaction: IDBTransaction;
+      try {
+        transaction = database.transaction("state", "readwrite");
+      } catch (error) {
+        this.databasePromise = undefined;
+        database.close();
+        reject(error);
+        return;
+      }
+      let result: PlayerState;
+      let failure: unknown;
+      transaction.oncomplete = () => resolve(result);
+      transaction.onabort = () =>
+        reject(
+          failure ?? transaction.error ?? new Error("Transaction aborted"),
         );
-        request.addEventListener("success", () => resolve(request.result), {
-          once: true,
-        });
-        request.addEventListener("error", () => reject(request.error), {
-          once: true,
-        });
-        request.addEventListener(
-          "blocked",
-          () => reject(new Error("IndexedDB upgrade blocked")),
-          {
-            once: true,
-          },
-        );
-      });
-    }
-    return this.databasePromise;
-  }
-
-  async load(): Promise<unknown | null> {
-    const database = await this.open();
-    const transaction = database.transaction(objectStoreName, "readonly");
-    const value = await requestResult(
-      transaction.objectStore(objectStoreName).get(progressKey),
-    );
-    await transactionDone(transaction);
-    return value ?? null;
-  }
-
-  async save(document: ProgressDocument): Promise<void> {
-    const database = await this.open();
-    const transaction = database.transaction(objectStoreName, "readwrite");
-    transaction.objectStore(objectStoreName).put(document, progressKey);
-    await transactionDone(transaction);
-  }
-
-  async clear(): Promise<void> {
-    const database = await this.open();
-    const transaction = database.transaction(objectStoreName, "readwrite");
-    transaction.objectStore(objectStoreName).delete(progressKey);
-    await transactionDone(transaction);
+      const store = transaction.objectStore("state");
+      const request = store.get("current");
+      request.onsuccess = () => {
+        try {
+          const reset =
+            operations.length === 1 && operations[0]?.kind === "reset"
+              ? operations[0]
+              : undefined;
+          const invalid =
+            request.result !== undefined && !isPlayerState(request.result);
+          if (invalid && !reset)
+            throw new InvalidPlayerStateError(request.result);
+          result =
+            request.result === undefined || invalid
+              ? createPlayerState(locale)
+              : request.result;
+          if (invalid && reset) result = { ...result, epoch: reset.epoch };
+          for (const operation of operations)
+            result = applyPlayerOperation(result, operation);
+          if (operations.length || request.result === undefined) {
+            result = { ...result, revision: result.revision + 1 };
+            store.put(result, "current");
+          }
+        } catch (error) {
+          failure = error;
+          transaction.abort();
+        }
+      };
+    });
   }
 }

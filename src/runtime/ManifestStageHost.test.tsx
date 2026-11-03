@@ -44,13 +44,16 @@ function createStage(id: StageIdFormat, name: string) {
 }
 
 const progress: ProgressController = {
-  document: createProgressDocument("en"),
+  document: createProgressDocument(),
   storageState: "ready",
   setLocale: vi.fn(),
   solve: vi.fn(),
   hasMarker: vi.fn(() => false),
   mark: vi.fn(),
-  replaceDocument: vi.fn(),
+  settings: { locale: "en" },
+  epoch: "epoch",
+  initialized: true,
+  mergeProgress: vi.fn(async () => true),
   retryStorage: vi.fn(async () => true),
   reset: vi.fn(async () => true),
 };

@@ -5,7 +5,7 @@ import { generateMaze } from "./maze";
 import { stage } from "./stage";
 
 const id = "maze-stage-fixture";
-function fixture(installationId: string | undefined = id) {
+function fixture(progressEpoch: string | undefined = id) {
   const solve = vi.fn();
   const controller = new AbortController();
   const definition = stage.boxes.B01;
@@ -13,7 +13,7 @@ function fixture(installationId: string | undefined = id) {
   const p: StageComponentProps = {
     locale: "en",
     signal: controller.signal,
-    services: { installationId },
+    services: { progressEpoch },
     boxes: { B01: { id: "B01", definition, state: "ribboned", solve } },
     progress: { hasMarker: () => false, mark: vi.fn() },
   };

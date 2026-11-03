@@ -34,7 +34,8 @@ self.addEventListener("message", (event) => {
   if (!event.isTrusted || data?.channel !== channel || typeof data.requestId !== "string" || !port || !stage(event.source)) return;
   event.waitUntil(serial(async () => {
     try {
-      const state = await read();
+      const previous = await read();
+      const state = previous.epoch === data.epoch ? previous : { ...empty(), epoch: data.epoch };
       if (data.action === "prepare") {
         const manager = self.registration.backgroundFetch;
         if (!manager) throw new Error("Background Fetch unavailable");

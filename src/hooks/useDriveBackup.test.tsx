@@ -30,13 +30,16 @@ import { useDriveBackup } from "./useDriveBackup";
 
 function progress(): ProgressController {
   return {
-    document: createProgressDocument("en", "local"),
+    document: createProgressDocument("local"),
     storageState: "ready",
     setLocale: vi.fn(),
     solve: vi.fn(),
     hasMarker: vi.fn(() => false),
     mark: vi.fn(),
-    replaceDocument: vi.fn(),
+    settings: { locale: "en" },
+    epoch: "epoch",
+    initialized: true,
+    mergeProgress: vi.fn(async () => true),
     retryStorage: vi.fn(async () => true),
     reset: vi.fn(async () => true),
   };
@@ -47,7 +50,7 @@ describe("useDriveBackup", () => {
     vi.stubEnv("VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID", "client-id");
     driveMocks.requestDriveAccessToken.mockResolvedValue("token");
     driveMocks.syncDriveBackup.mockResolvedValue({
-      document: createProgressDocument("en", "local"),
+      document: createProgressDocument("local"),
       remoteInstallationId: null,
     });
   });
@@ -80,8 +83,9 @@ describe("useDriveBackup", () => {
     async (remoteInstallationId) => {
       const local = progress();
       let applied = local.document;
-      local.replaceDocument = vi.fn((change) => {
-        applied = change(applied);
+      local.mergeProgress = vi.fn(async (document) => {
+        applied = document;
+        return true;
       });
       driveMocks.syncDriveBackup.mockResolvedValueOnce({
         document: {
@@ -97,7 +101,7 @@ describe("useDriveBackup", () => {
           remoteDevice: remoteInstallationId === "remote",
         });
       });
-      expect(applied.installationId).toBe("local");
+      expect(applied.sourceStorageId).toBe("local");
       expect(applied.stages["S-020"]?.solvedBoxIds).toEqual(["B01"]);
       driveMocks.syncDriveBackup.mockRejectedValueOnce(new Error("offline"));
       await act(async () => {
@@ -106,7 +110,27 @@ describe("useDriveBackup", () => {
           remoteDevice: false,
         });
       });
-      expect(local.replaceDocument).toHaveBeenCalledOnce();
+      expect(local.mergeProgress).toHaveBeenCalledOnce();
     },
   );
+});
+
+it("leaves syncing state when the progress generation rejects a late result", async () => {
+  vi.stubEnv("VITE_BUSYCUBE_DRIVE_GOOGLE_CLIENT_ID", "client-id");
+  driveMocks.requestDriveAccessToken.mockResolvedValue("token");
+  const local = progress();
+  local.mergeProgress = vi.fn(async () => false);
+  driveMocks.syncDriveBackup.mockResolvedValue({
+    document: local.document,
+    remoteInstallationId: null,
+  });
+  const { result } = renderHook(() => useDriveBackup(local));
+  await act(async () => {
+    expect(await result.current.sync()).toEqual({
+      synced: false,
+      remoteDevice: false,
+    });
+  });
+  expect(result.current.state).toBe("idle");
+  vi.unstubAllEnvs();
 });

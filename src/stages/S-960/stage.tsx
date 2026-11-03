@@ -2,7 +2,7 @@ import "./styles.css";
 import CancelOutlined from "@mui/icons-material/CancelOutlined";
 import CloudDownloadOutlined from "@mui/icons-material/CloudDownloadOutlined";
 import DownloadDoneOutlined from "@mui/icons-material/DownloadDoneOutlined";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -16,9 +16,9 @@ import {
   type DownloadState,
   downloadChannel,
   downloadManager,
-  downloadRequest,
   downloadScript,
   downloadWorker,
+  downloadRequest as requestState,
 } from "./client";
 import { locale } from "./locale";
 import { manifest } from "./manifest";
@@ -36,6 +36,12 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 対応環境: secure contextとBackground Fetchを提供する限定browser。離脱後も実取得を継続し、再訪は保存receiptから受領する。外部UI取消の操作差は未観測として残す。
  */
 function S960Stage(props: Props) {
+  const downloadRequest = useMemo(
+    () =>
+      (...[worker, action, signal, id]: Parameters<typeof requestState>) =>
+        requestState(worker, action, signal, id, props.services.progressEpoch),
+    [props.services.progressEpoch],
+  );
   const boxes = useRef(props.boxes);
   boxes.current = props.boxes;
   const begin = useRef<() => Promise<void>>(async () => {});
@@ -219,7 +225,7 @@ function S960Stage(props: Props) {
       window.removeEventListener("pagehide", stop);
       props.signal.removeEventListener("abort", stop);
     };
-  }, [props.signal]);
+  }, [props.signal, downloadRequest]);
   return (
     <div className="puzzle puzzle--centered s960-stage">
       <CloudDownloadOutlined className="s960-cloud" aria-hidden="true" />

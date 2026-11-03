@@ -88,7 +88,7 @@ function S360Stage(props: Props) {
     stop();
     identity.current = null;
     setReady(false);
-    const id = props.services.installationId;
+    const id = props.services.storageId;
     if (!id) setStatus("storage");
     else
       void acousticIdentity(id)
@@ -108,7 +108,7 @@ function S360Stage(props: Props) {
       props.signal.removeEventListener("abort", stop);
       stop();
     };
-  }, [props.services.installationId, props.signal, stop]);
+  }, [props.services.storageId, props.signal, stop]);
 
   const listen = async () => {
     if (

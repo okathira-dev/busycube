@@ -62,7 +62,7 @@ interface Props {
   driveFailureMessage: string;
   onExport(): void;
   onPrepareImport(file: File): Promise<ProgressImportResult>;
-  onMergeImport(document: ProgressDocument): void;
+  onMergeImport(document: ProgressDocument): Promise<boolean>;
   onReset(): Promise<boolean>;
   onApplyUpdate(): void;
   onDriveSync(): void;
@@ -161,8 +161,11 @@ export function SettingsView({
       onDriveRemoveReplica(current.replica);
     }
     if (current?.kind === "import") {
-      onMergeImport(current.document);
-      setImportNotice({ severity: "success", message: copy.importSuccess });
+      const saved = await onMergeImport(current.document);
+      setImportNotice({
+        severity: saved ? "success" : "warning",
+        message: saved ? copy.importSuccess : copy.storageUnavailable,
+      });
     }
   };
 

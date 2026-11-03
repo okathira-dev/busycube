@@ -1,19 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  createProgressDocument,
-  hasStageMarker,
-  markStage,
-  mergeProgressDocuments,
-  type ProgressDocument,
-  parseProgressDocument,
-  solveBox,
-} from "../domain/progress";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { hasStageMarker, type ProgressDocument } from "../domain/progress";
 import type { Locale } from "../i18n";
 import {
   IndexedDbProgressStore,
   type ProgressStore,
 } from "../infra/progressStore";
-import { clearSynchronousFlags } from "../infra/synchronousFlags";
+import { PlayerController } from "../state/playerController";
 
 export type StorageState =
   | "loading"
@@ -21,216 +13,94 @@ export type StorageState =
   | "unavailable"
   | "corrupt"
   | "future";
-
 export interface ProgressController {
   document: ProgressDocument;
+  settings: { locale: Locale };
+  epoch: string;
+  initialized: boolean;
   storageState: StorageState;
   setLocale(locale: Locale): void;
   solve(stageId: string, boxId: string): void;
-  hasMarker(stageId: string, marker: string): boolean;
   mark(stageId: string, marker: string): void;
-  replaceDocument(
-    change: (current: ProgressDocument) => ProgressDocument,
-  ): void;
+  hasMarker(stageId: string, marker: string): boolean;
+  mergeProgress(document: ProgressDocument, epoch: string): Promise<boolean>;
   retryStorage(): Promise<boolean>;
   reset(): Promise<boolean>;
 }
-
 export function useProgress(
   initialLocale: Locale,
-  store: ProgressStore = new IndexedDbProgressStore(),
+  store?: ProgressStore,
 ): ProgressController {
-  const storeRef = useRef(store);
-  const [document, setDocument] = useState(() =>
-    createProgressDocument(initialLocale),
+  const ref = useRef<PlayerController | null>(null);
+  if (!ref.current)
+    ref.current = new PlayerController(
+      store ?? new IndexedDbProgressStore(),
+      initialLocale,
+    );
+  const controller = ref.current;
+  const snapshot = useSyncExternalStore(
+    controller.subscribe,
+    controller.getSnapshot,
   );
-  const initialDocumentRef = useRef(document);
-  const documentRef = useRef(document);
-  const [storageState, setStorageState] = useState<StorageState>("loading");
-  const writableRef = useRef(false);
-  const dirtyBeforeLoadRef = useRef(false);
-  const latestUnsavedRef = useRef<ProgressDocument | null>(null);
-  const writeQueueRef = useRef<Promise<void>>(Promise.resolve());
-  const loadGenerationRef = useRef(0);
-
-  const updateStorageState = useCallback((next: StorageState) => {
-    setStorageState(next);
-  }, []);
-
-  const updateDocument = useCallback((next: ProgressDocument) => {
-    documentRef.current = next;
-    setDocument(next);
-  }, []);
-
-  const queueSave = useCallback(
-    async (next: ProgressDocument): Promise<boolean> => {
-      latestUnsavedRef.current = next;
-      const save = writeQueueRef.current
-        .catch(() => undefined)
-        .then(() => storeRef.current.save(next));
-      writeQueueRef.current = save;
-      try {
-        await save;
-        if (latestUnsavedRef.current === next) {
-          latestUnsavedRef.current = null;
-          updateStorageState("ready");
-        }
-        return true;
-      } catch {
-        updateStorageState("unavailable");
-        return false;
-      }
-    },
-    [updateStorageState],
-  );
-
-  const loadFromStore = useCallback(
-    async (mergeUnsaved: boolean): Promise<boolean> => {
-      const generation = loadGenerationRef.current + 1;
-      loadGenerationRef.current = generation;
-      updateStorageState("loading");
-      try {
-        const raw = await storeRef.current.load();
-        if (generation !== loadGenerationRef.current) return false;
-        if (raw === null) {
-          writableRef.current = true;
-          const next = documentRef.current;
-          dirtyBeforeLoadRef.current = false;
-          return queueSave(next);
-        }
-
-        const parsed = parseProgressDocument(raw);
-        if (parsed.status === "future") {
-          writableRef.current = false;
-          updateStorageState("future");
-          return false;
-        }
-        if (parsed.status === "corrupt") {
-          writableRef.current = false;
-          updateStorageState("corrupt");
-          return false;
-        }
-
-        writableRef.current = true;
-        const next =
-          mergeUnsaved && dirtyBeforeLoadRef.current
-            ? {
-                ...mergeProgressDocuments(parsed.document, documentRef.current),
-                settings: documentRef.current.settings,
-              }
-            : parsed.document;
-        updateDocument(next);
-        dirtyBeforeLoadRef.current = false;
-        if (next !== parsed.document) return queueSave(next);
-        latestUnsavedRef.current = null;
-        updateStorageState("ready");
-        return true;
-      } catch {
-        if (generation !== loadGenerationRef.current) return false;
-        updateStorageState("unavailable");
-        return false;
-      }
-    },
-    [queueSave, updateDocument, updateStorageState],
-  );
-
   useEffect(() => {
-    documentRef.current = initialDocumentRef.current;
-    void loadFromStore(false);
-    return () => {
-      loadGenerationRef.current += 1;
-    };
-  }, [loadFromStore]);
-
-  const replaceDocument = useCallback(
-    (change: (current: ProgressDocument) => ProgressDocument) => {
-      const current = documentRef.current;
-      const next = change(current);
-      if (next === current) return;
-      updateDocument(next);
-      if (writableRef.current) {
-        void queueSave(next);
-      } else {
-        dirtyBeforeLoadRef.current = true;
-      }
-    },
-    [queueSave, updateDocument],
-  );
-
-  const setLocale = useCallback(
-    (locale: Locale) => {
-      replaceDocument((current) =>
-        current.settings.locale === locale
-          ? current
-          : {
-              ...current,
-              settings: { ...current.settings, locale },
-            },
-      );
-    },
-    [replaceDocument],
-  );
-
-  const retryStorage = useCallback(async () => {
-    if (writableRef.current) {
-      return queueSave(latestUnsavedRef.current ?? documentRef.current);
-    }
-    return loadFromStore(true);
-  }, [loadFromStore, queueSave]);
-
-  const reset = useCallback(async () => {
-    const next = createProgressDocument(documentRef.current.settings.locale);
-    const resetTask = writeQueueRef.current
-      .catch(() => undefined)
-      .then(async () => {
-        await storeRef.current.clear();
-        clearSynchronousFlags();
-        await storeRef.current.save(next);
-      });
-    writeQueueRef.current = resetTask;
+    let channel: BroadcastChannel | undefined;
     try {
-      await resetTask;
-      writableRef.current = true;
-      dirtyBeforeLoadRef.current = false;
-      latestUnsavedRef.current = null;
-      updateDocument(next);
-      updateStorageState("ready");
-      return true;
+      channel = new BroadcastChannel("busycube-player-v2");
+      channel.onmessage = () => {
+        void controller.refresh();
+      };
     } catch {
-      updateStorageState("unavailable");
-      return false;
+      /* Focus refresh also works without messaging. */
     }
-  }, [updateDocument, updateStorageState]);
-
-  const solve = useCallback(
-    (stageId: string, boxId: string) => {
-      replaceDocument((current) => solveBox(current, stageId, boxId));
-    },
-    [replaceDocument],
-  );
-
-  const hasMarker = useCallback(
-    (stageId: string, marker: string) =>
-      hasStageMarker(document, stageId, marker),
-    [document],
-  );
-
-  const mark = useCallback(
-    (stageId: string, marker: string) => {
-      replaceDocument((current) => markStage(current, stageId, marker));
-    },
-    [replaceDocument],
-  );
-
+    controller.notify = () => {
+      try {
+        channel?.postMessage("changed");
+      } catch {
+        /* Focus refresh remains available. */
+      }
+    };
+    const refresh = () => {
+      if (document.visibilityState === "visible") void controller.refresh();
+    };
+    window.addEventListener("focus", refresh);
+    window.addEventListener("pageshow", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    void controller.refresh();
+    return () => {
+      controller.notify = undefined;
+      channel?.close();
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("pageshow", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [controller]);
+  const epoch = snapshot.state.epoch;
   return {
-    document,
-    storageState,
-    setLocale,
-    solve,
-    hasMarker,
-    mark,
-    replaceDocument,
-    retryStorage,
-    reset,
+    document: controller.document,
+    settings: snapshot.state.settings,
+    epoch,
+    initialized: snapshot.initialized,
+    storageState: snapshot.status,
+    setLocale: (locale) => {
+      void controller.dispatch({ kind: "locale", locale });
+    },
+    solve: (stageId, boxId) => {
+      void controller.dispatch({ kind: "solve", epoch, stageId, boxId });
+    },
+    mark: (stageId, marker) => {
+      void controller.dispatch({ kind: "mark", epoch, stageId, marker });
+    },
+    hasMarker: (stageId, marker) =>
+      hasStageMarker(controller.document, stageId, marker),
+    mergeProgress: async (progress, expectedEpoch) => {
+      if (controller.snapshot.state.epoch !== expectedEpoch) return false;
+      return controller.dispatch({
+        kind: "merge",
+        epoch: expectedEpoch,
+        progress,
+      });
+    },
+    retryStorage: controller.retry,
+    reset: () => controller.reset(),
   };
 }

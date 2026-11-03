@@ -32,7 +32,7 @@ function settingsProps(
     driveFailureMessage: "Drive sync failed.",
     onExport: vi.fn(),
     onPrepareImport: vi.fn(async () => ({ status: "corrupt" as const })),
-    onMergeImport: vi.fn(),
+    onMergeImport: vi.fn(async () => true),
     onReset: vi.fn(async () => true),
     onApplyUpdate: vi.fn(),
     onDriveSync: vi.fn(),
@@ -48,14 +48,14 @@ function settingsProps(
 
 describe("SettingsView", () => {
   it("merges imported progress only after preview confirmation", async () => {
-    const imported = createProgressDocument("en", "imported");
+    const imported = createProgressDocument("imported");
     const onPrepareImport = vi.fn(async () => ({
       status: "ready" as const,
       document: imported,
       addedBoxes: 2,
       addedMarkers: 1,
     }));
-    const onMergeImport = vi.fn();
+    const onMergeImport = vi.fn(async () => true);
     render(
       <SettingsView {...settingsProps({ onPrepareImport, onMergeImport })} />,
     );

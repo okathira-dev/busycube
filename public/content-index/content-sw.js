@@ -32,10 +32,10 @@ async function cleanupEntries(currentId) {
   const entries = await self.registration.index.getAll();
   for (const entry of entries) if (idValid(entry.id) && entry.id !== currentId) await self.registration.index.delete(entry.id);
 }
-async function save(locale) {
+async function save(locale, epoch) {
   const manager = self.registration.index;
   if (!manager) throw new Error("Content Index unavailable");
-  const state = await read(), id = prefix + crypto.randomUUID();
+  const previous = await read(), state = previous.epoch === epoch ? previous : { ...empty(), epoch }, id = prefix + crypto.randomUUID();
   const url = new URL("./saved.html", scope); url.searchParams.set("entry", id.slice(prefix.length)); url.searchParams.set("locale", locale);
   const priorUrl = state.url;
   state.id = id; state.url = url.href; state.status = "preparing"; state.saved = false;
@@ -86,8 +86,8 @@ self.addEventListener("message", (event) => {
   event.waitUntil(serial(async () => {
     try {
       let state;
-      if (data.action === "save" && from === "stage") state = await save(data.locale === "ja" ? "ja" : "en");
-      else if (data.action === "read") state = await read();
+      if (data.action === "save" && from === "stage") state = await save(data.locale === "ja" ? "ja" : "en", data.epoch);
+      else if (data.action === "read") { state = await read(); if (from === "stage" && state.epoch !== data.epoch) state = empty(); }
       else if (data.action === "open" && from === "saved") {
         state = await read();
         if (!state.saved || !state.id || event.source.url !== state.url) throw new Error("Unregistered content page");

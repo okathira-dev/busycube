@@ -55,4 +55,12 @@ export const downloadRequest = (
   action: "read" | "prepare" | "arm" | "failed",
   signal: AbortSignal,
   id?: string,
-) => workerRequest(worker, downloadChannel, { action, id }, signal, isState);
+  epoch?: string,
+) =>
+  workerRequest(
+    worker,
+    downloadChannel,
+    { action, id, epoch },
+    signal,
+    isState,
+  );

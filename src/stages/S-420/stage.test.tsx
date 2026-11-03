@@ -20,7 +20,7 @@ const backend = vi.hoisted(() => ({
         _worker: ServiceWorker,
         action: string,
         nonce: string,
-        installationId: string,
+        progressEpoch: string,
         locale: string,
         signal: AbortSignal,
       ) => Promise<VaultSnapshot | null>
@@ -102,7 +102,7 @@ function fixture() {
       ]),
     ),
     progress: { hasMarker: () => false, mark: vi.fn() },
-    services: { installationId: "vault-installation" },
+    services: { progressEpoch: "vault-installation" },
   };
   return { container, permission, abort, p };
 }

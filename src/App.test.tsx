@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   progress: {
     document: {
       schemaVersion: 1 as const,
-      installationId: "test",
+      sourceStorageId: "test",
       stages: {},
       settings: { locale: "en" as const },
     },
@@ -20,7 +20,10 @@ const mocks = vi.hoisted(() => ({
     solve: vi.fn(),
     hasMarker: vi.fn(() => false),
     mark: vi.fn(),
-    replaceDocument: vi.fn(),
+    settings: { locale: "en" },
+    epoch: "epoch",
+    initialized: true,
+    mergeProgress: vi.fn(async () => true),
     retryStorage: vi.fn(async () => true),
     reset: vi.fn(async () => true),
   },

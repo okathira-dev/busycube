@@ -118,7 +118,8 @@ export interface StageProgressApi {
 }
 
 export interface StageServices {
-  installationId?: string;
+  storageId?: string;
+  progressEpoch?: string;
   arrival?: StageArrival;
   drive?: {
     configured: boolean;

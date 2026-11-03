@@ -77,6 +77,7 @@ it("reads on entry and saves/registers only on the explicit save action, with no
     "read",
     expect.any(AbortSignal),
     "en",
+    undefined,
   );
   await act(async () =>
     fireEvent.click(screen.getByRole("button", { name: "Save page" })),
@@ -86,6 +87,7 @@ it("reads on entry and saves/registers only on the explicit save action, with no
     "save",
     expect.any(AbortSignal),
     "en",
+    undefined,
   );
   expect(f.b1).not.toHaveBeenCalled();
   expect(f.b2).not.toHaveBeenCalled();

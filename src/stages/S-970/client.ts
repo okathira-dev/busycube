@@ -33,4 +33,12 @@ export const contentRequest = (
   action: "read" | "save",
   signal: AbortSignal,
   locale: string,
-) => workerRequest(worker, contentChannel, { action, locale }, signal, isState);
+  epoch?: string,
+) =>
+  workerRequest(
+    worker,
+    contentChannel,
+    { action, locale, epoch },
+    signal,
+    isState,
+  );

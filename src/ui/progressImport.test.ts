@@ -6,10 +6,10 @@ function fileWith(text: () => Promise<string>): File {
 }
 
 describe("prepareProgressImport", () => {
-  const current = createProgressDocument("en", "current");
+  const current = createProgressDocument("current");
 
   it("previews only additions from a valid document", async () => {
-    const imported = createProgressDocument("ja", "imported");
+    const imported = createProgressDocument("imported");
     imported.stages["S-000"] = {
       solvedBoxIds: ["B01"],
       markers: ["seen"],

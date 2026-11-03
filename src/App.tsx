@@ -9,10 +9,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import {
-  mergeProgressDocuments,
-  type ProgressDocument,
-} from "./domain/progress";
+import type { ProgressDocument } from "./domain/progress";
 import { countSolvedBoxes } from "./domain/stageRuntime";
 import { useDelayedVisibility } from "./hooks/useDelayedVisibility";
 import { useDriveBackup } from "./hooks/useDriveBackup";
@@ -100,7 +97,7 @@ export function App() {
   const progress = useProgress(initialLocale());
   const serviceWorker = useServiceWorker();
   const drive = useDriveBackup(progress);
-  const locale = progress.document.settings.locale;
+  const locale = progress.settings.locale;
   const [route, setRoute] = useState(currentRoute);
   const arrival = useNavigationJourney(route.stageId);
   const [catalogueRestore, setCatalogueRestore] = useState<{
@@ -177,9 +174,7 @@ export function App() {
     prepareProgressImport(file, progress.document);
 
   const mergeImportedProgress = (imported: ProgressDocument) => {
-    progress.replaceDocument((current) =>
-      mergeProgressDocuments(current, imported),
-    );
+    return progress.mergeProgress(imported, progress.epoch);
   };
 
   const driveFailureMessage =
@@ -413,17 +408,17 @@ export function App() {
         >
           {view === "stages" && selectedManifest ? (
             <ManifestStageHost
-              key={`${selectedManifest.id}:${stageAttemptId}`}
+              key={`${selectedManifest.id}:${stageAttemptId}:${progress.epoch}`}
               manifest={selectedManifest}
               displayCode={selectedCatalogueStage?.displayCode ?? ""}
               locale={locale}
               progress={progress}
               services={{
                 arrival,
-                installationId:
-                  progress.storageState !== "loading"
-                    ? progress.document.installationId
-                    : undefined,
+                progressEpoch: progress.epoch,
+                storageId: progress.initialized
+                  ? progress.document.sourceStorageId
+                  : undefined,
                 drive: { configured: drive.configured, sync: drive.sync },
               }}
               onBack={showStageList}

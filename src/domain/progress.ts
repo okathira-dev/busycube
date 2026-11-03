@@ -1,22 +1,15 @@
-import type { Locale } from "../i18n";
-
 /** This is a clean pre-release schema. Older development saves are discarded. */
-export const progressSchemaVersion = 1 as const;
+export const progressSchemaVersion = 2 as const;
 
 export interface StageProgress {
   solvedBoxIds: string[];
   markers?: string[];
 }
 
-export interface ProgressSettings {
-  locale: Locale;
-}
-
 export interface ProgressDocument {
   schemaVersion: typeof progressSchemaVersion;
-  installationId: string;
+  sourceStorageId: string;
   stages: Record<string, StageProgress>;
-  settings: ProgressSettings;
 }
 
 export type ProgressParseResult =
@@ -26,10 +19,6 @@ export type ProgressParseResult =
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isLocale(value: unknown): value is Locale {
-  return value === "ja" || value === "en";
 }
 
 function uniqueStrings(values: readonly string[]): string[] {
@@ -64,14 +53,12 @@ function makeInstallationId(): string {
 }
 
 export function createProgressDocument(
-  locale: Locale,
-  installationId = makeInstallationId(),
+  sourceStorageId = makeInstallationId(),
 ): ProgressDocument {
   return {
     schemaVersion: progressSchemaVersion,
-    installationId,
+    sourceStorageId,
     stages: {},
-    settings: { locale },
   };
 }
 
@@ -86,11 +73,9 @@ export function parseProgressDocument(value: unknown): ProgressParseResult {
     return { status: "corrupt", reason: "unsupported-schema" };
   }
   if (
-    typeof value.installationId !== "string" ||
-    value.installationId.trim().length === 0 ||
-    !isRecord(value.stages) ||
-    !isRecord(value.settings) ||
-    !isLocale(value.settings.locale)
+    typeof value.sourceStorageId !== "string" ||
+    value.sourceStorageId.trim().length === 0 ||
+    !isRecord(value.stages)
   ) {
     return { status: "corrupt", reason: "required-fields" };
   }
@@ -105,9 +90,8 @@ export function parseProgressDocument(value: unknown): ProgressParseResult {
     status: "valid",
     document: {
       schemaVersion: progressSchemaVersion,
-      installationId: value.installationId,
+      sourceStorageId: value.sourceStorageId,
       stages,
-      settings: { locale: value.settings.locale },
     },
   };
 }
@@ -148,10 +132,8 @@ export function mergeProgressDocuments(
   }
   return {
     schemaVersion: progressSchemaVersion,
-    installationId: local.installationId,
+    sourceStorageId: local.sourceStorageId,
     stages,
-    // Settings are device-local even when the progress document is synchronized.
-    settings: local.settings,
   };
 }
 

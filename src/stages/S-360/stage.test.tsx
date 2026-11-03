@@ -36,7 +36,7 @@ it("stops a microphone granted after stage departure without opening either box"
       ]),
     ),
     progress: { hasMarker: () => false, mark: vi.fn() },
-    services: { installationId: "test-installation" },
+    services: { storageId: "test-installation" },
   };
   try {
     render(<stage.Component {...props} />);

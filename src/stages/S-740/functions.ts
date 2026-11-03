@@ -115,6 +115,7 @@ export function greenhouseRequest(
   action: "read" | "prepare" | "arm",
   signal: AbortSignal,
   nonce?: string,
+  epoch?: string,
 ): Promise<GreenhouseView> {
   return new Promise((resolve, reject) => {
     const channel = new MessageChannel();
@@ -153,7 +154,7 @@ export function greenhouseRequest(
       return;
     }
     try {
-      worker.postMessage({ channel: greenhouseChannel, action, nonce }, [
+      worker.postMessage({ channel: greenhouseChannel, action, nonce, epoch }, [
         channel.port2,
       ]);
     } catch (error) {

@@ -3,7 +3,7 @@ import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import DesktopAccessDisabledOutlined from "@mui/icons-material/DesktopAccessDisabledOutlined";
 import SpaOutlined from "@mui/icons-material/SpaOutlined";
 import YardOutlined from "@mui/icons-material/YardOutlined";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -15,8 +15,8 @@ import { stageText } from "../locale";
 import {
   type GreenhouseView,
   greenhouse,
-  greenhouseRequest,
   periodicUrl,
+  greenhouseRequest as requestState,
   S740_TAG,
 } from "./functions";
 import { locale } from "./locale";
@@ -34,6 +34,18 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 対応環境: 長期の背景同期を許可し、全窓を閉じても実periodicsyncを起動できるbrowser/OS。schedulerやinstall/許可の条件はbrowser依存で、拒否/不在/未観測を開花へ変換しない。
  */
 function S740Stage(props: Props) {
+  const greenhouseRequest = useMemo(
+    () =>
+      (...[worker, action, signal, nonce]: Parameters<typeof requestState>) =>
+        requestState(
+          worker,
+          action,
+          signal,
+          nonce,
+          props.services.progressEpoch,
+        ),
+    [props.services.progressEpoch],
+  );
   const boxes = useRef(props.boxes);
   boxes.current = props.boxes;
   const api = useRef<ReturnType<typeof greenhouse> | null>(null);
@@ -83,7 +95,7 @@ function S740Stage(props: Props) {
       if (!props.signal.aborted && token === sequence.current)
         setStatus("error");
     }
-  }, [props.signal, connect, accept]);
+  }, [props.signal, connect, accept, greenhouseRequest]);
   useEffect(() => {
     void inspect();
     const focus = () => {

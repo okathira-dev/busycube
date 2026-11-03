@@ -41,7 +41,7 @@ describe("StageCatalogue preload", () => {
     );
 
     const continueButton = screen.getByRole("button", {
-      name: /Next unopened stage/,
+      name: /Continue/,
     });
     fireEvent.pointerEnter(continueButton);
     fireEvent.focus(continueButton);

@@ -2,7 +2,7 @@ import "./styles.css";
 import ArchiveOutlined from "@mui/icons-material/ArchiveOutlined";
 import DeleteOutlineOutlined from "@mui/icons-material/DeleteOutlineOutlined";
 import SaveOutlined from "@mui/icons-material/SaveOutlined";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -14,9 +14,9 @@ import { stageText } from "../locale";
 import {
   type ContentState,
   contentChannel,
-  contentRequest,
   contentScript,
   contentWorker,
+  contentRequest as requestState,
 } from "./client";
 import { locale } from "./locale";
 import { manifest } from "./manifest";
@@ -34,6 +34,18 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 対応環境: secure contextとContent Index一覧/削除eventを提供する限定browser。ゲーム本体に専用ページへの直接リンク・削除button・静的合言葉を置かず、保存/登録/実操作のreceiptと共有進捗を接続する。
  */
 function S970Stage(props: Props) {
+  const contentRequest = useMemo(
+    () =>
+      (...[worker, action, signal, locale]: Parameters<typeof requestState>) =>
+        requestState(
+          worker,
+          action,
+          signal,
+          locale,
+          props.services.progressEpoch,
+        ),
+    [props.services.progressEpoch],
+  );
   const boxes = useRef(props.boxes);
   boxes.current = props.boxes;
   const save = useRef<() => Promise<void>>(async () => {}),
@@ -150,7 +162,7 @@ function S970Stage(props: Props) {
       window.removeEventListener("pagehide", stop);
       props.signal.removeEventListener("abort", stop);
     };
-  }, [props.signal, props.locale]);
+  }, [props.signal, props.locale, contentRequest]);
   return (
     <div className="puzzle puzzle--centered s970-stage">
       <ArchiveOutlined className="s970-archive" aria-hidden="true" />

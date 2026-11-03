@@ -26,10 +26,10 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 目的: 通知の左右actionで入力し、通知本体の「試す」で位置ごとの反応を調べ、金庫を開く。
  * 最初の一手: 錠前の箱を押して通知を許可し、外側の通知から入力する。
  * 箱ごとの解法:
- * - B02「錠前」: 箱から挑戦を始め、実notificationclickの左右actionを入力し、本体の「試す」を押す。既存installationId/S-420/問題version 1をSHA-256へかけた五bit由来の左右五入力と、内容/長さが完全一致した提出だけで開く。途中の正解一致では開かず、入力は正解の長さで切り詰めない。短い提出は入力数分だけ、超過位置は誤りとして、試した時だけ各入力の正誤を表示する。再び箱を押すと入力/判定を消して同じ正解の新しい挑戦になる。
+ * - B02「錠前」: 箱から挑戦を始め、実notificationclickの左右actionを入力し、本体の「試す」を押す。既存progressEpoch/S-420/問題version 1をSHA-256へかけた五bit由来の左右五入力と、内容/長さが完全一致した提出だけで開く。途中の正解一致では開かず、入力は正解の長さで切り詰めない。短い提出は入力数分だけ、超過位置は誤りとして、試した時だけ各入力の正誤を表示する。再び箱を押すと入力/判定を消して同じ正解の新しい挑戦になる。
  * 使用API: Notifications/Service Worker notificationclick/Clients.navigate・focus・openWindow、MessageChannel、IndexedDB、Web Crypto SHA-256。新しいnonceとnotification step、最新の一つの試行を照合する。固定URL/旧通知/合成eventだけでは開けない。
- * 権限・privacy: 通知許可は箱操作後のみ。保存するのは既存のゲーム用installationId、今回のnonce/所有client/入力/提出後の結果と一回の受領状態だけで、正解列や位置別ハッシュは保存/送信しない。過去の試行履歴は蓄積しない。複数tabでは最後に始めた挑戦だけが有効。離脱のcancelは入力中だけに作用し、既に提出済みの返却結果を消さない。
- * 対応環境: secure contextで通知の左右actionと本体clickを区別し、Service Worker/IndexedDBを使えるbrowser/OS。操作buttonが出ない環境をページ内の代替操作で成功にしない。installationIdは物理端末/PWA installの保証ではなく、保存できない環境のreload後の同一性は保証しない。
+ * 権限・privacy: 通知許可は箱操作後のみ。保存するのは既存のゲーム用progressEpoch、今回のnonce/所有client/入力/提出後の結果と一回の受領状態だけで、正解列や位置別ハッシュは保存/送信しない。過去の試行履歴は蓄積しない。複数tabでは最後に始めた挑戦だけが有効。離脱のcancelは入力中だけに作用し、既に提出済みの返却結果を消さない。
+ * 対応環境: secure contextで通知の左右actionと本体clickを区別し、Service Worker/IndexedDBを使えるbrowser/OS。操作buttonが出ない環境をページ内の代替操作で成功にしない。progressEpochは物理端末/PWA installの保証ではなく、保存できない環境のreload後の同一性は保証しない。
  */
 function S420Stage(props: Props) {
   const [state, setState] = useState<VaultSnapshot | null>(null);
@@ -48,7 +48,7 @@ function S420Stage(props: Props) {
   const runtime = useRef<AbortController | null>(null);
   const boxes = useRef(props.boxes);
   boxes.current = props.boxes;
-  const installationId = props.services.installationId;
+  const installationId = props.services.progressEpoch;
 
   useEffect(() => {
     if (props.signal.aborted) return;
