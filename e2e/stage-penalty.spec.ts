@@ -524,15 +524,12 @@ test("departing a lagging shot stops the game; returning restores the same oppon
   await page.waitForTimeout(750);
   const solved = await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const r = indexedDB.open("busycube-progress-v1", 1);
+      const r = indexedDB.open("busycube-player-v2", 1);
       r.onsuccess = () => resolve(r.result);
       r.onerror = () => reject(r.error);
     });
     const ids = await new Promise<string[]>((resolve, reject) => {
-      const r = db
-        .transaction("documents")
-        .objectStore("documents")
-        .get("current");
+      const r = db.transaction("state").objectStore("state").get("current");
       r.onsuccess = () =>
         resolve(r.result?.stages?.["S-980"]?.solvedBoxIds ?? []);
       r.onerror = () => reject(r.error);

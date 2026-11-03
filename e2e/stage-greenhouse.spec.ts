@@ -118,16 +118,17 @@ test("with controlled registration policy, a native injected periodic event grow
       request.onerror = () => reject(request.error);
     });
     await new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open("busycube-progress-v1", 1);
-      request.onupgradeneeded = () =>
-        request.result.createObjectStore("documents");
+      const request = indexedDB.open("busycube-player-v2", 1);
+      request.onupgradeneeded = () => request.result.createObjectStore("state");
       request.onsuccess = () => {
         const db = request.result;
-        const tx = db.transaction("documents", "readwrite");
-        tx.objectStore("documents").put(
+        const tx = db.transaction("state", "readwrite");
+        tx.objectStore("state").put(
           {
             schemaVersion: 1,
-            installationId: "greenhouse-fixture",
+            storageId: "greenhouse-fixture",
+            revision: 1,
+            epoch: "fixture-epoch",
             stages: { "S-740": { solvedBoxIds: ["B01"] } },
             settings: { locale: "en" },
           },
@@ -266,7 +267,7 @@ test("with controlled registration policy, a native injected periodic event grow
           });
         Promise.all([
           read("busycube-periodic-stage-v1", "care", "state"),
-          read("busycube-progress-v1", "documents", "current"),
+          read("busycube-player-v2", "state", "current"),
         ]).then(([old, progress]) => resolve({ old, progress }), reject);
       }),
   );

@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import type { ProgressDocument } from "../src/domain/progress";
+import type { PlayerState } from "../src/domain/playerState";
 
 async function observeNative(page: Page) {
   const cdp = await page.context().newCDPSession(page);
@@ -31,21 +31,22 @@ test("a real native sentinel must remain held for the full visible wait and lega
   await observeNative(page);
   await page.goto("/privacy/index.html");
   await page.evaluate(async () => {
-    const value: ProgressDocument = {
+    const value: PlayerState = {
       schemaVersion: 1,
-      installationId: "wake-fixture",
+      storageId: "wake-fixture",
+      revision: 1,
+      epoch: "fixture-epoch",
       stages: { "S-330": { solvedBoxIds: ["B01", "B02"] } },
       settings: { locale: "en" },
     };
     await new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open("busycube-progress-v1", 1);
-      request.onupgradeneeded = () =>
-        request.result.createObjectStore("documents");
+      const request = indexedDB.open("busycube-player-v2", 1);
+      request.onupgradeneeded = () => request.result.createObjectStore("state");
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result;
-        const tx = db.transaction("documents", "readwrite");
-        tx.objectStore("documents").put(value, "current");
+        const tx = db.transaction("state", "readwrite");
+        tx.objectStore("state").put(value, "current");
         tx.oncomplete = () => {
           db.close();
           resolve();
@@ -55,7 +56,7 @@ test("a real native sentinel must remain held for the full visible wait and lega
     });
   });
   await page.goto("/?locale=en&stage=S-330");
-  await expect(page.locator(".stage-view__header > p")).toHaveText(/^D-/);
+  await expect(page.locator(".stage-view__identity > p")).toHaveText(/^D-/);
   await expect(gift(page)).toHaveAttribute("data-box-state", "ribboned");
   await expect(page.locator(".problem-gift")).toHaveCount(1);
   const start = await page.evaluate(() => performance.now());
@@ -101,12 +102,12 @@ test("a real native sentinel must remain held for the full visible wait and lega
       page.evaluate(
         async () =>
           new Promise<string[]>((resolve, reject) => {
-            const request = indexedDB.open("busycube-progress-v1", 1);
+            const request = indexedDB.open("busycube-player-v2", 1);
             request.onerror = () => reject(request.error);
             request.onsuccess = () => {
               const db = request.result;
-              const tx = db.transaction("documents");
-              const read = tx.objectStore("documents").get("current");
+              const tx = db.transaction("state");
+              const read = tx.objectStore("state").get("current");
               read.onsuccess = () =>
                 resolve(read.result.stages["S-330"].solvedBoxIds);
               tx.oncomplete = () => db.close();

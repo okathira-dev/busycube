@@ -185,17 +185,18 @@ test("controlled valid-request refusal opens only the new refusal box and preser
   await page.goto("http://localhost:4173/privacy/index.html");
   await page.evaluate(async () => {
     await new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open("busycube-progress-v1", 1);
-      request.onupgradeneeded = () =>
-        request.result.createObjectStore("documents");
+      const request = indexedDB.open("busycube-player-v2", 1);
+      request.onupgradeneeded = () => request.result.createObjectStore("state");
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result;
-        const tx = db.transaction("documents", "readwrite");
-        tx.objectStore("documents").put(
+        const tx = db.transaction("state", "readwrite");
+        tx.objectStore("state").put(
           {
             schemaVersion: 1,
-            installationId: "passkey-fixture",
+            storageId: "passkey-fixture",
+            revision: 1,
+            epoch: "fixture-epoch",
             stages: { "S-380": { solvedBoxIds: ["B03"] } },
             settings: { locale: "en" },
           },
@@ -229,11 +230,11 @@ test("controlled valid-request refusal opens only the new refusal box and preser
       page.evaluate(
         async () =>
           new Promise<string[]>((resolve) => {
-            const request = indexedDB.open("busycube-progress-v1", 1);
+            const request = indexedDB.open("busycube-player-v2", 1);
             request.onsuccess = () => {
               const db = request.result;
-              const tx = db.transaction("documents");
-              const read = tx.objectStore("documents").get("current");
+              const tx = db.transaction("state");
+              const read = tx.objectStore("state").get("current");
               read.onsuccess = () =>
                 resolve(read.result.stages["S-380"].solvedBoxIds);
               tx.oncomplete = () => db.close();

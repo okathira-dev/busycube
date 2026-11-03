@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { ProgressDocument } from "../src/domain/progress";
+import type { PlayerState } from "../src/domain/playerState";
 
 const removed = [
   "S-160",
@@ -19,9 +19,11 @@ test("removed stages stay out of the catalogue while persisted legacy progress s
 }) => {
   await page.goto("/privacy/index.html");
   await page.evaluate(async (ids) => {
-    const document: ProgressDocument = {
+    const document: PlayerState = {
       schemaVersion: 1,
-      installationId: "removed-stage-fixture",
+      storageId: "removed-stage-fixture",
+      revision: 1,
+      epoch: "fixture-epoch",
       settings: { locale: "en" },
       stages: Object.fromEntries(
         ids.map((id) => [
@@ -39,16 +41,16 @@ test("removed stages stay out of the catalogue while persisted legacy progress s
       ),
     };
     await new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open("busycube-progress-v1", 1);
+      const request = indexedDB.open("busycube-player-v2", 1);
       request.onupgradeneeded = () => {
-        if (!request.result.objectStoreNames.contains("documents"))
-          request.result.createObjectStore("documents");
+        if (!request.result.objectStoreNames.contains("state"))
+          request.result.createObjectStore("state");
       };
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result;
-        const tx = db.transaction("documents", "readwrite");
-        tx.objectStore("documents").put(document, "current");
+        const tx = db.transaction("state", "readwrite");
+        tx.objectStore("state").put(document, "current");
         tx.oncomplete = () => {
           db.close();
           resolve();
@@ -73,13 +75,13 @@ test("removed stages stay out of the catalogue while persisted legacy progress s
   async function readProgress() {
     return page.evaluate(
       () =>
-        new Promise<ProgressDocument>((resolve, reject) => {
-          const request = indexedDB.open("busycube-progress-v1", 1);
+        new Promise<PlayerState>((resolve, reject) => {
+          const request = indexedDB.open("busycube-player-v2", 1);
           request.onerror = () => reject(request.error);
           request.onsuccess = () => {
             const db = request.result;
-            const tx = db.transaction("documents");
-            const read = tx.objectStore("documents").get("current");
+            const tx = db.transaction("state");
+            const read = tx.objectStore("state").get("current");
             read.onsuccess = () => resolve(read.result);
             tx.oncomplete = () => db.close();
           };

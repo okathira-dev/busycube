@@ -119,13 +119,13 @@ test("real worker messaging and IndexedDB keep unlimited input separate from Try
   const savedId = await page.evaluate(
     () =>
       new Promise<string>((resolve, reject) => {
-        const request = indexedDB.open("busycube-progress-v1", 1);
+        const request = indexedDB.open("busycube-player-v2", 1);
         request.onerror = () => reject(request.error);
         request.onsuccess = () => {
           const db = request.result;
-          const tx = db.transaction("documents");
-          const read = tx.objectStore("documents").get("current");
-          read.onsuccess = () => resolve(read.result.installationId);
+          const tx = db.transaction("state");
+          const read = tx.objectStore("state").get("current");
+          read.onsuccess = () => resolve(read.result.epoch);
           read.onerror = () => reject(read.error);
           tx.oncomplete = () => db.close();
         };

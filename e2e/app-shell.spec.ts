@@ -213,16 +213,18 @@ test("restores progress from IndexedDB after reload", async ({ page }) => {
 
   await page.evaluate(async () => {
     const database = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open("busycube-progress-v1", 1);
+      const request = indexedDB.open("busycube-player-v2", 1);
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
     await new Promise<void>((resolve, reject) => {
-      const transaction = database.transaction("documents", "readwrite");
-      transaction.objectStore("documents").put(
+      const transaction = database.transaction("state", "readwrite");
+      transaction.objectStore("state").put(
         {
           schemaVersion: 1,
-          installationId: "e2e-installation",
+          storageId: "e2e-installation",
+          revision: 1,
+          epoch: "fixture-epoch",
           stages: { "S-000": { solvedBoxIds: ["B01"] } },
           settings: { locale: "en" },
         },

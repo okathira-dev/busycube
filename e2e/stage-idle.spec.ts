@@ -49,7 +49,7 @@ for (const initial of ["active", "locked", "idle"]) {
       isUserActive: initial !== "idle",
       isScreenUnlocked: !initialLocked,
     });
-    await expect(page.locator(".stage-view__header > p")).toHaveText(/^L-/);
+    await expect(page.locator(".stage-view__identity > p")).toHaveText(/^L-/);
     const boxes = page.locator(".gift-box");
     await expect(boxes).toHaveCount(2);
     await expect(

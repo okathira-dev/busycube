@@ -1,5 +1,5 @@
 import { type BrowserContext, expect, type Page, test } from "@playwright/test";
-import type { ProgressDocument } from "../src/domain/progress";
+import type { PlayerState } from "../src/domain/playerState";
 
 type Replica = { id: string; name: string; document: unknown; version: number };
 function driveBackend() {
@@ -110,9 +110,11 @@ async function seed(page: Page, id: string, legacy = false) {
   await page.goto("/privacy/index.html");
   await page.evaluate(
     async ({ id, legacy }) => {
-      const value: ProgressDocument = {
+      const value: PlayerState = {
         schemaVersion: 1,
-        installationId: id,
+        storageId: id,
+        revision: 1,
+        epoch: "fixture-epoch",
         stages: legacy
           ? {
               "S-140": { solvedBoxIds: ["B01", "B02"] },
@@ -122,14 +124,14 @@ async function seed(page: Page, id: string, legacy = false) {
         settings: { locale: "en" },
       };
       await new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open("busycube-progress-v1", 1);
+        const request = indexedDB.open("busycube-player-v2", 1);
         request.onupgradeneeded = () =>
-          request.result.createObjectStore("documents");
+          request.result.createObjectStore("state");
         request.onerror = () => reject(request.error);
         request.onsuccess = () => {
           const db = request.result;
-          const tx = db.transaction("documents", "readwrite");
-          tx.objectStore("documents").put(value, "current");
+          const tx = db.transaction("state", "readwrite");
+          tx.objectStore("state").put(value, "current");
           tx.oncomplete = () => {
             db.close();
             resolve();
@@ -149,13 +151,13 @@ async function seed(page: Page, id: string, legacy = false) {
 async function stored(page: Page) {
   return page.evaluate(
     () =>
-      new Promise<ProgressDocument>((resolve, reject) => {
-        const request = indexedDB.open("busycube-progress-v1", 1);
+      new Promise<PlayerState>((resolve, reject) => {
+        const request = indexedDB.open("busycube-player-v2", 1);
         request.onerror = () => reject(request.error);
         request.onsuccess = () => {
           const db = request.result;
-          const tx = db.transaction("documents");
-          const value = tx.objectStore("documents").get("current");
+          const tx = db.transaction("state");
+          const value = tx.objectStore("state").get("current");
           value.onsuccess = () => resolve(value.result);
           tx.oncomplete = () => db.close();
         };
@@ -190,7 +192,7 @@ test("two independent browser stores exchange real product sync requests through
   await expect(page.locator(".s140-link__arrival")).toBeHidden();
   expect(drive.replicas).toHaveLength(1);
   expect(drive.replicas[0]?.document).toMatchObject({
-    installationId: "installation-one",
+    sourceStorageId: "installation-one",
   });
   const second = await browser.newContext();
   try {
@@ -204,7 +206,7 @@ test("two independent browser stores exchange real product sync requests through
       "data-box-state",
       "open",
     );
-    expect((await stored(other)).installationId).toBe("installation-two");
+    expect((await stored(other)).storageId).toBe("installation-two");
     await page
       .getByRole("button", { name: /^Two overlapping frames:/ })
       .click();
@@ -214,12 +216,14 @@ test("two independent browser stores exchange real product sync requests through
       .poll(async () => (await stored(page)).stages["S-020"]?.solvedBoxIds)
       .toContain("B01");
     const value = await stored(page);
-    expect(value.installationId).toBe("installation-one");
+    expect(value.storageId).toBe("installation-one");
     expect(value.stages["S-140"]?.solvedBoxIds).toEqual(["B01", "B02"]);
     expect(value.stages["S-000"]?.solvedBoxIds).toEqual(["B01"]);
     expect(value.settings.locale).toBe("en");
     for (const doc of drive.replicas)
-      expect((doc.document as ProgressDocument).installationId).toBe(
+      expect(
+        (doc.document as { sourceStorageId: string }).sourceStorageId,
+      ).toBe(
         doc.name.includes("installation-one")
           ? "installation-one"
           : "installation-two",
@@ -271,10 +275,10 @@ test("network failure and a replica without identity never open a box or upload 
   drive.fail(false);
   drive.replicas.push({
     id: "corrupt",
-    name: "busycube-progress-corrupt.json",
+    name: "busycube-progress-v2-corrupt.json",
     document: {
-      schemaVersion: 1,
-      installationId: "  ",
+      schemaVersion: 2,
+      sourceStorageId: "  ",
       stages: {},
       settings: { locale: "en" },
     },
@@ -294,6 +298,6 @@ test("network failure and a replica without identity never open a box or upload 
       (call) => call.startsWith("PATCH") || call.startsWith("POST"),
     ),
   ).toBe(false);
-  expect((await stored(page)).installationId).toBe("installation-one");
+  expect((await stored(page)).storageId).toBe("installation-one");
   expect((await stored(page)).stages["S-020"]?.solvedBoxIds).toEqual(["B01"]);
 });
