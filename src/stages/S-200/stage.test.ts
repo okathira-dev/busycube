@@ -1,9 +1,9 @@
 import {
-  completedGamepadGroups,
-  gamepadGroups,
+  isGamepadComplete,
   type PadInput,
   type PadReading,
   readGamepadInputs,
+  requiredGamepadInputs,
 } from "./functions";
 
 function pad(
@@ -22,33 +22,38 @@ function pad(
   };
 }
 
-describe("S-200 controller parts", () => {
-  it("accumulates sequential inputs for eight independent groups, with stick clicks separate", () => {
+describe("S-200 controller", () => {
+  it("requires every button and both directions of every stick axis, accumulated sequentially", () => {
     const seen = new Set<PadInput>();
-    for (const index of [12, 13, 14, 15])
+    for (let index = 0; index < 16; index++) {
       for (const input of readGamepadInputs([pad([index])])) seen.add(input);
-    expect(completedGamepadGroups(seen)).toEqual(["B02"]);
-    for (const axes of [
-      [-1, 0, 0, 0],
-      [1, 0, 0, 0],
-      [0, -1, 0, 0],
-      [0, 1, 0, 0],
-    ])
-      for (const input of readGamepadInputs([pad([], axes)])) seen.add(input);
-    expect(completedGamepadGroups(seen)).toEqual(["B02", "B03"]);
-    expect(completedGamepadGroups(seen)).not.toContain("B08");
-    for (const index of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
-      for (const input of readGamepadInputs([pad([index])])) seen.add(input);
-    for (const axes of [
-      [0, 0, -1, 0],
-      [0, 0, 1, 0],
-      [0, 0, 0, -1],
-      [0, 0, 0, 1],
-    ])
-      for (const input of readGamepadInputs([pad([], axes)])) seen.add(input);
-    expect(completedGamepadGroups(seen)).toEqual(
-      gamepadGroups.map((group) => group.box),
-    );
+      expect(isGamepadComplete(seen)).toBe(false);
+    }
+    for (let axis = 0; axis < 4; axis++) {
+      for (const sign of [-1, 1]) {
+        expect(isGamepadComplete(seen)).toBe(false);
+        const axes = [0, 0, 0, 0];
+        axes[axis] = sign;
+        for (const input of readGamepadInputs([pad([], axes)])) seen.add(input);
+      }
+    }
+    expect(isGamepadComplete(seen)).toBe(true);
+  });
+
+  it.each(requiredGamepadInputs)(
+    "does not complete while %s is missing",
+    (missing) => {
+      const seen = new Set<PadInput>(requiredGamepadInputs);
+      seen.delete(missing);
+      expect(isGamepadComplete(seen)).toBe(false);
+    },
+  );
+
+  it("reads the standard controller regardless of slot, ignoring unrecognized layouts", () => {
+    const unmapped = { ...pad([0]), mapping: "" as const };
+    expect([...readGamepadInputs([null, unmapped, pad([1])])]).toEqual([
+      "face-right",
+    ]);
   });
 
   it("does not require a home button and never accepts nonstandard or absent controllers", () => {
@@ -56,6 +61,7 @@ describe("S-200 controller parts", () => {
     expect(readGamepadInputs([{ ...pad([0]), mapping: "" }]).size).toBe(0);
     expect(readGamepadInputs([{ ...pad([0]), connected: false }]).size).toBe(0);
     expect(readGamepadInputs([null]).size).toBe(0);
+    expect(isGamepadComplete(new Set())).toBe(false);
   });
 
   it("ignores neutral, missing and invalid axes while retaining the signed direction", () => {

@@ -11,6 +11,7 @@ import {
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
 import { statusText } from "../../ui/statusLocale";
+import { stageText } from "../locale";
 import { locale } from "./locale";
 import { manifest } from "./manifest";
 
@@ -27,7 +28,7 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * - B03「満ちた電池」: 端末を充電して残量を75%以上にする。取得直後またはlevelchange時の有限なlevelが0.75〜1なら開く。
  * - B04「少ない電池」: 端末の残量を75%未満にする。同じ観測でlevelが0以上0.75未満なら開く。訪問をまたいで通常進捗へ累積できる。
  * 使用API: navigator.getBattery、BatteryManager.charging/level、chargingchange/levelchange。
- * 権限・privacy: 権限を要求せず、充電状態と丸めた残量だけを現在表示へ使い、履歴や端末情報を保存・送信しない。
+ * 権限・privacy: 権限を要求せず、充電状態と残量を現在表示に使い、履歴や端末情報を保存・送信しない。
  * 対応環境: Battery Status APIを公開するブラウザー・端末。
  */
 function S370Stage(props: Props) {
@@ -82,12 +83,13 @@ function S370Stage(props: Props) {
   return (
     <div className="puzzle puzzle--centered">
       <div className="battery-reading">
-        <div className="battery-reading__body" aria-hidden="true">
+        <div
+          className="battery-reading__body"
+          role="img"
+          aria-label={`${stageText(props.locale, locale.level)}: ${level === null ? stageText(props.locale, locale.unknown) : `${Math.round(level * 100)}%`}`}
+        >
           <span style={{ width: level === null ? "0%" : `${level * 100}%` }} />
         </div>
-        <p className="measurement" aria-live="polite">
-          {level === null ? "—" : `${Math.round(level * 100)}%`}
-        </p>
         {charging !== null && <Plug aria-hidden="true" />}
       </div>
       <div className="problem-row">
@@ -95,13 +97,21 @@ function S370Stage(props: Props) {
         <StageProblemGiftBox box={unplugged} locale={props.locale} />
         <div className="battery-goal">
           <StageProblemGiftBox box={high} locale={props.locale} />
-          <div className="battery-range" data-high="true" aria-hidden="true" />
-          <span>≥75%</span>
+          <div
+            className="battery-range"
+            data-high="true"
+            role="img"
+            aria-label={stageText(props.locale, locale.highRange)}
+          />
         </div>
         <div className="battery-goal">
           <StageProblemGiftBox box={low} locale={props.locale} />
-          <div className="battery-range" data-high="false" aria-hidden="true" />
-          <span>&lt;75%</span>
+          <div
+            className="battery-range"
+            data-high="false"
+            role="img"
+            aria-label={stageText(props.locale, locale.lowRange)}
+          />
         </div>
       </div>
       {error && <p role="status">{statusText(props.locale, "error")}</p>}

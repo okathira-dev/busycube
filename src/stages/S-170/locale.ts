@@ -5,5 +5,5 @@ export const locale = defineStageLocale({
   stageName,
   pause: { ja: "停止", en: "Pause" },
   play: { ja: "再開", en: "Resume" },
-  B02: { ja: "時計", en: "Clock" },
+  B02: { ja: "速度計", en: "Speedometer" },
 });

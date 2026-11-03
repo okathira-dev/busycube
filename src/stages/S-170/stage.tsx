@@ -1,7 +1,7 @@
 import "./styles.css";
 import PauseOutlined from "@mui/icons-material/PauseOutlined";
 import PlayArrowOutlined from "@mui/icons-material/PlayArrowOutlined";
-import ScheduleOutlined from "@mui/icons-material/ScheduleOutlined";
+import SpeedOutlined from "@mui/icons-material/SpeedOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -22,7 +22,7 @@ import { locale } from "./locale";
  * 目的: browserが動かす縦型の往復メーターを利用者のtimingでpauseし、上端の目標帯へ合わせる。
  * 最初の一手: 上下するメーターが上端の目標帯へ入った瞬間に停止アイコンを押す。
  * 箱ごとの解法:
- * - B02「時計」: メーターが上端の目標帯へ入ったときに停止アイコンを押す。実WAAPIをpauseした直後のgetComputedTiming().progressが0.95以上1以下なら開く。再開で再挑戦できる。
+ * - B02「速度計」: メーターが上端の目標帯へ入ったときに停止アイコンを押す。実WAAPIをpauseした直後のgetComputedTiming().progressが0.95以上1以下なら開く。再開で再挑戦できる。
  * 使用API: Web Animations APIの`Element.animate()`、`Animation.playState` / `pause()` / `play()`、`getComputedTiming()`。
  * 権限・privacy: 権限を要求せず、animation進捗は現在表示と開箱判定にだけ使い、操作timingを保存・送信しない。
  * 対応環境: Element.animateとWeb Animations APIのtiming情報を実装するbrowser。
@@ -102,7 +102,7 @@ function S170Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B02]: {
-      icon: ScheduleOutlined,
+      icon: SpeedOutlined,
       color: "#fbbf24",
       label: locale.B02,
     },

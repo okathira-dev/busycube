@@ -2,7 +2,8 @@ import excerpt from "./hyperlink-excerpt.json";
 
 export const words = excerpt.paragraphs.flatMap((paragraph, paragraphIndex) =>
   paragraph.split(/\s+/).map((text, occurrence) => ({
-    text,
+    text: text.replace(/[,.]+$/, ""),
+    punctuation: text.match(/[,.]+$/)?.[0] ?? "",
     paragraphIndex,
     id: `${paragraphIndex}:${occurrence}`,
   })),
@@ -52,9 +53,13 @@ export function textDirective(index: number): string {
     words
       .slice(start, end)
       .filter((w) => w.paragraphIndex === target.paragraphIndex)
-      .map((w) => w.text)
+      .map((w) => w.text + w.punctuation)
       .join(" ");
   const before = context(Math.max(0, index - 6), index);
-  const after = context(index + 1, index + 7);
-  return `#s690-word-${index}:~:text=${before ? `${encodeURIComponent(before)}-,` : ""}${encodeURIComponent(target.text)}${after ? `,-${encodeURIComponent(after)}` : ""}`;
+  const following = context(index + 1, index + 7);
+  const after = target.punctuation + (following ? ` ${following}` : "");
+  // encodeURIComponent leaves hyphens intact, but text directives reserve them.
+  const encodeTerm = (text: string) =>
+    encodeURIComponent(text).replaceAll("-", "%2D");
+  return `#s690-word-${index}:~:text=${before ? `${encodeTerm(before)}-,` : ""}${encodeTerm(target.text)}${after ? `,-${encodeTerm(after)}` : ""}`;
 }

@@ -7,7 +7,7 @@ import { stageName } from "./name";
 export const manifest = defineStageManifest({
   id: "S-630",
   name: stageName,
-  platform: { baseline: "newly", permission: "none" },
+  platform: { baseline: "limited", permission: "none" },
   boxes: ["B01", "B02", "B03", "B04"],
   load: async (): Promise<StageModule> => (await import("./stage")).stage,
 });

@@ -1,27 +1,31 @@
-export const gamepadGroups = [
-  { box: "B02", name: "dpad", inputs: ["up", "left", "down", "right"] },
-  {
-    box: "B03",
-    name: "left-stick",
-    inputs: ["ls-up", "ls-left", "ls-down", "ls-right"],
-  },
-  {
-    box: "B04",
-    name: "right-stick",
-    inputs: ["rs-up", "rs-left", "rs-down", "rs-right"],
-  },
-  {
-    box: "B05",
-    name: "face",
-    inputs: ["face-top", "face-left", "face-bottom", "face-right"],
-  },
-  { box: "B06", name: "shoulders", inputs: ["L", "R"] },
-  { box: "B07", name: "triggers", inputs: ["ZL", "ZR"] },
-  { box: "B08", name: "clicks", inputs: ["L3", "R3"] },
-  { box: "B09", name: "center", inputs: ["select", "start"] },
+export const requiredGamepadInputs = [
+  "up",
+  "left",
+  "down",
+  "right",
+  "ls-up",
+  "ls-left",
+  "ls-down",
+  "ls-right",
+  "rs-up",
+  "rs-left",
+  "rs-down",
+  "rs-right",
+  "face-top",
+  "face-left",
+  "face-bottom",
+  "face-right",
+  "L",
+  "R",
+  "ZL",
+  "ZR",
+  "L3",
+  "R3",
+  "select",
+  "start",
 ] as const;
 
-export type PadInput = (typeof gamepadGroups)[number]["inputs"][number];
+export type PadInput = (typeof requiredGamepadInputs)[number];
 
 const buttonInputs: readonly (readonly [number, PadInput])[] = [
   [12, "up"],
@@ -73,8 +77,6 @@ export function readGamepadInputs(
   return inputs;
 }
 
-export function completedGamepadGroups(seen: ReadonlySet<PadInput>) {
-  return gamepadGroups
-    .filter((group) => group.inputs.every((input) => seen.has(input)))
-    .map((group) => group.box);
+export function isGamepadComplete(seen: ReadonlySet<PadInput>) {
+  return requiredGamepadInputs.every((input) => seen.has(input));
 }

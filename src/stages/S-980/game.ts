@@ -15,6 +15,15 @@ export function isPoint(value: unknown): value is Point {
 }
 
 export type Level = "easy" | "medium" | "hard";
+export type Victories = Record<Level, boolean>;
+export function recordVictory(
+  victories: Victories,
+  level: Level,
+  shotOnline: boolean,
+): Victories {
+  if (level === "hard" && shotOnline) return victories;
+  return { ...victories, [level]: true };
+}
 export type Phase = "ready" | "flying" | "lagging" | "goal" | "saved";
 export interface Game {
   level: Level;

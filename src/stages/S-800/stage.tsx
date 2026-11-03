@@ -45,8 +45,8 @@ function WordCanvas({ word }: { word: string }) {
  * 目的: 検索語とURL断片を手掛かりに、browser自身のmatchで隠れた二つの文章を見つける。
  * 最初の一手: 虫眼鏡の下のcanvasの語を読み、ページ内検索で探す。
  * 箱ごとの解法:
- * - B02「虫眼鏡」: canvasの残り火（英語ember）をページ内検索し、その語を含むhidden=until-found要素の実beforematchを受けると開く。
- * - B01「リンク」: 表示された対象言語の全文Text FragmentをURL末尾に付けて移動し、小瓶とコバルトの隠れた文の実beforematchを受けると開く。
+ * - B02「虫眼鏡」: canvasの語をページ内検索し、その語を含むhidden=until-found要素の実beforematchを受けると開く。
+ * - B01「リンク」: 表示された対象言語の全文Text FragmentをURL末尾に付けて移動し、隠れた文の実beforematchを受けると開く。
  * 使用API: native Text Fragments、hidden=until-found、beforematch、Canvas 2D。
  * 権限・privacy: 権限不要。検索語や入力を保存・送信せず、browserのbeforematchだけで判定する。
  * 対応環境: hidden=until-foundとText Fragment対応browser。発見経路は制限せず、どちらの箱も検索/URLのいずれからでも開く。
@@ -93,17 +93,28 @@ function S800Stage(props: Props) {
       <article className="s800-article">
         {passage(locale.passage1)}
         {passage(locale.passage2)}
-        {passage(locale.passage3)}
         <section ref={encodedTargetRef} hidden>
           <p>{encodedSentence}</p>
         </section>
-        {passage(locale.passage4)}
-        {passage(locale.passage5)}
-        {passage(locale.passage6)}
+        {passage(locale.passage3)}
         <section ref={wordTargetRef} hidden>
           <p>{searchSentence}</p>
         </section>
-        {passage(locale.passage7)}
+        <footer>
+          <a
+            href={
+              props.locale === "ja"
+                ? "https://ja.wikipedia.org/wiki/蛍光ペン"
+                : "https://en.wikipedia.org/wiki/Highlighter"
+            }
+          >
+            {stageText(props.locale, locale.source)}
+          </a>
+          {" · "}
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/">
+            {stageText(props.locale, locale.license)}
+          </a>
+        </footer>
       </article>
     </div>
   );

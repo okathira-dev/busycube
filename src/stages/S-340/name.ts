@@ -1,6 +1,6 @@
 import type { StageLocaleText } from "../locale";
 
 export const stageName = {
-  ja: "形をつなぐ",
-  en: "Connect the shapes",
+  ja: "カップ＆ボール",
+  en: "Cups and Balls",
 } satisfies StageLocaleText;

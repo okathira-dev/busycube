@@ -1,32 +1,44 @@
 export type Move = "rock" | "scissors" | "paper";
+export const moves: Move[] = ["rock", "scissors", "paper"];
 export interface DuelState {
-  phase: "waiting" | "joining" | "playing" | "result";
-  role: 1 | 2 | null;
+  phase: "lobby" | "waiting" | "joining" | "playing" | "result";
+  name: string;
+  opponent: string;
   mine: Move | null;
   theirs: Move | null;
-  opponentReady: boolean;
   winner: 0 | 1 | 2 | null;
+  streak: number;
+  history: {
+    id: string;
+    opponent: string;
+    mine: Move;
+    theirs: Move;
+    winner: 0 | 1 | 2;
+  }[];
 }
 export interface Transport {
   send(value: unknown): void;
   listen(handler: (event: MessageEvent<unknown>) => void): () => void;
   close(): void;
 }
-const uuid = (value: unknown): value is string =>
-  typeof value === "string" &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value,
-  );
-const move = (value: unknown): value is Move =>
-  value === "rock" || value === "scissors" || value === "paper";
-export function winner(p1: Move, p2: Move): 0 | 1 | 2 {
-  return p1 === p2
+export function validName(value: string): boolean {
+  return /^[\p{L}\p{N}_-]{1,20}$/u.test(value);
+}
+export function winner(a: Move, b: Move): 0 | 1 | 2 {
+  return a === b
     ? 0
-    : (p1 === "rock" && p2 === "scissors") ||
-        (p1 === "scissors" && p2 === "paper") ||
-        (p1 === "paper" && p2 === "rock")
+    : (a === "rock" && b === "scissors") ||
+        (a === "scissors" && b === "paper") ||
+        (a === "paper" && b === "rock")
       ? 1
       : 2;
+}
+export function randomMove(): Move {
+  // Reject the remainder to keep all three hands equally likely.
+  let value = 0xffffffff;
+  while (value === 0xffffffff)
+    value = crypto.getRandomValues(new Uint32Array(1))[0] ?? 0xffffffff;
+  return moves[value % 3] ?? "rock";
 }
 export function duel(
   transport: Transport,
@@ -35,85 +47,117 @@ export function duel(
   signal: AbortSignal,
   changed: (state: DuelState) => void,
   solve: () => void,
+  random = randomMove,
 ) {
+  let state: DuelState = {
+    phase: "lobby",
+    name: `guest_${id.slice(0, 8)}`,
+    opponent: "",
+    mine: null,
+    theirs: null,
+    winner: null,
+    streak: 0,
+    history: [],
+  };
   let alive = true,
-    credited = false;
-  let peer: string | null = null,
+    credited = false,
+    peer: string | null = null,
     match: string | null = null,
-    round: string | null = null;
-  let role: 1 | 2 | null = null,
-    phase: DuelState["phase"] = "waiting";
-  let mine: Move | null = null,
+    cpu: Move | null = null,
     theirs: Move | null = null,
-    result: DuelState["winner"] = null;
+    serial = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  const otherTabs = new Set<string>();
   const emit = () => {
-    if (alive && !signal.aborted)
-      changed({
-        phase,
-        role,
-        mine,
-        theirs: mine && theirs ? theirs : null,
-        opponentReady: theirs !== null,
-        winner: result,
-      });
+    if (alive && !signal.aborted) changed({ ...state });
   };
-  const send = (type: string, extra = {}) => {
-    if (alive)
-      transport.send({
-        protocol: "busycube-duel-v1",
-        from: id,
-        to: peer,
-        match,
-        type,
-        ...extra,
-      });
-  };
-  const lobby = () => {
+  const send = (type: string, extra = {}) =>
+    transport.send({
+      protocol: "busycube-duel-v2",
+      from: id,
+      to: peer,
+      match,
+      name: state.name,
+      type,
+      ...extra,
+    });
+  const reset = () => {
     clearTimeout(timer);
     peer = null;
     match = null;
-    round = null;
-    role = null;
-    mine = null;
+    cpu = null;
     theirs = null;
-    result = null;
-    phase = "waiting";
-    emit();
-  };
-  const joining = () => {
-    phase = "joining";
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      if (!alive || signal.aborted || phase !== "joining") return;
-      lobby();
-      send("hello");
-    }, 5000);
-    emit();
-  };
-  const start = (next: string) => {
-    clearTimeout(timer);
-    round = next;
-    mine = null;
-    theirs = null;
-    result = null;
-    phase = "playing";
-    emit();
+    state = { ...state, mine: null, theirs: null, winner: null, opponent: "" };
   };
   const decide = () => {
-    if (!mine || !theirs || !role || phase !== "playing") {
-      emit();
-      return;
-    }
-    result = role === 1 ? winner(mine, theirs) : winner(theirs, mine);
-    phase = "result";
+    if (!state.mine || !theirs || state.phase !== "playing") return;
+    const result = winner(state.mine, theirs);
+    state = {
+      ...state,
+      phase: "result",
+      theirs,
+      winner: result,
+      streak: result === 1 ? state.streak + 1 : 0,
+      history: [
+        {
+          id: match ?? crypto.randomUUID(),
+          opponent: state.opponent,
+          mine: state.mine,
+          theirs,
+          winner: result,
+        },
+        ...state.history,
+      ].slice(0, 8),
+    };
     emit();
-    if (role === 1 && result === 1 && !credited && alive && !signal.aborted) {
+    if (state.streak === 3 && peer && !credited) {
       credited = true;
       solve();
     }
   };
-  const receive = (event: MessageEvent<unknown>) => {
+  const search = () => {
+    if (!alive || signal.aborted || state.streak === 3) return;
+    if (peer && state.phase !== "result") send("bye");
+    reset();
+    state.phase = "waiting";
+    emit();
+    send("hello");
+    let extended = otherTabs.size > 0;
+    const fallback = () => {
+      if (state.phase !== "waiting" || !alive) return;
+      if (!extended && otherTabs.size > 0) {
+        extended = true;
+        timer = setTimeout(fallback, 1800);
+        return;
+      }
+      cpu = random();
+      serial++;
+      state = {
+        ...state,
+        phase: "playing",
+        opponent: `${["mikan", "kuma", "luna", "nagi", "pico", "tora"][serial % 6]}_${id.slice(0, 4)}${serial.toString().padStart(2, "0")}`,
+      };
+      emit();
+    };
+    timer = setTimeout(fallback, extended ? 3600 : 1800);
+  };
+  const joining = () => {
+    clearTimeout(timer);
+    state.phase = "joining";
+    emit();
+    timer = setTimeout(() => {
+      if (alive && state.phase === "joining") {
+        send("bye");
+        search();
+      }
+    }, 5000);
+  };
+  const start = () => {
+    clearTimeout(timer);
+    state.phase = "playing";
+    emit();
+  };
+  const remove = transport.listen((event) => {
     if (
       !alive ||
       signal.aborted ||
@@ -123,106 +167,110 @@ export function duel(
       typeof event.data !== "object"
     )
       return;
-    const data = event.data as Record<string, unknown>;
+    const d = event.data as Record<string, unknown>;
     if (
-      data.protocol !== "busycube-duel-v1" ||
-      !uuid(data.from) ||
-      data.from === id
+      d.protocol !== "busycube-duel-v2" ||
+      typeof d.from !== "string" ||
+      !/^[0-9a-f-]{36}$/i.test(d.from) ||
+      d.from === id ||
+      typeof d.name !== "string" ||
+      !validName(d.name)
     )
       return;
-    if (data.type === "hello") {
-      if (peer || phase !== "waiting") return;
-      if (id < data.from) {
-        peer = data.from;
+    if (d.type === "departed") {
+      otherTabs.delete(d.from);
+      return;
+    }
+    if (d.type === "presence" || d.type === "presence-request") {
+      otherTabs.add(d.from);
+      if (d.type === "presence-request") send("presence");
+      return;
+    }
+    if (d.type === "hello" && state.phase === "waiting" && !peer) {
+      if (id < d.from) {
+        peer = d.from;
         match = crypto.randomUUID();
-        role = 1;
+        state.opponent = d.name;
         joining();
         send("offer");
       } else send("hello");
       return;
     }
-    if (data.to !== id || !uuid(data.match)) return;
+    if (d.to !== id || typeof d.match !== "string") return;
     if (
-      data.type === "offer" &&
+      d.type === "offer" &&
+      state.phase === "waiting" &&
       !peer &&
-      phase === "waiting" &&
-      data.from < id
+      d.from < id
     ) {
-      peer = data.from;
-      match = data.match;
-      role = 2;
+      peer = d.from;
+      match = d.match;
+      state.opponent = d.name;
       joining();
       send("accept");
       return;
     }
-    if (data.from !== peer || data.match !== match) return;
-    if (data.type === "accept" && phase === "joining" && role === 1) {
-      const next = crypto.randomUUID();
-      start(next);
-      send("confirmed", { round: next });
+    if (d.from !== peer || d.match !== match) return;
+    if (d.type === "accept" && state.phase === "joining" && id < d.from) {
+      start();
+      send("confirmed");
+      return;
+    }
+    if (d.type === "confirmed" && state.phase === "joining" && id > d.from) {
+      start();
+      return;
+    }
+    if (d.type === "bye" && state.phase !== "result") {
+      reset();
+      state.phase = "lobby";
+      emit();
       return;
     }
     if (
-      data.type === "confirmed" &&
-      phase === "joining" &&
-      role === 2 &&
-      uuid(data.round)
+      d.type === "move" &&
+      state.phase === "playing" &&
+      !theirs &&
+      moves.includes(d.move as Move)
     ) {
-      start(data.round);
-      return;
-    }
-    if (data.type === "bye") {
-      lobby();
-      send("hello");
-      return;
-    }
-    if (
-      data.type === "round" &&
-      role === 2 &&
-      phase === "result" &&
-      data.previous === round &&
-      uuid(data.round) &&
-      data.round !== round
-    ) {
-      start(data.round);
-      return;
-    }
-    if (
-      data.type === "move" &&
-      phase === "playing" &&
-      data.round === round &&
-      move(data.move) &&
-      !theirs
-    ) {
-      theirs = data.move;
+      theirs = d.move as Move;
       decide();
     }
-  };
-  const remove = transport.listen(receive);
+  });
   const pick = (value: Move) => {
-    if (!alive || signal.aborted || phase !== "playing" || mine || !move(value))
+    if (
+      !alive ||
+      signal.aborted ||
+      state.phase !== "playing" ||
+      state.mine ||
+      !moves.includes(value)
+    )
       return;
-    mine = value;
-    send("move", { round, move: value });
+    state.mine = value;
+    if (peer) send("move", { move: value });
+    else {
+      theirs =
+        state.streak === 2
+          ? value === "rock"
+            ? "paper"
+            : value === "paper"
+              ? "scissors"
+              : "rock"
+          : cpu;
+    }
     decide();
-  };
-  const next = () => {
-    if (!alive || signal.aborted || role !== 1 || phase !== "result" || !round)
-      return;
-    const previous = round,
-      value = crypto.randomUUID();
-    start(value);
-    send("round", { previous, round: value });
+    emit();
   };
   const restart = () => {
-    if (!alive || signal.aborted) return;
-    if (peer) send("bye");
-    lobby();
-    send("hello");
+    if (!alive) return;
+    if (peer && state.phase !== "result") send("bye");
+    reset();
+    state = { ...state, phase: "lobby", streak: 0, history: [] };
+    emit();
   };
   const dispose = () => {
     if (!alive) return;
-    if (peer) send("bye");
+    send("departed");
+    if (peer && state.phase !== "result") send("bye");
     alive = false;
     clearTimeout(timer);
     remove();
@@ -233,7 +281,15 @@ export function duel(
   if (signal.aborted) dispose();
   else {
     emit();
-    send("hello");
+    send("presence-request");
   }
-  return { pick, next, restart, dispose };
+  const rename = (value: string): boolean => {
+    const name = value.trim();
+    if (!alive || signal.aborted || state.phase !== "lobby" || !validName(name))
+      return false;
+    state = { ...state, name };
+    emit();
+    return true;
+  };
+  return { pick, next: search, restart, dispose, rename };
 }

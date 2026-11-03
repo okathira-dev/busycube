@@ -19,6 +19,7 @@ import {
   type Game,
   kick,
   type Level,
+  recordVictory,
 } from "./game";
 import { locale } from "./locale";
 import { manifest } from "./manifest";
@@ -35,7 +36,7 @@ const aimKeys: Record<string, number | undefined> = {
  * 目的: ゲーム内の組込み配信表示とともにPKを遊び、配信を見て先回りする相手と切断中のシュートの謎へ進む。
  * 最初の一手: レート1000/1500/2000の部屋を選び、ゴール内をタップして横位置を狙い「蹴る」で発射する。高さは固定。1000/1500は巡回し、1500の巡回幅は1000の半分で蹴った後に反応する。
  * 箱ごとの解法:
- * - B01「サッカーボール」: レート2000で対戦相手名に_subを加えた視聴者が入室し、キーパーが照準へ高速追従することを観察する。通信を切って別のコースへ蹴り、球が序盤を繰り返す間に再接続する。接続状態の復帰を観測すると1500相当の反応で飛翔を再開する。到達時にキーパーを抜いた場合だけ開く。再訪は不要で、1000/1500の得点や切断だけでは開かない。全レートで切断球の待機・再開は同じ処理を使う。
+ * - B01「サッカーボール」: 1000/1500/2000の全レートでゴールする。2000では対戦相手名に_subを加えた視聴者と照準への高速追従を観察し、通信を切って別のコースへ蹴り、再接続後にキーパーを抜く。勝利は訪問中に累積し、順序は問わない。
  * 使用API: requestAnimationFrame、navigator.onLineとonline/offline、sessionStorage、crypto.getRandomValues、実pointer/keyboard click。
  * 権限・privacy: 権限不要。配信・視聴者・コメント・対戦は端末内の演出で、画面録画/共有や実対人通信はしない。未完了試行の部屋・架空対戦名・狙い/keeper座標だけをsessionStorageで復元する。ステージ固有の通信は行わない。
  * 対応環境: 接続状態をnavigator.onLineとonline/offlineで観測できるbrowser。sessionStorage拒否時も同画面のゲームは継続できるが、再訪時の試行復元はできない。旧S-060-B02の達成を移行しない。
@@ -56,6 +57,7 @@ function PenaltyStage(props: Props) {
     medium: false,
     hard: false,
   });
+  const victories = useRef(practice);
   const update = useCallback((next: Game) => {
     engine.current = next;
     setGame(next);
@@ -102,9 +104,15 @@ function PenaltyStage(props: Props) {
       }
       if (next !== current) update(next);
       if (current.phase === "flying" && next.phase === "goal") {
-        if (next.level !== "hard" || !next.shotOnline)
-          setPractice((value) => ({ ...value, [next.level]: true }));
-        if (next.level === "hard" && !next.shotOnline) props.boxes.B01.solve();
+        const updated = recordVictory(
+          victories.current,
+          next.level,
+          next.shotOnline,
+        );
+        victories.current = updated;
+        setPractice(updated);
+        if (updated.easy && updated.medium && updated.hard)
+          props.boxes.B01.solve();
       }
       frame = requestAnimationFrame(step);
     };

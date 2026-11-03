@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { ProgressDocument } from "../src/domain/progress";
 
 const removed = [
+  "S-160",
   "S-210",
   "S-250",
   "S-310",

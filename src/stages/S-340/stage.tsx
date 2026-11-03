@@ -1,4 +1,5 @@
 import "./styles.css";
+import ReplayOutlined from "@mui/icons-material/ReplayOutlined";
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -25,14 +26,15 @@ type Phase =
   | "error";
 
 const tokenIdentities = Array.from({ length: 10 }, (_, identity) => identity);
+const shuffleCount = 5;
 
 /**
  * S-340
  *
- * 目的: 円環上の十箱のうち、提示された当たりを実View Transitionの移動中に追跡する。
+ * 目的: 円環上の十箱のうち、提示された当たりを五回連続の実View Transitionの移動中に追跡する。
  * 最初の一手: 蓋が開いた当たりの箱を見て、中央の矢印からシャッフルを開始する。
  * 箱ごとの解法:
- * - B02「左右の矢印」: 提示中の当たりを覚えて中央の矢印を押し、全箱が移動する間も追跡し、回答画面でその箱を押す。実ViewTransition.readyとfinishedの成功後にのみ選択可能となり、当たりのidentityを選べば開く。外れは揺れた後に新しい当たりを提示し、中央の矢印から再挑戦する。
+ * - B02「左右の矢印」: 提示中の当たりを覚えて中央の矢印を押し、全箱が五回移動する間も追跡し、回答画面でその箱を押す。五回すべての実ViewTransition.readyとfinishedの成功後にのみ選択可能となり、当たりのidentityを選べば開く。外れは揺れて全箱が閉じたまま止まり、中央の再挑戦を押すと新しい当たりを提示する。
  * 使用API: document.startViewTransition、ViewTransition.ready/finished/skipTransition、React flushSync、Web Crypto乱数。
  * 権限・privacy: 権限を要求せず、十箱の位置・当たり・選択を挑戦中だけ保持し保存・送信しない。
  * 対応環境: 要素の同一性をview-transition-nameで追跡できるsame-document View Transitions対応ブラウザー。
@@ -46,12 +48,10 @@ function S340Stage(props: Props) {
   const [phase, setPhase] = useState<Phase>("showing");
   const [wrong, setWrong] = useState<number | null>(null);
   const transitionRef = useRef<ViewTransition | null>(null);
-  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const busy = useRef(false);
   useEffect(() => {
     const stop = () => {
       transitionRef.current?.skipTransition();
-      if (retryTimer.current) clearTimeout(retryTimer.current);
     };
     props.signal.addEventListener("abort", stop, { once: true });
     return () => {
@@ -71,16 +71,21 @@ function S340Stage(props: Props) {
     try {
       // The outgoing snapshot must already conceal the open lid.
       flushSync(() => setPhase("closing"));
-      const next = shuffleAllPositions(positions);
-      const transition = document.startViewTransition(() => {
+      let current = positions;
+      for (let round = 0; round < shuffleCount; round += 1) {
         if (props.signal.aborted) return;
-        flushSync(() => {
-          setPositions(next);
-          setPhase("moving");
+        const next = shuffleAllPositions(current);
+        const transition = document.startViewTransition(() => {
+          if (props.signal.aborted) return;
+          flushSync(() => {
+            setPositions(next);
+            setPhase("moving");
+          });
         });
-      });
-      transitionRef.current = transition;
-      await Promise.all([transition.ready, transition.finished]);
+        transitionRef.current = transition;
+        await Promise.all([transition.ready, transition.finished]);
+        current = next;
+      }
       if (!props.signal.aborted) setPhase("choosing");
     } catch {
       if (!props.signal.aborted) setPhase("error");
@@ -98,12 +103,12 @@ function S340Stage(props: Props) {
     }
     setWrong(identity);
     setPhase("wrong");
-    retryTimer.current = setTimeout(() => {
-      if (props.signal.aborted) return;
-      setWinner((current) => (current + 1 + randomIndex(9)) % 10);
-      setWrong(null);
-      setPhase("showing");
-    }, 600);
+  };
+  const retry = () => {
+    if (phase !== "wrong" || props.signal.aborted) return;
+    setWinner((current) => (current + 1 + randomIndex(9)) % 10);
+    setWrong(null);
+    setPhase("showing");
   };
   return (
     <div className="puzzle puzzle--centered shuffle-puzzle">
@@ -150,11 +155,20 @@ function S340Stage(props: Props) {
         <button
           type="button"
           className="stage-action shuffle-start"
-          aria-label={stageText(props.locale, locale.shuffle)}
-          disabled={phase !== "showing" && phase !== "error"}
-          onClick={() => void shuffle()}
+          aria-label={stageText(
+            props.locale,
+            phase === "wrong" ? locale.retry : locale.shuffle,
+          )}
+          disabled={
+            phase !== "showing" && phase !== "error" && phase !== "wrong"
+          }
+          onClick={() => (phase === "wrong" ? retry() : void shuffle())}
         >
-          <SwapHorizOutlined aria-hidden="true" />
+          {phase === "wrong" ? (
+            <ReplayOutlined aria-hidden="true" />
+          ) : (
+            <SwapHorizOutlined aria-hidden="true" />
+          )}
         </button>
       </div>
       {phase === "error" && (

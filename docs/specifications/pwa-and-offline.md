@@ -43,4 +43,4 @@ manifestの `start_url`、`id`、`scope` とアイコンはroot-relative URLに�
 
 ## 公開前の人手ゲート
 
-[実環境台帳](../notes/stage-review-environments.md)のH-005、H-021、H-022、H-023を現行条件と照合して確認する。特にChromeのインストール条件、iOSのホーム画面追加、更新配信中の古いHTML/新しいJS混在、キャッシュ削除後の回復と、同梱の192px・512px PNG・maskable PNG・Apple Touch Iconの表示を実環境で確認する。専用ステージの未観測範囲は[実装作業表](../notes/stage-review-implementation.md)を参照し、自動検証を人手合格へ換算しない。
+公開対象の環境で、Chromeのインストール条件、iOSのホーム画面追加、更新配信中の古いHTML/新しいJS混在、キャッシュ削除後の回復と、同梱の192px・512px PNG・maskable PNG・Apple Touch Iconの表示を確認する。自動検証を人手合格へ換算しない。ステージの内容レビューの進行は[レビューの進行](../notes/stage-review.md)を参照する。

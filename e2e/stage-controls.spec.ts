@@ -52,13 +52,25 @@ test("requires keyboard confirmation for each of the three keyboard-only control
   await expect(boxes.nth(1)).not.toHaveAttribute("data-box-state", "open");
   await select.press("Enter");
   await expect(boxes.nth(1)).toHaveAttribute("data-box-state", "open");
+  const summaries = page.locator("summary");
+  for (const index of [0, 2]) {
+    await summaries.nth(index).focus();
+    await summaries.nth(index).press("Enter");
+    const wrong = page.getByRole("button", { name: "Cross", exact: true });
+    await expect(wrong).toHaveText("✗");
+    await expect(wrong).toBeDisabled();
+    await summaries.nth(index).press("Enter");
+  }
   await page.locator("summary").nth(1).focus();
   await page.locator("summary").nth(1).press("Enter");
   await expect(boxes.nth(2)).not.toHaveAttribute("data-box-state", "open");
   await page.locator("summary").nth(1).press("Tab");
   await expect(
-    page.getByRole("button", { name: "Circle", exact: true }),
+    page.getByRole("button", { name: "Star", exact: true }),
   ).toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Star", exact: true }),
+  ).toHaveText("☆");
   await page.keyboard.press("Space");
   await expect(boxes.nth(2)).toHaveAttribute("data-box-state", "open");
 });

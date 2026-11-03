@@ -59,7 +59,7 @@ afterEach(() => {
 });
 async function start() {
   await act(async () =>
-    fireEvent.click(screen.getByRole("button", { name: /^Sun rays:/ })),
+    fireEvent.click(screen.getByRole("button", { name: /^Screen:/ })),
   );
 }
 async function time(ms: number) {
@@ -74,6 +74,7 @@ it("requires a live sentinel throughout the visible hold and releases it after a
   await start();
   expect(f.request).toHaveBeenCalledExactlyOnceWith("screen");
   expect(screen.getByRole("status").textContent).toBe("Holding");
+  expect(screen.getByRole("status").classList.contains("sr-only")).toBe(true);
   await time(61_000);
   expect(f.p.boxes.B03?.solve).not.toHaveBeenCalled();
   expect(f.sentinel.released).toBe(false);
@@ -201,6 +202,7 @@ it("cleans up on abort and never counts denial or missing APIs as holding", asyn
   await start();
   await time(100_000);
   expect(screen.getByRole("status").textContent).toBe("Denied");
+  expect(screen.getByRole("status").classList.contains("sr-only")).toBe(false);
   expect(denied.p.boxes.B03?.solve).not.toHaveBeenCalled();
   cleanup();
   Reflect.deleteProperty(navigator, "wakeLock");

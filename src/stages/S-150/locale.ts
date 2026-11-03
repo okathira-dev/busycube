@@ -4,8 +4,9 @@ import { stageName } from "./name";
 export const locale = defineStageLocale({
   stageName,
   menu: { ja: "メニュー", en: "Menu" },
-  circle: { ja: "丸", en: "Circle" },
-  B04: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B05: { ja: "点線の四角", en: "Dotted square" },
-  B06: { ja: "枝分かれした線", en: "Branching lines" },
+  star: { ja: "星", en: "Star" },
+  cross: { ja: "バツ", en: "Cross" },
+  B04: { ja: "エンターキー", en: "Enter key" },
+  B05: { ja: "セレクトメニュー", en: "Select menu" },
+  B06: { ja: "アコーディオン", en: "Accordion" },
 });

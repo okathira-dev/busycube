@@ -1,5 +1,6 @@
 import "./styles.css";
 import MemoryOutlined from "@mui/icons-material/MemoryOutlined";
+import { createSvgIcon } from "@mui/material/utils";
 import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
@@ -12,28 +13,43 @@ import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-const levels = [1, 2, 3, 4] as const;
-function Indicator({ level }: { level: number }) {
-  return (
-    <div className="pressure-bars" aria-hidden="true">
-      {levels.map((step) => (
-        <span key={step} data-lit={step <= level} />
-      ))}
-    </div>
-  );
+const steps = [0, 1, 2, 3] as const;
+function gauge(level: number, y: number) {
+  return steps.map((step) => (
+    <rect
+      key={step}
+      x={2 + step * 5}
+      y={y}
+      width="4"
+      height="7"
+      rx="1"
+      fill={step < level ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="0.8"
+    />
+  ));
 }
+const LowGauge = createSvgIcon(<>{gauge(1, 8)}</>, "PressureLowGauge");
+const MediumGauge = createSvgIcon(<>{gauge(2, 8)}</>, "PressureMediumGauge");
+const HighGauge = createSvgIcon(
+  <>
+    {gauge(3, 3)}
+    {gauge(4, 14)}
+  </>,
+  "PressureHighGauge",
+);
 
 /**
  * S-660
  *
  * 目的: ブラウザーが公開する実CPU pressureをnominal、fair、serious/criticalの三帯で観測する。
- * 最初の一手: チップの四段階メーターを観察し、端末で通常作業を行い状態の変化を待つ。
+ * 最初の一手: チップと箱の目盛りを見て、端末で通常作業を行い状態の変化を待つ。
  * 箱ごとの解法:
- * - B01「チップ」: 低負荷の端末で初回の自動観測を待つ。最新の実PressureRecord.stateがnominalなら開く。
- * - B04「チップ」: 通常作業中の状態変化を待つ。最新stateが厳密にfairなら開く。seriousではこの箱を開かない。
- * - B03「チップ」: 通常作業中の状態変化を待つ。最新stateがseriousまたはcriticalなら開く。critical単独は必須にせず、訪問間で累積できる。
+ * - B01「目盛り」: 低負荷の端末で初回の自動観測を待つ。最新の実PressureRecord.stateがnominalなら開く。
+ * - B04「目盛り」: 通常作業中の状態変化を待つ。最新stateが厳密にfairなら開く。seriousではこの箱を開かない。
+ * - B03「目盛り」: 通常作業中の状態変化を待つ。最新stateがseriousまたはcriticalなら開く。critical単独は必須にせず、訪問間で累積できる。
  * 使用API: PressureObserver.knownSources、cpu sourceのobserve、PressureRecord、Page Visibility。
- * 権限・privacy: ゲーム自身は負荷を発生させない。coarseな四状態だけを表示・判定し、CPU使用率・process・状態履歴を取得/保存/送信しない。
+ * 権限・privacy: ゲーム自身は負荷を発生させない。coarseな四状態だけを判定に使い、CPU使用率・process・状態履歴を取得/保存/送信しない。
  * 対応環境: CPU sourceのCompute Pressure APIと必要なPermissions Policyを満たすブラウザー。hidden中は切断し、visibleで再購読する。
  */
 function S660Stage(props: Props) {
@@ -116,7 +132,6 @@ function S660Stage(props: Props) {
     <div className="puzzle puzzle--centered">
       <div className="pressure-reading">
         <MemoryOutlined aria-hidden="true" />
-        <Indicator level={level} />
         <meter
           className="sr-only"
           aria-label={stageText(props.locale, locale.level)}
@@ -128,22 +143,9 @@ function S660Stage(props: Props) {
         </meter>
       </div>
       <div className="problem-row">
-        <div className="pressure-target">
-          <StageProblemGiftBox box={props.boxes.B01} locale={props.locale} />
-          <Indicator level={1} />
-        </div>
-        <div className="pressure-target">
-          <StageProblemGiftBox box={props.boxes.B04} locale={props.locale} />
-          <Indicator level={2} />
-        </div>
-        <div className="pressure-target">
-          <StageProblemGiftBox box={props.boxes.B03} locale={props.locale} />
-          <div className="pressure-alternatives">
-            <Indicator level={3} />
-            <span aria-hidden="true">/</span>
-            <Indicator level={4} />
-          </div>
-        </div>
+        <StageProblemGiftBox box={props.boxes.B01} locale={props.locale} />
+        <StageProblemGiftBox box={props.boxes.B04} locale={props.locale} />
+        <StageProblemGiftBox box={props.boxes.B03} locale={props.locale} />
       </div>
       {error && (
         <p role="status">{stageText(props.locale, locale.unavailable)}</p>
@@ -154,19 +156,19 @@ function S660Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
-      icon: MemoryOutlined,
+      icon: LowGauge,
       tone: "cyan",
-      label: locale.box,
+      label: locale.lowGauge,
     },
     [manifest.box.B04]: {
-      icon: MemoryOutlined,
+      icon: MediumGauge,
       tone: "amber",
-      label: locale.box,
+      label: locale.mediumGauge,
     },
     [manifest.box.B03]: {
-      icon: MemoryOutlined,
+      icon: HighGauge,
       tone: "rose",
-      label: locale.box,
+      label: locale.highGauge,
     },
   },
   probe: () =>

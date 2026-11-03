@@ -46,6 +46,7 @@ function S690Stage(props: Props) {
               word.paragraphIndex === paragraphIndex ? (
                 <span key={word.id}>
                   <a
+                    id={`s690-word-${index}`}
                     href={textDirective(links[index] ?? -1)}
                     data-word={index}
                     onClick={(event) => {
@@ -66,7 +67,8 @@ function S690Stage(props: Props) {
                     }}
                   >
                     {word.text}
-                  </a>{" "}
+                  </a>
+                  {word.punctuation}{" "}
                 </span>
               ) : null,
             )}

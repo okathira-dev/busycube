@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 interface Props {
   initialText: string;
   className: string;
-  as: "h1" | "p";
+  as: "h1" | "p" | "span";
   label: string;
   onCorrect(value: string): void;
 }

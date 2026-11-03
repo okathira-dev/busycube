@@ -26,7 +26,7 @@ type ReadyRound = {
 type Status = "preparing" | "ready" | "unsupported" | "failed";
 const formatNames = {
   gzip: "gzip",
-  deflate: "zlib (DEFLATE)",
+  deflate: "zlib",
   "deflate-raw": "raw DEFLATE",
 };
 
@@ -36,7 +36,7 @@ const formatNames = {
  * 目的: 外部で三ファイルの圧縮形式を調べ、一括回答で一箱を開ける。
  * 最初の一手: 紙と下向き矢印の箱を押し、三つの.compressedファイルを取得して調べる。
  * 箱ごとの解法:
- * - B04「紙と下向き矢印」: 三ファイルをダウンロードし、各ファイルの実形式をgzip / zlib (DEFLATE) / raw DEFLATEから選び確定する。実CompressionStream生成とDecompressionStream完全往復検証が成功した同じ世代の三割当すべてに一致すると開く。途中選択では判定しない。誤答では割当と本文を更新して未選択へ戻す。
+ * - B04「紙と下向き矢印」: 三ファイルをダウンロードし、各ファイルの実形式をgzip / zlib / raw DEFLATEから選び確定する。実CompressionStream生成とDecompressionStream完全往復検証が成功した同じ世代の三割当すべてに一致すると開く。途中選択では判定しない。誤答では割当と本文を更新して未選択へ戻す。
  * 使用API: CompressionStream/DecompressionStream三形式、ReadableStream、crypto.getRandomValues、Blob URL、native download。
  * 権限・privacy: 権限不要。無作為な問題本文/byte列/回答を訪問中memoryだけで扱い、外部送信や端末入力の取得はしない。プレイヤーが明示操作で問題ファイルを保存する。
  * 対応環境: 三形式すべてを圧縮/展開できるbrowser。複数ダウンロードが制限される場合も、同じ世代の各ファイルを個別リンクから再取得できる。拡張子は圧縮形式を示さない。

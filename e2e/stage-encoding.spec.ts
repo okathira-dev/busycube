@@ -8,13 +8,18 @@ test("ships all eight agreed cultural questions and accepts their exact recovere
   await expect(page.locator(".encoding-question-grid code")).toHaveText(
     encodingPocFixtures.map((fixture) => fixture.presentedText),
   );
-  const answer = page.locator(".parallel-answer input");
-  await answer.fill("русский ящик");
+  const cards = page.locator(".encoding-question-grid article");
+  const answers = cards.locator("input");
+  await answers.nth(0).fill("русский ящик");
   await expect(
     page.locator('.stage-view .gift-box[data-box-state="open"]'),
   ).toHaveCount(0);
-  for (const fixture of encodingPocFixtures)
-    await answer.fill(fixture.expectedText);
+  await answers.nth(0).fill(encodingPocFixtures[1].expectedText);
+  await expect(
+    page.locator('.stage-view .gift-box[data-box-state="open"]'),
+  ).toHaveCount(0);
+  for (const [index, fixture] of encodingPocFixtures.entries())
+    await answers.nth(index).fill(fixture.expectedText);
   await expect(
     page.locator('.stage-view .gift-box[data-box-state="open"]'),
   ).toHaveCount(8);

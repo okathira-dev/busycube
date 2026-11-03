@@ -7,7 +7,6 @@ import {
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
-import { stageText } from "../locale";
 import { locale } from "./locale";
 import { manifest } from "./manifest";
 import { ExternalTimeSync, estimateUtc } from "./timeSync";
@@ -22,9 +21,9 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 箱ごとの解法:
  * - B03「時計」: OS設定で端末時計を外部UTC基準から55〜65分戻す。直近45秒以内の実取得基準をperformance.nowで補間し、その差が範囲内なら開く。時計の針はこの目標時刻を示す。
  * - B04「折り返す矢印」: 同じ挑戦で一時間戻した実差を観測した後、OS設定で現在時刻へ戻す。再同期した有効基準との差が±5分以内なら開く。B03後は針が現在時刻の目標を示す。
- * 使用API: UTCTime/TimeAPI.ioへのfetch、AbortController、performance.now、Date.now、Page Visibility。
+ * 使用API: UTCTime/TimeAPI.ioへのfetch（両方の取得失敗時だけ同一originの/api/time）、AbortController、performance.now、Date.now、Page Visibility。
  * 権限・privacy: 権限を要求せず、時刻APIへcredentials/referrerや端末時計を送らない。UTC基準と差はmemory内だけに保持する。
- * 対応環境: 外部HTTPS APIへ到達でき、利用者がOS時計を変更できるブラウザー。通信失敗・古い基準・不連続時計は再同期待ちにする。
+ * 対応環境: サーバー時刻を取得でき、利用者がOS時計を変更できるブラウザー。通信失敗・古い基準・不連続時計は再同期待ちにする。
  */
 function S400Stage(props: Props) {
   const rewind = props.boxes.B03;
@@ -110,8 +109,7 @@ function S400Stage(props: Props) {
         className="analog-clock"
         dateTime={display?.toISOString()}
         aria-label={
-          display?.toLocaleTimeString(props.locale) ??
-          stageText(props.locale, locale.waiting)
+          display?.toLocaleTimeString(props.locale) ?? locale.B03[props.locale]
         }
         data-ready={!waiting}
       >
@@ -132,9 +130,6 @@ function S400Stage(props: Props) {
         <StageProblemGiftBox box={rewind} locale={props.locale} />
         <StageProblemGiftBox box={restore} locale={props.locale} />
       </div>
-      {waiting && (
-        <p role="status">{stageText(props.locale, locale.waiting)}</p>
-      )}
     </div>
   );
 }

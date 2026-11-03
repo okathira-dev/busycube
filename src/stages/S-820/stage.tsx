@@ -19,19 +19,11 @@ const targets = [
   { boxId: manifest.box.B02, x: -3000, y: 4000 },
   { boxId: manifest.box.B03, x: 6000, y: 8000 },
 ] as const;
-function directionArrow(dx: number, dy: number) {
-  return (
-    ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"][
-      Math.round(Math.atan2(dy, dx) / (Math.PI / 4) + 8) % 8
-    ] ?? "•"
-  );
-}
-
 /**
  * S-820
  *
  * 目的: Pointer Lockの実相対移動で仮想平面を探索し、三箱を照準へ合わせる。
- * 最初の一手: 格子の平面をクリックして固定し、流れる背景と方向・距離を見て箱へ近づく。
+ * 最初の一手: 格子の平面をクリックして固定し、流れる背景と距離を見て箱へ近づく。
  * 箱ごとの解法:
  * - B01「マウス」: ロック中の実movementX/Yで累積位置を(800,-600)の半径64以内へ動かすと自動で開く。
  * - B02「マウス」: 同じ平面を(-3000,4000)の半径64以内へ動かすと自動で開く。
@@ -179,7 +171,6 @@ function S820Stage(props: Props) {
               color: resolveStageBoxColor(props.boxes[target.boxId].definition),
             }}
           >
-            {directionArrow(target.x - position.x, target.y - position.y)}{" "}
             {Math.round(
               Math.hypot(target.x - position.x, target.y - position.y),
             )}

@@ -27,6 +27,10 @@
   outline: 3px solid #ffd166;
   outline-offset: 3px;
 }
+.shuffle-token .gift-box--closed .gift-box__visual,
+.shuffle-token .gift-box--closed .gift-box__lid {
+  transition: none;
+}
 .shuffle-token[data-wrong="true"] button {
   animation: s340-wrong 100ms ease-in-out 4 alternate;
 }
@@ -54,6 +58,6 @@
 ::view-transition-group(s340-box-7),
 ::view-transition-group(s340-box-8),
 ::view-transition-group(s340-box-9) {
-  animation-duration: 1.6s;
+  animation-duration: 450ms;
   animation-timing-function: linear;
 }

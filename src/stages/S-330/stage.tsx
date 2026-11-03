@@ -1,6 +1,6 @@
 import "./styles.css";
+import DesktopWindowsOutlined from "@mui/icons-material/DesktopWindowsOutlined";
 import StopCircleOutlined from "@mui/icons-material/StopCircleOutlined";
-import WbSunnyOutlined from "@mui/icons-material/WbSunnyOutlined";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
@@ -23,9 +23,9 @@ const observationGap = 2_500;
 /**
  * S-330
  * 目的: 画面表示中に実Screen Wake Lockを取得して保持し、待機リングを満たす。
- * 最初の一手: 日差しの箱を押し、保持中の点灯と待機リングを画面を開いたまま待つ。途中でやめる場合は解除アイコンを押す。
+ * 最初の一手: スクリーンの箱を押し、保持中の点灯と待機リングを画面を開いたまま待つ。途中でやめる場合は解除アイコンを押す。
  * 箱ごとの解法:
- * - B03「日差し」: 箱からnavigator.wakeLock.request('screen')を実行する。取得完了からdocument.visibilityState === 'visible'かつ同じsentinel.released === falseを連続観測して62,000ms保持すると開く。取得だけの旧B01は移行しない。非表示/解除で待機を失い、再試行は箱から行う。1秒間隔の観測が2.5秒超空いた場合や時計異常は基準をリセットし、中断時間だけで成功にしない。
+ * - B03「スクリーン」: 箱からnavigator.wakeLock.request('screen')を実行する。取得完了からdocument.visibilityState === 'visible'かつ同じsentinel.released === falseを連続観測して62,000ms保持すると開く。取得だけの旧B01は移行しない。非表示/解除で待機を失い、再試行は箱から行う。1秒間隔の観測が2.5秒超空いた場合や時計異常は基準をリセットし、中断時間だけで成功にしない。
  * 使用API: Screen Wake Lock / WakeLockSentinel.released/release、Page Visibility、performance.now、待機用timer。IdleDetectorは使わずS-830とは独立する。
  * 権限・privacy: screen wake lockだけを利用し、点灯状態と経過表示をmemoryに持つ。操作履歴・端末情報を保存/送信しない。手動解除/離脱/abort/達成で解放し、遅い取得結果も解放する。
  * 対応環境: secure contextのScreen Wake Lock対応browser。OSの省電力等で解放され得る。API上の保持はOS画面の常時点灯を物理的に保証するものではない。
@@ -218,7 +218,14 @@ function S330Stage(props: Props) {
           <StopCircleOutlined aria-hidden="true" />
         </button>
       ) : null}
-      <p role="status" className="interaction-status">
+      <p
+        role="status"
+        className={
+          status === "denied" || status === "error" || status === "unavailable"
+            ? "interaction-status"
+            : "sr-only"
+        }
+      >
         {status === "holding"
           ? stageText(props.locale, locale.holding)
           : statusText(props.locale, status)}
@@ -229,7 +236,7 @@ function S330Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B03]: {
-      icon: WbSunnyOutlined,
+      icon: DesktopWindowsOutlined,
       color: "#facc15",
       label: locale.B03,
     },

@@ -7,5 +7,7 @@ export const locale = defineStageLocale({
     en: "Could not observe the state.",
   },
   level: { ja: "観測状態", en: "Observed state" },
-  box: { ja: "チップ", en: "Chip" },
+  lowGauge: { ja: "1段の目盛り", en: "One-segment gauge" },
+  mediumGauge: { ja: "2段の目盛り", en: "Two-segment gauge" },
+  highGauge: { ja: "3段と4段の目盛り", en: "Three- and four-segment gauges" },
 });

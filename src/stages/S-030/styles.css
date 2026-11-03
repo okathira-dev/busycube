@@ -1,6 +1,18 @@
 .selection-puzzle > p {
   font-family: Georgia, serif;
-  font-size: clamp(2.4rem, 12vw, 6rem);
+  font-size: clamp(1.4rem, 5vw, 3rem);
   letter-spacing: 0.05em;
+  line-height: 1.8;
   user-select: text;
+}
+
+.selection-redacted {
+  color: #111;
+  background-color: #111;
+  white-space: nowrap;
+}
+
+.selection-redacted::selection {
+  color: #fff;
+  background-color: #2563eb;
 }

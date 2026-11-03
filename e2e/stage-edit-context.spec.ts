@@ -5,7 +5,7 @@ test("native composition stays uncompleted until committed", async ({
   context,
 }) => {
   await page.goto("/?locale=ja&stage=S-860");
-  const line = page.locator(".s860-proof [role=textbox]").first();
+  const line = page.locator(".s860-proof .s860-title");
   await line.click();
   await page.keyboard.press("ControlOrMeta+A");
   const cdp = await context.newCDPSession(page);
@@ -16,10 +16,10 @@ test("native composition stays uncompleted until committed", async ({
   });
   await expect(line).toHaveText("Busycube");
   await expect(
-    page.locator(".problem-row .gift-box").first(),
+    page.locator(".problem-row .gift-box").nth(1),
   ).not.toHaveAttribute("data-box-state", "open");
   await page.keyboard.insertText("Busycube");
-  await expect(page.locator(".problem-row .gift-box").first()).toHaveAttribute(
+  await expect(page.locator(".problem-row .gift-box").nth(1)).toHaveAttribute(
     "data-box-state",
     "open",
   );
@@ -31,7 +31,7 @@ for (const language of ["ja", "en"]) {
     page,
   }) => {
     await page.goto(`/?locale=${language}&stage=S-860`);
-    const line = page.locator(".s860-proof [role=textbox]").first();
+    const line = page.locator(".s860-proof .s860-title");
     await expect(line).toHaveText("Busycuve");
     await line.click();
     await page.keyboard.press("End");
@@ -49,12 +49,22 @@ for (const language of ["ja", "en"]) {
     page,
   }, testInfo) => {
     await page.goto(`/?locale=${language}&stage=S-860`);
-    const lines = page.locator(".s860-proof [role=textbox]");
+    const lines = page.locator(".s860-proof [role=textbox]:not(.eyebrow)");
     await expect(lines).toHaveCount(3);
     await expect(page.locator(".s860-proof .eyebrow")).toHaveText(
-      "Web API Explorer",
+      "Web API Exploror",
     );
     await expect(lines.nth(0)).toHaveText("Busycuve");
+    await expect(lines.nth(1)).toHaveText(
+      language === "ja"
+        ? "いつものブラウザが、バズルになる。"
+        : "Your everyday browser becomes the puzzel.",
+    );
+    await expect(lines.nth(2)).toHaveText(
+      language === "ja"
+        ? "プラウサそのものが鍵となる新感覚パズル。"
+        : "A new kind of puzzle game where the prowler itself is the key.",
+    );
     await page.screenshot({
       path: testInfo.outputPath("hero-proof.png"),
       fullPage: true,
@@ -109,9 +119,14 @@ for (const language of ["ja", "en"]) {
       await page.keyboard.insertText(value);
       await expect(lines.nth(index)).toHaveText(value);
     }
+    const descriptor = page.locator(".s860-proof .eyebrow");
+    await descriptor.click();
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.insertText("Web API Explorer");
+    await expect(descriptor).toHaveText("Web API Explorer");
     await expect(
       page.locator('.problem-row .gift-box[data-box-state="open"]'),
-    ).toHaveCount(3);
+    ).toHaveCount(4);
     expect(
       await lines
         .nth(0)

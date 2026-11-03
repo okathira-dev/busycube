@@ -1,101 +1,68 @@
+.gamepad-puzzle {
+  width: 100%;
+}
+
+.gamepad-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2rem;
+  width: min(100%, 58rem);
+}
+
 .gamepad-diagram {
-  display: grid;
-  grid-template-areas: "shoulders triggers triggers" "dpad center face" "left-stick clicks right-stick";
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  width: min(100%, 48rem);
-  padding: 1rem;
-  border: 3px solid #6f5a91;
-  border-radius: 5rem 5rem 8rem 8rem;
-  background: #211a32;
+  display: block;
+  width: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 1rem 1rem #09061166);
 }
-.gamepad-group {
-  display: grid;
-  justify-items: center;
-  align-content: center;
-  gap: 0.5rem;
+
+.gamepad-stick-well {
+  fill: #1e1929;
+  stroke: #625573;
+  stroke-width: 2;
 }
-.gamepad-group[data-part="dpad"] {
-  grid-area: dpad;
+
+.gamepad-dpad-center {
+  fill: #24202f;
 }
-.gamepad-group[data-part="left-stick"] {
-  grid-area: left-stick;
+
+.gamepad-input {
+  stroke: #9586aa;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transition:
+    fill 100ms ease,
+    stroke 100ms ease;
 }
-.gamepad-group[data-part="right-stick"] {
-  grid-area: right-stick;
+
+.gamepad-input[data-seen="true"] {
+  fill: #27483f;
+  stroke: #64d9ac;
 }
-.gamepad-group[data-part="face"] {
-  grid-area: face;
+
+.gamepad-input[data-active="true"] {
+  fill: #66e9b4;
+  stroke: #c5ffe6;
 }
-.gamepad-group[data-part="shoulders"] {
-  grid-area: shoulders;
+
+.gamepad-stick-rim {
+  fill: none;
+  stroke: #9586aa;
+  stroke-opacity: 0.45;
+  stroke-width: 2;
+  stroke-dasharray: 2 3;
+  pointer-events: none;
 }
-.gamepad-group[data-part="triggers"] {
-  grid-area: triggers;
-}
-.gamepad-group[data-part="clicks"] {
-  grid-area: clicks;
-}
-.gamepad-group[data-part="center"] {
-  grid-area: center;
-}
-.gamepad-inputs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.3rem;
-}
-.gamepad-inputs span {
+
+.gamepad-reward {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid #6f5a91;
-  border-radius: 50%;
-  background: #181329;
-  color: #d8cfdf;
 }
-.gamepad-inputs [data-seen="true"] {
-  border-color: #34d399;
-  color: #34d399;
-}
-.gamepad-inputs [data-active="true"] {
-  background: #34d399;
-  color: #181329;
-  transform: scale(0.9);
-}
-.gamepad-group[data-part$="stick"] .gamepad-inputs {
-  border: 2px solid #6f5a91;
-  border-radius: 50%;
-  padding: 0.4rem;
-}
-.gamepad-group:is([data-part="dpad"], [data-part="face"], [data-part$="stick"])
-  .gamepad-inputs {
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  grid-template-rows: repeat(3, auto);
-}
-.gamepad-inputs:has(> :nth-child(4)) > :nth-child(1) {
-  grid-area: 1 / 2;
-}
-.gamepad-inputs:has(> :nth-child(4)) > :nth-child(2) {
-  grid-area: 2 / 1;
-}
-.gamepad-inputs:has(> :nth-child(4)) > :nth-child(3) {
-  grid-area: 3 / 2;
-}
-.gamepad-inputs:has(> :nth-child(4)) > :nth-child(4) {
-  grid-area: 2 / 3;
-}
-@media (width <= 540px) {
-  .gamepad-diagram {
-    gap: 0.5rem;
-    padding: 0.75rem 0.25rem;
-    border-radius: 2rem;
-  }
-  .gamepad-inputs span {
-    width: 1.5rem;
-    height: 1.5rem;
-    font-size: 0.8rem;
+
+@media (width <= 600px) {
+  .gamepad-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
   }
 }

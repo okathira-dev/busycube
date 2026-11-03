@@ -1,6 +1,6 @@
 import type { StageLocaleText } from "../locale";
 
 export const stageName = {
-  ja: "通信のない返事",
-  en: "An offline reply",
+  ja: "とぎれる",
+  en: "Disconnect",
 } satisfies StageLocaleText;

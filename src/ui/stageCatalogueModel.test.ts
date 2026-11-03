@@ -1,4 +1,5 @@
 import type { StageManifest } from "../runtime/stageContract";
+import { manifest as networkManifest } from "../stages/S-630/manifest";
 import {
   buildCatalogueStages,
   findNextIncompleteStage,
@@ -42,6 +43,14 @@ describe("stage catalogue presentation model", () => {
       ["S-010", "P-001"],
       ["S-030", "L-001"],
     ]);
+  });
+
+  it("places connection-type collection in the limited category", () => {
+    expect(buildCatalogueStages([networkManifest])[0]).toMatchObject({
+      accessKind: "limited",
+      displayCode: "L-001",
+      manifest: { id: "S-630" },
+    });
   });
 
   it("continues a partial stage before an unstarted stage", () => {

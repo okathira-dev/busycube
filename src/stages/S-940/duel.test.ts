@@ -1,4 +1,5 @@
 import { type DuelState, duel, type Move, winner } from "./duel";
+import { rankings } from "./rankings";
 
 const ids = [
   "11111111-1111-4111-8111-111111111111",
@@ -86,109 +87,203 @@ function fixture() {
 }
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
-it("pairs two contexts, hides the opponent's selected hand, and awards one genuine P1 win only once", () => {
+it("rematches each time and credits three genuine wins on either screen", () => {
   const f = fixture(),
     one = f.open(ids[0] ?? ""),
     two = f.open(ids[1] ?? "");
-  f.flush();
-  expect(one.state().role).toBe(1);
-  expect(two.state().role).toBe(2);
+  for (let round = 0; round < 3; round++) {
+    one.session.next();
+    two.session.next();
+    f.flush();
+    expect(one.state().phase).toBe("playing");
+    two.session.pick("rock");
+    f.flush();
+    expect(one.state().theirs).toBeNull();
+    one.session.pick("scissors");
+    f.flush();
+    expect(two.state().streak).toBe(round + 1);
+    expect(two.solve).toHaveBeenCalledTimes(round === 2 ? 1 : 0);
+  }
   expect(one.solve).not.toHaveBeenCalled();
-  two.session.pick("scissors");
-  f.flush();
-  expect(one.state()).toMatchObject({
-    theirs: null,
-    opponentReady: true,
-    phase: "playing",
-  });
-  expect(one.solve).not.toHaveBeenCalled();
-  one.session.pick("rock");
-  f.flush();
-  expect(one.state()).toMatchObject({
-    mine: "rock",
-    theirs: "scissors",
-    winner: 1,
-  });
-  expect(one.solve).toHaveBeenCalledOnce();
-  expect(two.solve).not.toHaveBeenCalled();
-  one.session.pick("paper");
-  f.flush();
-  expect(one.solve).toHaveBeenCalledOnce();
   f.dispose();
   expect(vi.getTimerCount()).toBe(0);
 });
-it("draw and P2 win remain uncompleted and the P1-led next round rejects replayed old hands", () => {
-  const f = fixture(),
-    one = f.open(ids[0] ?? ""),
-    two = f.open(ids[1] ?? "");
-  f.flush();
-  one.session.pick("paper");
-  two.session.pick("paper");
-  f.flush();
-  expect(one.state().winner).toBe(0);
-  const old = f.messages.findLast((message) => message.type === "move");
-  two.session.next();
-  expect(one.state().phase).toBe("result");
-  one.session.next();
-  f.flush();
-  if (old) one.receive(old);
-  expect(one.state().opponentReady).toBe(false);
-  one.session.pick("scissors");
-  two.session.pick("rock");
-  f.flush();
-  expect(one.state().winner).toBe(2);
-  expect(one.solve).not.toHaveBeenCalled();
-  one.session.next();
-  f.flush();
-  one.session.pick("rock");
-  two.session.pick("scissors");
-  f.flush();
-  expect(one.solve).toHaveBeenCalledOnce();
-  f.dispose();
+it("CPU is fair before two wins and counters every third-win attempt", async () => {
+  for (const hand of ["rock", "paper", "scissors"] as const) {
+    const changed = vi.fn(),
+      solve = vi.fn();
+    const losing =
+      hand === "rock" ? "scissors" : hand === "paper" ? "rock" : "paper";
+    const d = duel(
+      { send: vi.fn(), listen: () => () => {}, close: vi.fn() },
+      ids[0] ?? "",
+      origin,
+      new AbortController().signal,
+      changed,
+      solve,
+      () => losing,
+    );
+    for (let n = 0; n < 3; n++) {
+      d.next();
+      await vi.advanceTimersByTimeAsync(1800);
+      d.pick(hand);
+    }
+    expect(changed.mock.lastCall?.[0]).toMatchObject({ winner: 2, streak: 0 });
+    expect(
+      new Set(changed.mock.calls.map((c) => c[0].opponent).filter(Boolean))
+        .size,
+    ).toBe(3);
+    expect(solve).not.toHaveBeenCalled();
+    d.dispose();
+  }
 });
-it("keeps a third context outside the existing match and ignores synthetic/foreign/old-match messages", () => {
+it("rejects stale hands, third-party interference and aborts without a win", () => {
   const f = fixture(),
     one = f.open(ids[0] ?? ""),
     two = f.open(ids[1] ?? "");
+  one.session.next();
+  two.session.next();
   f.flush();
   const third = f.open(ids[2] ?? "");
+  third.session.next();
   f.flush();
   expect(third.state().phase).toBe("waiting");
-  two.session.pick("scissors");
+  two.session.pick("paper");
+  one.session.pick("paper");
   f.flush();
-  const actual = f.messages.findLast((message) => message.type === "move");
-  if (!actual) throw new Error("Missing real message");
-  one.session.restart();
+  expect(one.state().streak).toBe(0);
+  third.session.dispose();
+  const old = f.messages.findLast((m) => m.type === "move");
+  one.session.next();
+  two.session.next();
   f.flush();
-  one.receive(actual);
-  one.receive({ ...actual, match: "old" });
-  one.receive(actual, false);
-  one.session.pick("rock");
+  one.receive(old);
+  one.receive(old, false);
+  one.session.pick("scissors");
   f.flush();
-  expect(one.solve).not.toHaveBeenCalled();
-  expect(third.solve).not.toHaveBeenCalled();
-  f.dispose();
-  expect(vi.getTimerCount()).toBe(0);
-});
-it("releases a pending offer on timeout and an aborted session cannot select or receive an old win", async () => {
-  const f = fixture(),
-    one = f.open(ids[0] ?? "");
-  one.receive({ protocol: "busycube-duel-v1", from: ids[1], type: "hello" });
-  expect(one.state().phase).toBe("joining");
-  await vi.advanceTimersByTimeAsync(5000);
-  expect(one.state().phase).toBe("waiting");
+  expect(one.state().phase).toBe("playing");
   one.controller.abort();
-  one.session.pick("rock");
+  two.session.pick("paper");
   f.flush();
   expect(one.solve).not.toHaveBeenCalled();
-  expect(vi.getTimerCount()).toBe(0);
   f.dispose();
+  expect(vi.getTimerCount()).toBe(0);
 });
-it("covers all nine hand combinations without extra wins", () => {
+it("keeps the ranking clue at the bottom", () => {
+  expect(rankings.at(-1)?.name).toBe(`${rankings[0]?.name}_sub`);
+});
+it("covers all nine hand combinations", () => {
   const moves: Move[] = ["rock", "scissors", "paper"];
   expect(moves.map((a) => moves.map((b) => winner(a, b)))).toEqual([
     [0, 1, 2],
     [2, 0, 1],
     [1, 2, 0],
   ]);
+});
+
+it("carries two CPU wins into a genuine third win", async () => {
+  const f = fixture(),
+    one = f.open(ids[0] ?? "");
+  const spy = vi
+    .spyOn(crypto, "getRandomValues")
+    .mockImplementation((array) => {
+      if (array instanceof Uint32Array) array.fill(1);
+      return array;
+    });
+  for (let i = 0; i < 2; i++) {
+    one.session.next();
+    await vi.advanceTimersByTimeAsync(1800);
+    one.session.pick("rock");
+  }
+  expect(one.state().streak).toBe(2);
+  const two = f.open(ids[1] ?? "");
+  one.session.next();
+  two.session.next();
+  f.flush();
+  two.session.pick("scissors");
+  f.flush();
+  one.session.pick("rock");
+  f.flush();
+  expect(one.solve).toHaveBeenCalledOnce();
+  one.session.restart();
+  expect(one.state()).toMatchObject({ phase: "lobby", streak: 0, history: [] });
+  spy.mockRestore();
+  f.dispose();
+});
+
+it("uses renamed Unicode profiles for matching and rejects invalid or mid-match edits", () => {
+  const f = fixture(),
+    one = f.open(ids[0] ?? ""),
+    two = f.open(ids[1] ?? "");
+  expect(one.session.rename("  そら_sub  ")).toBe(true);
+  expect(one.session.rename("bad name")).toBe(false);
+  expect(one.session.rename("x".repeat(21))).toBe(false);
+  one.session.next();
+  two.session.next();
+  f.flush();
+  expect(two.state().opponent).toBe("そら_sub");
+  expect(one.session.rename("other")).toBe(false);
+  one.session.pick("rock");
+  two.session.pick("scissors");
+  f.flush();
+  expect(two.state().history[0]?.opponent).toBe("そら_sub");
+  f.dispose();
+});
+it("groups 28 normal-quantile ratings between two outliers", () => {
+  expect(rankings).toHaveLength(30);
+  const middle = rankings.slice(1, -1).map((p) => p.score);
+  expect(middle.reduce((a, b) => a + b, 0) / 28).toBeCloseTo(5000, 0);
+  expect(
+    middle.every((score, i) => i === 0 || score < (middle[i - 1] ?? 0)),
+  ).toBe(true);
+  const variance = middle.reduce((sum, n) => sum + (n - 5000) ** 2, 0) / 28;
+  expect(Math.sqrt(variance)).toBeGreaterThan(80);
+  expect(Math.sqrt(variance)).toBeLessThan(100);
+  expect(rankings[0]?.score).toBeGreaterThan(5000 + 1500);
+  expect(rankings.at(-1)?.score).toBeLessThan(5000 - 1500);
+});
+
+it("allows twice as long to find a second tab still on the title", async () => {
+  const f = fixture(),
+    one = f.open(ids[0] ?? ""),
+    two = f.open(ids[1] ?? "");
+  f.flush();
+  one.session.next();
+  f.flush();
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(one.state().phase).toBe("waiting");
+  two.session.next();
+  f.flush();
+  expect(one.state().phase).toBe("playing");
+  expect(one.state().opponent).toBe(two.state().name);
+  f.dispose();
+});
+it("extends an ongoing search for a newly opened tab, then falls back at 3.6 seconds", async () => {
+  const f = fixture(),
+    one = f.open(ids[0] ?? "");
+  one.session.next();
+  await vi.advanceTimersByTimeAsync(1000);
+  f.open(ids[1] ?? "");
+  f.flush();
+  await vi.advanceTimersByTimeAsync(2599);
+  expect(one.state().phase).toBe("waiting");
+  await vi.advanceTimersByTimeAsync(1);
+  expect(one.state().phase).toBe("playing");
+  expect(one.state().opponent).not.toMatch(/^guest_/);
+  f.dispose();
+});
+it("returns to the normal CPU delay after the other tab closes", async () => {
+  const f = fixture(),
+    one = f.open(ids[0] ?? ""),
+    two = f.open(ids[1] ?? "");
+  f.flush();
+  two.session.dispose();
+  f.flush();
+  one.session.next();
+  await vi.advanceTimersByTimeAsync(1799);
+  expect(one.state().phase).toBe("waiting");
+  await vi.advanceTimersByTimeAsync(1);
+  expect(one.state().phase).toBe("playing");
+  f.dispose();
+  expect(vi.getTimerCount()).toBe(0);
 });

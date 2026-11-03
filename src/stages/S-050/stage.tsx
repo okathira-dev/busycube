@@ -1,5 +1,5 @@
 import "./styles.css";
-import WindowOutlined from "@mui/icons-material/WindowOutlined";
+import OpenInNewOutlined from "@mui/icons-material/OpenInNewOutlined";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -30,7 +30,7 @@ function isChannelMessage(value: unknown): value is ChannelMessage {
  * 目的: 同一originで同じstageを開いた二つの独立したwindow/tabが、互いの存在をchannel越しに確認する。
  * 最初の一手: 二つの窓の図を見て、同じstageを新しいwindow/tabでも開く。
  * 箱ごとの解法:
- * - B01「窓」: 同じstageを二つ目のwindowまたはtabでも開く。各contextが固有sender ID付き`hello`を送信し、自分以外のsenderによる正しい`hello`または`ack`を`BroadcastChannel`で受信すると開く。
+ * - B01「枠から出る矢印」: 同じstageを二つ目のwindowまたはtabでも開く。各contextが固有sender ID付き`hello`を送信し、自分以外のsenderによる正しい`hello`または`ack`を`BroadcastChannel`で受信すると開く。
  * 使用API: Web Cryptoの`crypto.randomUUID()`、Broadcast Channel APIのmessage送受信。
  * 権限・privacy: 権限を要求せず、tab間にはmessage種別と一時的なrandom sender IDだけを流し、閲覧内容や個人情報は保存・外部送信しない。
  * 対応環境: 同一originの複数window/tab間で`BroadcastChannel`を共有でき、popupまたは新規tabを開けるbrowser。
@@ -71,7 +71,7 @@ function S050Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
-      icon: WindowOutlined,
+      icon: OpenInNewOutlined,
       color: "#38bdf8",
       label: locale.B01,
     },

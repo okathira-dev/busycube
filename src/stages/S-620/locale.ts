@@ -8,5 +8,5 @@ export const locale = defineStageLocale({
     en: "Could not display the text.",
   },
   answer: { ja: "答え", en: "Answer" },
-  box: { ja: "点線の四角", en: "Dotted square" },
+  box: { ja: "箱", en: "Box" },
 });

@@ -1,7 +1,7 @@
 import "./styles.css";
+import AddBoxOutlined from "@mui/icons-material/AddBoxOutlined";
 import AdsClickOutlined from "@mui/icons-material/AdsClickOutlined";
 import CloseOutlined from "@mui/icons-material/CloseOutlined";
-import WindowOutlined from "@mui/icons-material/WindowOutlined";
 import { createSvgIcon } from "@mui/material/utils";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
@@ -39,9 +39,9 @@ import { locale } from "./locale";
  * S-610
  *
  * 目的: modal dialogを内側button、backdrop light dismiss、Escape cancelという三つのnative経路で閉じ分ける。
- * 最初の一手: 窓アイコンを押してdialogを開き、内側の×を押す。
+ * 最初の一手: プラス付き四角を押してdialogを開き、内側の×を押す。
  * 箱ごとの解法:
- * - B01「窓」: dialog内の閉じるbuttonを押す。dialog内buttonがclose kindを`button`にして`dialog.close()`し、その後の`close` eventで開く。
+ * - B01「ばつ」: dialog内の閉じるbuttonを押す。dialog内buttonがclose kindを`button`にして`dialog.close()`し、その後の`close` eventで開く。
  * - B02「指先」: dialogを開き、外側のbackdropをクリックする。`closedby="any"`のmodal backdrop自身をclickしてkindを`dismiss`にし、native light dismiss後の`close` eventで開く。
  * - B03「Escキー」: dialogを開いてEscapeを押す。dialog上のEscape keydownまたはnative`cancel` eventでkindが`cancel`になり、その後の`close` eventで開く。
  * 使用API: HTMLDialogElementの`showModal()` / `close()`、`closedby`、cancel/close events、backdrop clickとkeyboard event。
@@ -128,7 +128,7 @@ function S610Stage(props: Props) {
         onClick={open}
         aria-label={stageText(props.locale, locale.openDialog)}
       >
-        <WindowOutlined aria-hidden="true" />
+        <AddBoxOutlined aria-hidden="true" />
       </button>
       <dialog
         ref={dialogRef}
@@ -157,7 +157,7 @@ function S610Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {
-      icon: WindowOutlined,
+      icon: CloseOutlined,
       color: "#f97316",
       label: locale.B01,
     },

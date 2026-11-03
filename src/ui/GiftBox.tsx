@@ -81,6 +81,7 @@ export function GiftBox({
 interface StageProblemGiftBoxProps {
   box: StageBoxHandle;
   locale: Locale;
+  showIcon?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   onPointerDown?: (event: PointerEvent) => void;
 }
@@ -89,6 +90,7 @@ interface StageProblemGiftBoxProps {
 export function StageProblemGiftBox({
   box,
   locale,
+  showIcon = true,
   onClick,
   onPointerDown,
 }: StageProblemGiftBoxProps) {
@@ -111,7 +113,7 @@ export function StageProblemGiftBox({
         onPointerDown={onPointerDown}
       />
       <figcaption className="problem-gift__clue">
-        <Icon fontSize="inherit" aria-hidden="true" />
+        {showIcon && <Icon fontSize="inherit" aria-hidden="true" />}
         <span className="sr-only">{box.definition.label[locale]}</span>
       </figcaption>
     </figure>

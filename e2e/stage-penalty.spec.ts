@@ -310,7 +310,7 @@ test("beginner and intermediate patrol; intermediate reacts only after the kick"
   await expect(box).not.toHaveAttribute("data-box-state", "open");
 });
 
-test("real offline shots lag and resume in the same visit; only an offline shot that beats the keeper solves", async ({
+test("all ratings must be won, including a resumed offline win at 2000", async ({
   page,
   context,
 }, info) => {
@@ -428,7 +428,7 @@ test("real offline shots lag and resume in the same visit; only an offline shot 
   });
   await context.setOffline(false);
   await expect(page.locator(".pk-score")).toHaveText("GOAL!");
-  await expect(box).toHaveAttribute("data-box-state", "open");
+  await expect(box).not.toHaveAttribute("data-box-state", "open");
   await expect(page.locator(".pk-levels button").nth(2)).toHaveText("2000 ✓");
   await expect(
     page.getByRole("button", { name: "Retry", exact: true }),
@@ -439,6 +439,25 @@ test("real offline shots lag and resume in the same visit; only an offline shot 
   });
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.locator(".pk-levels button").nth(2)).toHaveText("2000 ✓");
+  for (const [index, rating] of ["1000", "1500"].entries()) {
+    await page.getByRole("button", { name: rating, exact: true }).click();
+    await expect
+      .poll(() =>
+        page
+          .locator(".pk-keeper")
+          .evaluate((node) => parseFloat((node as HTMLElement).style.left)),
+      )
+      .toBeGreaterThan(65);
+    await aim(page, 0.02);
+    await kick.click();
+    await expect(page.locator(".pk-score")).toHaveText("GOAL!");
+    await expect(page.locator(".pk-levels button").nth(index)).toHaveText(
+      `${rating} ✓`,
+    );
+    if (index === 0)
+      await expect(box).not.toHaveAttribute("data-box-state", "open");
+  }
+  await expect(box).toHaveAttribute("data-box-state", "open");
   await page.reload();
   await expect(box).toHaveAttribute("data-box-state", "closed");
   await expect(page.locator(".pk-score")).not.toHaveText("GOAL!");
@@ -525,7 +544,7 @@ test("departing a lagging shot stops the game; returning restores the same oppon
   await page.goto("/?locale=en&stage=S-980");
   await expect(page.locator(".pk-match strong")).toHaveText(opponent);
   await expect(page.locator(".pk-score")).toHaveText("GOAL!");
-  await expect(page.locator(".problem-gift .gift-box")).toHaveAttribute(
+  await expect(page.locator(".problem-gift .gift-box")).not.toHaveAttribute(
     "data-box-state",
     "open",
   );
@@ -564,7 +583,7 @@ test("same-page offline play needs neither Beacon nor session storage", async ({
   await expect(page.locator(".pk-score")).toHaveText("LAG");
   await context.setOffline(false);
   await expect(page.locator(".pk-score")).toHaveText("GOAL!");
-  await expect(page.locator(".problem-gift .gift-box")).toHaveAttribute(
+  await expect(page.locator(".problem-gift .gift-box")).not.toHaveAttribute(
     "data-box-state",
     "open",
   );

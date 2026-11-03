@@ -1,6 +1,6 @@
 import type { StageLocaleText } from "../locale";
 
 export const stageName = {
-  ja: "URLの蛍光ペン",
-  en: "Address-bar Highlighter",
+  ja: "蛍光ペン",
+  en: "Highlighter",
 } satisfies StageLocaleText;

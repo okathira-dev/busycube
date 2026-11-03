@@ -1,7 +1,6 @@
 import "./styles.css";
-import AccountTreeOutlined from "@mui/icons-material/AccountTreeOutlined";
-import SelectAllOutlined from "@mui/icons-material/SelectAllOutlined";
-import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
+import KeyboardReturnOutlined from "@mui/icons-material/KeyboardReturnOutlined";
+import { createSvgIcon } from "@mui/material/utils";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -13,6 +12,45 @@ import { locale } from "./locale";
 import { manifest } from "./manifest";
 
 type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
+
+const SelectMenuIcon = createSvgIcon(
+  <>
+    <rect
+      x="2"
+      y="6"
+      width="20"
+      height="12"
+      rx="2"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <path d="M5 11h7v2H5zm10-1 3 4 3-4z" />
+  </>,
+  "SelectMenu",
+);
+
+const AccordionIcon = createSvgIcon(
+  <>
+    <rect
+      x="3"
+      y="3"
+      width="18"
+      height="18"
+      rx="2"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <path
+      d="M3 9h18M3 15h18m-7-9 2 1 2-1m-4 6 2 1 2-1m-4 6 2 1 2-1"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+  </>,
+  "Accordion",
+);
 
 const selectOptions = [
   ...Array.from(
@@ -32,9 +70,9 @@ const selectOptions = [
  * 目的: ポインター操作を受け付けない三つの対象へキーボードで移動し、選択を確定する。
  * 最初の一手: Tabで箱へフォーカスを移し、EnterまたはSpaceで確定する。
  * 箱ごとの解法:
- * - B04「斜線入りの目」: Tabで箱へフォーカスを移し、EnterまたはSpaceで押す。箱自身のkeyboard clickで開き、focusだけでは開かない。
- * - B05「点線の四角」: native selectでopen busycubeをキーボード選択し、Enterで確定する。Enterのkeydown時にvalueが完全一致すると開く。changeだけでは開かない。
- * - B06「枝分かれした線」: A/B/Cのaccordionをキーボードで開き、中にある丸いボタンをTabで選んでEnterまたはSpaceで押す。開いているdetails内の当たりbuttonのkeyboard clickで開く。
+ * - B04「エンターキー」: Tabで箱へフォーカスを移し、EnterまたはSpaceで押す。箱自身のkeyboard clickで開き、focusだけでは開かない。
+ * - B05「セレクトメニュー」: native selectでopen busycubeをキーボード選択し、Enterで確定する。Enterのkeydown時にvalueが完全一致すると開く。changeだけでは開かない。
+ * - B06「アコーディオン」: A/B/Cのaccordionをキーボードで開き、B内の星のボタンをTabで選んでEnterまたはSpaceで押す。A/C内のバツのボタンはdisabledで、開いているdetails内の当たりbuttonのkeyboard clickで開く。
  * 使用API: native buttonのkeyboard click、HTMLSelectElementのvalue/keydown、同じnameを持つdetails/summary。
  * 権限・privacy: 権限を要求せず、選択値はこの挑戦中の判定にだけ使用し保存・送信しない。
  * 対応環境: キーボードによるfocus・native select・details操作を実装するブラウザー。
@@ -86,25 +124,25 @@ function S150Stage(props: Props) {
         {(["A", "B", "C"] as const).map((name) => (
           <details key={name} name="busycube-exclusive-details">
             <summary>{name}</summary>
-            {name === "B" ? (
-              <button
-                type="button"
-                className="stage-action"
-                aria-label={stageText(props.locale, locale.circle)}
-                onClick={(event) => {
-                  if (
-                    event.detail === 0 &&
-                    event.currentTarget.closest("details")?.open &&
-                    !props.signal.aborted
-                  )
-                    detailsProblem.solve();
-                }}
-              >
-                ●
-              </button>
-            ) : (
-              <span aria-hidden="true">○</span>
-            )}
+            <button
+              type="button"
+              className="stage-action"
+              disabled={name !== "B"}
+              aria-label={stageText(
+                props.locale,
+                name === "B" ? locale.star : locale.cross,
+              )}
+              onClick={(event) => {
+                if (
+                  event.detail === 0 &&
+                  event.currentTarget.closest("details")?.open &&
+                  !props.signal.aborted
+                )
+                  detailsProblem.solve();
+              }}
+            >
+              {name === "B" ? "☆" : "✗"}
+            </button>
           </details>
         ))}
       </div>
@@ -115,17 +153,17 @@ function S150Stage(props: Props) {
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B04]: {
-      icon: VisibilityOffOutlined,
+      icon: KeyboardReturnOutlined,
       tone: "violet",
       label: locale.B04,
     },
     [manifest.box.B05]: {
-      icon: SelectAllOutlined,
+      icon: SelectMenuIcon,
       tone: "violet",
       label: locale.B05,
     },
     [manifest.box.B06]: {
-      icon: AccountTreeOutlined,
+      icon: AccordionIcon,
       tone: "violet",
       label: locale.B06,
     },

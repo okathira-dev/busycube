@@ -8,6 +8,7 @@
   "assets": {
     "binding": "ASSETS",
     "run_worker_first": [
+      "/api/time",
       "/payment/method",
       "/poc/payment/method",
       "/poc/payment/decoy-method",

@@ -5,7 +5,25 @@ import {
   flightTime,
   kick,
   lagFraction,
+  recordVictory,
 } from "./game";
+
+it("requires victories at all three ratings, preserving the offline condition for the highest", () => {
+  let wins = { easy: false, medium: false, hard: false };
+  wins = recordVictory(wins, "hard", true);
+  expect(wins).toEqual({ easy: false, medium: false, hard: false });
+  wins = recordVictory(wins, "hard", false);
+  wins = recordVictory(wins, "easy", true);
+  expect(Object.values(wins).every(Boolean)).toBe(false);
+  wins = recordVictory(wins, "medium", true);
+  expect(Object.values(wins).every(Boolean)).toBe(true);
+  let hardLast = { easy: false, medium: false, hard: false };
+  hardLast = recordVictory(hardLast, "medium", true);
+  hardLast = recordVictory(hardLast, "easy", true);
+  expect(Object.values(hardLast).every(Boolean)).toBe(false);
+  hardLast = recordVictory(hardLast, "hard", false);
+  expect(Object.values(hardLast).every(Boolean)).toBe(true);
+});
 
 it("patrols independently of the aim in both beginner and intermediate", () => {
   for (const level of ["easy", "medium"] as const) {

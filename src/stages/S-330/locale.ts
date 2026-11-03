@@ -8,5 +8,5 @@ export const locale = defineStageLocale({
   holding: { ja: "保持中", en: "Holding" },
   released: { ja: "解放済み", en: "Released" },
   unavailable: { ja: "Wake Lockを利用できません", en: "Wake Lock unavailable" },
-  B03: { ja: "日差し", en: "Sun rays" },
+  B03: { ja: "スクリーン", en: "Screen" },
 });

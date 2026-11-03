@@ -62,7 +62,7 @@ it("releases S-330's existing Wake Lock when departing before entering the indep
   });
   const view = render(<wakeStage.Component {...props(wakeStage)} />);
   await act(async () => {
-    fireEvent.click(screen.getByRole("button", { name: /^Sun rays:/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Screen:/ }));
   });
   expect(sentinel.released).toBe(false);
   view.unmount();
@@ -90,7 +90,7 @@ it("releases a late S-330 sentinel after the stage has already been left", async
   });
   const view = render(<wakeStage.Component {...props(wakeStage)} />);
   await act(async () => {
-    fireEvent.click(screen.getByRole("button", { name: /^Sun rays:/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Screen:/ }));
   });
   view.unmount();
   await act(async () => {

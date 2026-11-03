@@ -22,7 +22,7 @@ async function observeNative(page: Page) {
 }
 const gift = (page: Page) => page.locator(".problem-gift .gift-box");
 const begin = (page: Page) =>
-  page.getByRole("button", { name: /^Sun rays:/ }).click();
+  page.getByRole("button", { name: /^Screen:/ }).click();
 
 test("a real native sentinel must remain held for the full visible wait and legacy immediate clears are kept separately", async ({
   page,

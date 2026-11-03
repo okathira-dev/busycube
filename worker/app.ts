@@ -35,6 +35,10 @@ app.use("*", async (context, next) => {
   }
 });
 
+app.get("/api/time", (context) =>
+  context.json({ unix_ms: Date.now() }, 200, { "Cache-Control": "no-store" }),
+);
+
 app.use("/share-target", bodyLimit({ maxSize: 64 * 1024 }));
 app.post("/share-target", async (context) => {
   if (

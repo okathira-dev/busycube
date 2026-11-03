@@ -1,8 +1,5 @@
-import "./styles.css";
 import DevicesFoldOutlined from "@mui/icons-material/DevicesFoldOutlined";
-import UnfoldLessOutlined from "@mui/icons-material/UnfoldLessOutlined";
-import UnfoldMoreOutlined from "@mui/icons-material/UnfoldMoreOutlined";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
@@ -30,7 +27,7 @@ function readPosture(): Posture | null {
  * S-320
  *
  * 目的: 入場時の物理postureを基準に、foldable端末の折り曲げ状態の変化を観測する。
- * 最初の一手: 画面の開閉アイコンを見て、実端末を開くか折り曲げる。
+ * 最初の一手: 箱の折りたたみ画面アイコンを見て、実端末を開くか折り曲げる。
  * 箱ごとの解法:
  * - B02「折りたたみ画面」: 入場時がcontinuousなら端末をfoldedへ、foldedならcontinuousへ変える。実devicePosture.typeが最初の有効観測と異なる既知状態へ変化したら開く。初期folded・viewport二分割だけでは開かない。
  * 使用API: navigator.devicePostureとchangeイベント。
@@ -40,7 +37,6 @@ function readPosture(): Posture | null {
 function S320Stage(props: Props) {
   const problem = props.boxes.B02;
   const initial = useRef(readPosture());
-  const [posture, setPosture] = useState(initial.current);
   useEffect(() => {
     const api = postureApi();
     if (!api) return;
@@ -49,7 +45,6 @@ function S320Stage(props: Props) {
       const next = readPosture();
       if (!next) return;
       initial.current ??= next;
-      setPosture(next);
       if (next !== initial.current) problem.solve();
     };
     api.addEventListener("change", inspect);
@@ -61,20 +56,8 @@ function S320Stage(props: Props) {
       stop();
     };
   }, [problem.solve, props.signal]);
-  const Direction =
-    posture === "folded" ? UnfoldMoreOutlined : UnfoldLessOutlined;
   return (
     <div className="puzzle puzzle--centered">
-      <div
-        className="fold-preview"
-        data-folded={posture === "folded"}
-        aria-hidden="true"
-      >
-        <span />
-        <i />
-        <span />
-      </div>
-      <Direction className="fold-direction" aria-hidden="true" />
       <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
   );

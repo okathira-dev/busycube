@@ -1,4 +1,4 @@
-type ProviderId = "utctime" | "timeapi";
+type ProviderId = "server" | "utctime" | "timeapi";
 export interface TimeReference {
   utcMs: number;
   receivedPerf: number;
@@ -9,6 +9,7 @@ export const timeProviders = [
     id: "timeapi",
     url: "https://timeapi.io/api/Time/current/zone?timeZone=Etc%2FUTC",
   },
+  { id: "server", url: "/api/time" },
 ] as const;
 type Provider = (typeof timeProviders)[number];
 
@@ -17,7 +18,7 @@ export function parseUtc(id: ProviderId, body: unknown): number {
     throw new Error("Invalid time response");
   const value = body as Record<string, unknown>;
   let utc: number;
-  if (id === "utctime") {
+  if (id === "server" || id === "utctime") {
     if (typeof value.unix_ms !== "number")
       throw new Error("Invalid UTC milliseconds");
     utc = value.unix_ms;
@@ -59,11 +60,12 @@ export class ExternalTimeSync {
 
   constructor(
     private readonly changed: (reference: TimeReference | null) => void,
-    private readonly request: typeof fetch = fetch,
+    private readonly request: typeof fetch = (...args) => fetch(...args),
     private readonly now: () => number = () => performance.now(),
     reverse = Math.random() < 0.5,
   ) {
-    this.order = reverse ? [...timeProviders].reverse() : [...timeProviders];
+    const [first, second, server] = timeProviders;
+    this.order = [...(reverse ? [second, first] : [first, second]), server];
   }
 
   start() {
@@ -160,10 +162,12 @@ export class ExternalTimeSync {
             receivedPerf: finished,
           };
           this.changed(this.reference);
-          this.order = [
-            provider,
-            ...this.order.filter((candidate) => candidate !== provider),
-          ];
+          if (provider.id !== "server") {
+            this.order = [
+              provider,
+              ...this.order.filter((candidate) => candidate !== provider),
+            ];
+          }
           success = true;
           break;
         } catch {

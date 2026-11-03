@@ -96,7 +96,7 @@ it("resynchronizes before accepting wall-clock changes and stops networking afte
   vi.spyOn(document, "hidden", "get").mockReturnValue(false);
   const request = vi.fn(async (url: RequestInfo | URL) => {
     const now = utc + performance.now();
-    return String(url).includes("utctime")
+    return String(url) === "/api/time" || String(url).includes("utctime")
       ? Response.json({ unix_ms: now })
       : Response.json({
           timeZone: "Etc/UTC",
@@ -232,11 +232,64 @@ it.each([
   },
 );
 
-it("keeps the bracketed sentence as the only visible selection clue", () => {
-  render(<selectionStage.Component {...stageProps(selectionStage)} />);
-  expect(screen.getByText("ひかりの[あいだ]にしるし。")).toBeTruthy();
-  expect(screen.queryByText("あいだ", { exact: true })).toBeNull();
-});
+it.each([
+  ["ja", "合言葉は［ひみつ］。", "ひみつ"],
+  ["en", "The password is [secret].", "secret"],
+] as const)(
+  "opens when the selection includes the entire redacted password in the %s sentence",
+  (locale, sentence, answer) => {
+    const props = { ...stageProps(selectionStage), locale };
+    const { container } = render(<selectionStage.Component {...props} />);
+    const paragraph = container.querySelector("p");
+    const redacted = container.querySelector(".selection-redacted");
+    expect(paragraph?.textContent).toBe(sentence);
+    expect(redacted?.textContent).toBe(answer);
+    if (!paragraph || !redacted) throw new Error("Missing redacted sentence");
+    fireEvent.click(redacted);
+    expect(props.boxes.B01?.solve).not.toHaveBeenCalled();
+
+    const selection = document.getSelection();
+    const text = redacted.firstChild;
+    if (!selection || !text) throw new Error("Missing native selection");
+    const select = (range: Range) => {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      fireEvent(document, new Event("selectionchange"));
+    };
+    const range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, answer.length - 1);
+    select(range);
+    expect(props.boxes.B01?.solve).not.toHaveBeenCalled();
+    range.setStart(text, 1);
+    range.setEnd(text, answer.length);
+    select(range);
+    expect(props.boxes.B01?.solve).not.toHaveBeenCalled();
+
+    const duplicate = document.createElement("span");
+    duplicate.textContent = answer;
+    container.append(duplicate);
+    range.selectNodeContents(duplicate);
+    select(range);
+    expect(props.boxes.B01?.solve).not.toHaveBeenCalled();
+    duplicate.remove();
+
+    range.selectNodeContents(text);
+    select(range);
+    expect(props.boxes.B01?.solve).toHaveBeenCalledOnce();
+    vi.mocked(props.boxes.B01?.solve)?.mockClear();
+
+    range.selectNodeContents(paragraph);
+    select(range);
+    expect(props.boxes.B01?.solve).toHaveBeenCalledOnce();
+    vi.mocked(props.boxes.B01?.solve)?.mockClear();
+
+    range.selectNodeContents(document.body);
+    select(range);
+    expect(props.boxes.B01?.solve).toHaveBeenCalledOnce();
+    selection.removeAllRanges();
+  },
+);
 
 it("measures the last absence and opens the two-second and sixty-second boxes independently", () => {
   let now = 0;

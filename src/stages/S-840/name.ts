@@ -1,6 +1,6 @@
 import type { StageLocaleText } from "../locale";
 
 export const stageName = {
-  ja: "ぴったり重ねる",
-  en: "Perfect Alignment",
+  ja: "スクロール",
+  en: "Scroll",
 } satisfies StageLocaleText;

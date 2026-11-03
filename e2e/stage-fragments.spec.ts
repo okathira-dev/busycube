@@ -6,6 +6,17 @@ test("follows fixed native text-fragment links to the two-word cycle and require
   await page.goto("/?locale=en&stage=S-690");
   const links = page.locator(".s690-article [data-word]");
   await expect(links).toHaveCount(174);
+  expect(await links.allTextContents()).toEqual(
+    expect.arrayContaining(["graph", "HTML"]),
+  );
+  for (const text of await links.allTextContents())
+    expect(text).not.toMatch(/[,.]/);
+  await expect(page.locator(".s690-article p").nth(1)).toHaveText(
+    "Webgraph is a graph, formed from web pages as vertices and hyperlinks, as directed edges.",
+  );
+  await expect(
+    page.getByRole("heading", { name: "Explorer", exact: true }),
+  ).toBeVisible();
   const before = await links.evaluateAll((nodes) =>
     nodes.map((node) => node.getAttribute("href")),
   );
@@ -37,12 +48,12 @@ test("follows fixed native text-fragment links to the two-word cycle and require
     current = destination;
     expect(seen.size).toBeLessThanOrEqual(8);
   }
-  expect(await links.nth(current).textContent()).toMatch(/^(directed|graph,)$/);
+  expect(await links.nth(current).textContent()).toMatch(/^(directed|graph)$/);
   await page.screenshot({
     path: testInfo.outputPath("native-highlight.png"),
     fullPage: true,
   });
-  await links.filter({ hasText: /^graph,$/ }).click();
+  await links.filter({ hasText: /^graph$/ }).click();
   await page.screenshot({
     path: testInfo.outputPath("directed-highlight.png"),
     fullPage: true,
@@ -68,3 +79,30 @@ test("follows fixed native text-fragment links to the two-word cycle and require
   await page.getByRole("button", { name: "Confirm", exact: true }).click();
   await expect(box).toHaveCount(1);
 });
+
+for (const [index, word] of [
+  [4, "possibility"],
+  [5, "of"],
+] as const) {
+  test(`opens the permalink for ${word} at occurrence ${index}`, async ({
+    page,
+  }, testInfo) => {
+    const href =
+      index === 4
+        ? "#s690-word-4:~:text=Tim%20Berners%2DLee%20saw%20the-,possibility,-of%20using%20hyperlinks%20to%20link%20any"
+        : "#s690-word-5:~:text=Tim%20Berners%2DLee%20saw%20the%20possibility-,of,-using%20hyperlinks%20to%20link%20any%20information";
+    expect(href).toContain("Berners%2DLee");
+    await page.goto(`/?locale=ja&stage=S-690${href}`);
+    const target = page.locator(`#s690-word-${index}`);
+    await expect(target).toHaveText(word);
+    await expect(target).toBeInViewport();
+    await expect(page.locator(":target")).toHaveAttribute(
+      "id",
+      `s690-word-${index}`,
+    );
+    await page.reload();
+    await expect(target).toHaveText(word);
+    await expect(target).toBeInViewport();
+    await page.screenshot({ path: testInfo.outputPath("permalink.png") });
+  });
+}

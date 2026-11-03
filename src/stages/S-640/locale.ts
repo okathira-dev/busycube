@@ -3,15 +3,13 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  mojibake: { ja: "文字化け", en: "Mojibake" },
   decoded: { ja: "復号した文字列", en: "Decoded text" },
-  sharedAnswer: { ja: "共通の復号回答", en: "Shared decoded answer" },
-  B01: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B09: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B10: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B11: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B12: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B13: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B14: { ja: "斜線入りの目", en: "Crossed-out eye" },
-  B15: { ja: "斜線入りの目", en: "Crossed-out eye" },
+  B01: { ja: "箱", en: "Box" },
+  B09: { ja: "箱", en: "Box" },
+  B10: { ja: "箱", en: "Box" },
+  B11: { ja: "箱", en: "Box" },
+  B12: { ja: "箱", en: "Box" },
+  B13: { ja: "箱", en: "Box" },
+  B14: { ja: "箱", en: "Box" },
+  B15: { ja: "箱", en: "Box" },
 });
