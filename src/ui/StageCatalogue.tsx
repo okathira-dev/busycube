@@ -27,6 +27,7 @@ import type { StageAccessKind, StageIdFormat } from "../runtime/stageContract";
 import { preloadOnActivation } from "./activationIntent";
 import { GiftBox, type GiftBoxState } from "./GiftBox";
 import { uiText } from "./locale";
+import { StagePreviewBadge } from "./StagePreviewBadge";
 import { type CatalogueStage, stageAccessOrder } from "./stageCatalogueModel";
 import "./StageCatalogue.css";
 
@@ -270,16 +271,27 @@ export const StageCatalogue = memo(function StageCatalogue({
               >
                 <Stack
                   direction="row"
-                  sx={{ alignItems: "center", gap: 1, minWidth: 0 }}
+                  sx={{
+                    alignItems: "center",
+                    gap: 1,
+                    minWidth: 0,
+                    flexWrap: "wrap",
+                  }}
                 >
                   <Icon fontSize="small" aria-hidden="true" />
                   <Typography component="h3" sx={{ fontWeight: 700 }}>
                     {uiText(locale, groupLabel[group])}
                   </Typography>
                   <Chip size="small" label={groupStages.length} />
+                  <StagePreviewBadge accessKind={group} locale={locale} />
                 </Stack>
               </AccordionSummary>
               <AccordionDetails sx={{ p: { xs: 1.5, sm: 2 } }}>
+                {group !== "baseline-direct" && (
+                  <Typography color="text.secondary" sx={{ mb: 1.5 }}>
+                    {uiText(locale, "stagePreviewDescription")}
+                  </Typography>
+                )}
                 <ul className="stage-grid">
                   {groupStages.map((stage) => (
                     <li key={stage.manifest.id}>
@@ -386,6 +398,7 @@ function StageCard({
           <Typography className="stage-card__heading" component="h4">
             {manifest.name[locale]}
           </Typography>
+          <StagePreviewBadge accessKind={stage.accessKind} locale={locale} />
         </CardContent>
       </CardActionArea>
     </Card>

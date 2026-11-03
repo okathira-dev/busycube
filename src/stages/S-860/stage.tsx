@@ -21,10 +21,10 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * 目的: メインページと同じ見出し四行から違いを見つけ、EditContextで誤りを直接校正する。
  * 最初の一手: メインページを思い出し、Busycuveの文字をクリックまたはTabで選んで誤字を直す。
  * 箱ごとの解法:
- * - B01「鉛筆」: Explorerの綴りを直す。
- * - B04「鉛筆」: 題名をBusycubeへ直す。
- * - B03「鉛筆」: 日本語のバズル、英語のpuzzelを直す。
- * - B02「鉛筆」: 日本語のプラウサ、英語のprowlerを直す。
+ * - B01「鉛筆」: Web API Explororの綴りを直接編集して直す。実EditContextで確定したtextが共通descriptorと完全一致すると開く。
+ * - B04「鉛筆」: 題名Busycuveを直接編集して直す。実EditContextで確定したtextが共通brandNameのBusycubeと完全一致すると開く。
+ * - B03「鉛筆」: 日本語のバズル、英語のpuzzelを直接編集して直す。実EditContextで確定したtextが表示言語の共通taglineと完全一致すると開く。
+ * - B02「鉛筆」: 日本語のプラウサ、英語のprowlerを直接編集して直す。実EditContextで確定したtextが表示言語の共通subtitleと完全一致すると開く。
  * 使用API: EditContextの実textupdate/composition/selection/character bounds、DOM Range、ResizeObserver、focus。
  * 権限・privacy: 権限不要。編集中の文字と選択だけをcomponent memoryに保持し、保存・送信しない。
  * 対応環境: EditContextを実装するbrowser。IME変換中は確定前の一致を達成にしない。

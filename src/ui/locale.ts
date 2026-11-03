@@ -16,6 +16,11 @@ export const uiLocale = defineLocale({
   stageAccessDirect: { ja: "すぐプレイ", en: "Play now" },
   stageAccessPermission: { ja: "権限が必要", en: "Permission required" },
   stageAccessLimited: { ja: "対応環境限定", en: "Limited browser support" },
+  stagePreview: { ja: "暫定版", en: "Preview" },
+  stagePreviewDescription: {
+    ja: "このカテゴリのステージは暫定版です。内容や表示は今後変更する場合があります。",
+    en: "Stages in this category are in preview. Their content and presentation may change.",
+  },
   stageCrashed: {
     ja: "この箱は応答を停止しました。一覧へ戻って、もう一度試してください。",
     en: "This box stopped responding. Return to the box room and try again.",

@@ -24,12 +24,15 @@ import {
 import type { ProgressController } from "../hooks/useProgress";
 import { type Locale, messages } from "../i18n";
 import { preloadOnActivation } from "../ui/activationIntent";
+import { LanguageSelect } from "../ui/LanguageSelect";
 import { uiText } from "../ui/locale";
+import { StagePreviewBadge } from "../ui/StagePreviewBadge";
 import { preloadInBackground } from "./preload";
-import type {
-  StageManifest,
-  StageModule,
-  StageServices,
+import {
+  deriveStageAccessKind,
+  type StageManifest,
+  type StageModule,
+  type StageServices,
 } from "./stageContract";
 import "./ManifestStageHost.css";
 
@@ -44,6 +47,7 @@ interface Props {
   progress: ProgressController;
   services: StageServices;
   onBack(): void;
+  onLocaleChange?(locale: Locale): void;
   onPrevious?(): void;
   onNext?(): void;
 }
@@ -148,6 +152,7 @@ export function ManifestStageHost({
   progress,
   services,
   onBack,
+  onLocaleChange,
   onPrevious,
   onNext,
 }: Props) {
@@ -278,15 +283,30 @@ export function ManifestStageHost({
 
   return (
     <section className="stage-view" aria-labelledby={activeStageHeadingId}>
-      <Button
-        className="back-button"
-        startIcon={<ArrowBackOutlined />}
-        onClick={onBack}
-      >
-        {copy.back}
-      </Button>
+      <div className="stage-view__toolbar">
+        <Button
+          className="back-button"
+          startIcon={<ArrowBackOutlined />}
+          onClick={onBack}
+        >
+          {copy.back}
+        </Button>
+        {onLocaleChange && (
+          <LanguageSelect
+            locale={locale}
+            label={copy.language}
+            onChange={onLocaleChange}
+          />
+        )}
+      </div>
       <header className="stage-view__header">
-        <p>{displayCode}</p>
+        <div className="stage-view__identity">
+          <p>{displayCode}</p>
+          <StagePreviewBadge
+            accessKind={deriveStageAccessKind(manifest.platform)}
+            locale={locale}
+          />
+        </div>
         <h2 id={activeStageHeadingId} ref={headingRef} tabIndex={-1}>
           {manifest.name[locale]}
         </h2>

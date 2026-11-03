@@ -3,6 +3,86 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import jsQR from "jsqr";
 
+for (const locale of ["ja", "en"]) {
+  test(`labels P and L as preview in the catalogue and stage header in ${locale}`, async ({
+    page,
+  }, testInfo) => {
+    const label = locale === "ja" ? "暫定版" : "Preview";
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/?locale=${locale}`);
+    for (const [id, provisional] of [
+      ["S-000", false],
+      ["S-090", true],
+      ["S-630", true],
+    ] as const) {
+      const card = page.locator(`[data-stage-id="${id}"]`);
+      await expect(card.getByText(label, { exact: true })).toHaveCount(
+        provisional ? 1 : 0,
+      );
+    }
+    await expect(
+      page
+        .locator(".stage-catalogue__group .MuiAccordionSummary-root")
+        .getByText(label, { exact: true }),
+    ).toHaveCount(2);
+    for (const [id, provisional] of [
+      ["S-090", true],
+      ["S-630", true],
+      ["S-000", false],
+    ] as const) {
+      await page.goto(`/?locale=${locale}&stage=${id}`);
+      await expect(
+        page.locator(".stage-view__identity").getByText(label, { exact: true }),
+      ).toHaveCount(provisional ? 1 : 0);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      if (id === "S-090" && locale === "ja") {
+        await page.screenshot({
+          path: testInfo.outputPath("preview-stage-mobile.png"),
+          fullPage: true,
+        });
+      }
+    }
+  });
+}
+
+test("switches stage language without leaving or losing the current box state", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/?locale=en&stage=S-000");
+  await page.getByRole("button", { name: /^Pointing hand:/ }).click();
+  await expect(page.locator('.gift-box[data-box-state="open"]')).toHaveCount(1);
+  await page.getByRole("combobox", { name: "Language", exact: true }).click();
+  await page.getByRole("option", { name: "日本語", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "最初の箱", exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/locale=ja&stage=S-000/);
+  await expect(page.locator('.gift-box[data-box-state="open"]')).toHaveCount(1);
+  await page.getByRole("combobox", { name: "Language", exact: true }).click();
+  await page.getByRole("option", { name: "English", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "The first box", exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("combobox", { name: "Language", exact: true }),
+  ).toContainText("English");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath("stage-language-mobile.png"),
+    fullPage: true,
+  });
+});
+
 test("replaces the QR payload in real converted video frames", async ({
   page,
 }) => {

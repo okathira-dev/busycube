@@ -57,6 +57,32 @@ const progress: ProgressController = {
 
 describe("ManifestStageHost navigation preload", () => {
   afterEach(() => cleanup());
+  it.each([
+    ["ja", "widely", "none", false],
+    ["ja", "widely", "required", true],
+    ["en", "limited", "none", true],
+  ] as const)(
+    "shows the preview badge for %s/%s/%s only when provisional",
+    (locale, baseline, permission, provisional) => {
+      window.scrollTo = vi.fn();
+      const current = createStage("S-993", "Preview fixture");
+      render(
+        <ManifestStageHost
+          manifest={{ ...current.manifest, platform: { baseline, permission } }}
+          displayCode="Fixture"
+          locale={locale}
+          progress={progress}
+          services={{}}
+          onBack={vi.fn()}
+        />,
+      );
+      expect(
+        screen.queryByText(locale === "ja" ? "暫定版" : "Preview", {
+          exact: true,
+        }) !== null,
+      ).toBe(provisional);
+    },
+  );
   it("keeps stage actions live after StrictMode replay and aborts them on departure", async () => {
     window.scrollTo = vi.fn();
     const current = createStage("S-994", "Lifetime fixture");

@@ -427,6 +427,7 @@ export function App() {
                 drive: { configured: drive.configured, sync: drive.sync },
               }}
               onBack={showStageList}
+              onLocaleChange={changeLocale}
               previousStage={previousCatalogueStage?.manifest}
               previousDisplayCode={previousCatalogueStage?.displayCode}
               onPrevious={
