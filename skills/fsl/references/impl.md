@@ -1,0 +1,344 @@
+## 9. Implementation connection (the testgen Adapter contract)
+
+### Layer selection for conformance tests
+
+Generate implementation-conformance tests from the spec at the **same layer
+granularity as the implementation** you are checking. `fslc testgen` against a
+design-layer `spec` checks the design model; against a `requirements` spec it
+checks the requirements model — pick the layer that matches what the Adapter
+projects.
+
+From an **upper** layer you may reuse **`forbidden` (negative) scenarios only**.
+Forbidden traces are sound under refinement: if the upper model must reject a
+sequence, a faithful lower layer must reject it too. Do **not** reuse upper-layer
+**positive** scenarios (`acceptance`, `cover`, random-walk witnesses) as
+implementation tests for a lower-layer implementation. Refinement is forward
+simulation (`fslc refine` asks whether the implementation model can simulate the
+abstract one), not backward simulation of every abstract positive trace. A
+legitimately refined lower layer may add intermediate states or guards that make
+an upper-layer positive trace unrealizable without violating the refinement
+contract.
+
+**Example:** An upper spec `ChainTop` starts in `TOpen`
+with `finish` enabled immediately (`fair action finish` requires only
+`st[c] == TOpen`). Its refinement `ChainMid` requires
+`MOpen → MReview` before `finish` (`finish` requires `st[c] == MReview`). Running
+`ChainTop`'s positive `finish` trace against a `ChainMid` implementation falsely
+fails a sound refinement — the implementation correctly requires the review step
+the abstract top layer omitted.
+
+So the refinement chain ends with implementation conforming to the **design**
+layer via testgen/replay; the requirements layer's `acceptance` flows into
+scenarios/testgen for **that layer's** conformance anchor, not as a substitute
+for design-layer positive tests.
+
+Wire the generated file's `Adapter` to the implementation:
+- `reset()`: bring the implementation to the same initial state as init
+- `step(action, params)`: execute one action (in composition, `"alias.action"` names
+  also arrive; `use X as a__b` with action `c` arrives as `"a__b.c"`, and a v1
+  `fslc replay` trace uses the same names)
+- `observe() -> dict`: project the implementation state onto the spec's logical-state
+  form (keys are state-variable names / composition uses `alias.var`, except that
+  with an alias containing `__` the key keeps the older rule: state `n` of
+  `use X as a__b` is `"a.b__n"`, while the frozen Python reference uses
+  `"a__b.n"`; enum = name
+  string, Option = None|value, Seq = list, Map = dict with string keys, struct = dict)
+
+The random-walk test uses the Monitor (the spec's concrete interpreter) as the
+oracle, stepping through the implementation one step at a time. A failure = a
+divergence between implementation and spec (read the trace to decide which one is
+correct).
+
+Generated tests and conformance vectors step the implementation one spec
+action at a time. A spec action is atomic in the model, so the generated
+sequences do not enumerate interleaving or crash points inside an action.
+Whether anything interleaves inside the implementation's handling of one
+action is decided by the implementation and the Adapter, not by the generated
+sequence. If the implementation carries out one design action as several
+transactions, an error that needs an interleaving or a crash between those
+transactions can pass every generated test and vector. Cover each procedure
+the design declares atomic with implementation tests that interleave or crash
+at the implementation's own transaction boundaries; a conformance run with
+zero divergences does not show that the implementation keeps that atomicity.
+
+The native pytest/Vitest/Swift/Kotlin/Dart/PHPUnit emitters share one validated
+input adapter: Public Kernel v1 metadata, scenario JSON, and the versioned
+fixed-seed `testgen-trace.v1` conformance trace. They never consume a private
+model or AST. Public Kernel/trace schema mismatches, malformed vectors, unknown
+state/action/parameter names, and spec-name mismatches fail closed. Compose is the explicit exception at the producer boundary because
+Public Kernel rejects incomplete multi-file provenance; checked names/order feed
+the same adapter until truthful compose export is available.
+
+The fixed-seed walk is capped at 100 steps and is **not** bounded by `--depth`, so
+it can reach a violation the bounded verification `testgen` runs first proved
+absent within `depth`. The Monitor rolls a violating step back, so recording it
+would bake "this action is a no-op" as an expectation the spec never states.
+`testgen` therefore refuses: it emits the same `result:"violated"` envelope, exit
+code, property, step, and trace `verify` emits, and writes no harness. Raise
+`--depth` until `verify` is clean at the depth the walk reaches, or fix the spec.
+
+`--target` chooses the harness; the scenario-collection core is shared, so both
+emit the same scenarios:
+- `pytest` (default): Python tests; the random walk imports `fslc.runtime.Monitor`
+  and runs the fixed-seed walk live as the oracle. Output defaults to `test_<spec>.py`.
+- `vitest`: a self-contained TypeScript (Vitest) file with the same `Adapter`
+  contract (`reset`/`step`/`observe`). Deterministic and forbidden scenarios map
+  directly (a forbidden scenario asserts `ok == false` and `kind ==
+  rejected_by`, which is `requires_failed` or `bad_call`); the random walk is **baked at generation time** (the concrete Monitor
+  runs the seed-fixed walk and the `(action, params, expected_state)` trace is
+  embedded as a static fixture), so the tests need no `fslc`/Python at runtime.
+  Until `makeAdapter()` is wired every test fails. Output defaults to
+  `<spec>.test.ts`.
+- `swift`: a self-contained Swift Testing file (`import Testing` / `@Test` /
+  `#expect`; not XCTest), same `Adapter` contract and same baked walk. Dynamic
+  state is `[String: Any]` with a bundled deep-equality + partial-match helper;
+  Option `None` bakes as the `FSLNull.instance` sentinel (no Foundation). Every
+  test fails (`FSLNotWired`) until `makeAdapter()` is wired; `--allow-unwired`
+  disables them via `@Test(.enabled(if: isAdapterWired()))` instead. Output
+  defaults to `<SpecName>ConformanceTests.swift`.
+- `kotlin`: a self-contained kotlin.test file (multiplatform; JVM delegates to
+  JUnit), same `Adapter` contract and same baked walk. Dynamic state is
+  `Map<String, Any?>` — Kotlin's `==` is deep on `List`/`Map` and distinguishes
+  `Int`/`Double`, so the partial-match helper is a plain recursion. An unwired
+  `makeAdapter()` returns `null` and each test fails with
+  `fail(ADAPTER_NOT_WIRED)`. kotlin.test has no portable runtime skip, so
+  `--allow-unwired` is rejected for Kotlin (exit 2). Output defaults to
+  `<SpecName>ConformanceTest.kt`.
+- `dart`: a self-contained `package:test` file (also runs under `flutter test`),
+  same `Adapter` contract and same baked walk. Dynamic state is
+  `Map<String, dynamic>`; Dart's `==` is reference-based on collections, so
+  `assertPartial` recurses by the expected keys and compares leaves with the
+  `equals` matcher (the only dependency stays `package:test`). Every test fails
+  until `makeAdapter()` is wired; `--allow-unwired` sets `skip:` on each `test()`
+  instead. Output defaults to `<spec_name>_conformance_test.dart`.
+- `phpunit`: a self-contained PHPUnit file (PHP 8.1+ / PHPUnit 10+,
+  `strict_types`), same `Adapter` contract and same baked walk. Dynamic state is
+  an associative `array`; leaves compare with `assertSame` (`===`) so int/float,
+  bool and null never coerce (loose `==` would conflate `0 == "0"`).
+  `assertPartial` recurses by the expected keys (maps order-independent; lists
+  pin length). `setUp()` fails every test until `makeAdapter()` is wired
+  (`markTestSkipped` under `--allow-unwired`). Output defaults to
+  `<SpecName>ConformanceTest.php`.
+
+**Unwired = fail, on every target.** Until the Adapter
+is wired, every generated test fails with a message starting `adapter not
+wired`. Do not treat a green run of a generated suite as conformance evidence
+until you have seen it execute tests against the implementation: a suite that
+never calls the implementation proves nothing. `fslc testgen --allow-unwired`
+(also `fslc domain testgen`) is the explicit opt-in that restores
+skip-until-wired; Kotlin rejects it. An `--allow-unwired` suite exits 0 with every test skipped,
+so in `fslc chain` give `[impl]` a JUnit `report` (see `commands.md`, `chain`):
+then zero executed tests is `indeterminate`, never `passed`. An `[impl]` with
+neither `report` nor `evidence = "exit_code"` is `indeterminate` on exit 0, and
+`evidence = "exit_code"` is flagged `exit_code_only` with a warning — it is not
+conformance evidence for a generated suite.
+
+If a `reachable` target is not witnessed at the requested depth, `testgen` still
+generates tests for the scenarios it did witness and returns `warnings[]` with a
+message such as `reachable SoldOut not witnessed at depth 3; try --depth >= 4`.
+Use `--strict` to restore all-or-nothing `reachable_failed`. A genuine
+`violated`/`reachable_failed` result — the spec itself has a bug, not a
+testgen input problem — is returned verbatim (verdict, exit code, and trace
+unchanged), the same envelope `verify`/`scenarios` return for the identical
+spec; it is never re-wrapped as a generic exit-2 spec error.
+
+### Using conformance as an implementation loop for an AI agent
+
+Implementation conformance (`testgen` tests, `fslc conformance` vectors,
+`replay`) checks the implementation against the spec, not against the intent
+behind it. Where the spec differs from the intent — for example, it accepts a
+call the owner meant to reject because the rejecting condition was never
+written — an implementation that follows the intent can fail conformance on
+the cases that reach the difference. An agent told to reach zero divergence
+may then change correct code to match the spec, or reach zero by lowering the
+depth or skipping the diverging vectors. This applies at whichever layer the
+tests are generated from; it does not change "Layer selection for conformance
+tests" above.
+
+- Before handing the loop to an agent, confirm the spec against intent: the
+  formalization memo is confirmed, each rejection rule the source states is
+  carried by a declaration and exercised by a `forbidden` trace, and the owner
+  has read the `acceptance` / `forbidden` traces (or `fslc explain --readable`).
+- When a divergence appears, classify it before changing code: (a) the spec
+  misses or contradicts the intent, (b) the Adapter projects state wrongly, or
+  (c) the implementation is wrong. (a) goes back to the spec owner as a
+  question, (b) is fixed in the Adapter, and only (c) is fixed by editing the
+  implementation.
+- State the depth, and any vectors or tests that may be left unexecuted, in
+  the task. An agent that cannot reach zero divergence on those terms reports
+  the remaining divergences; it does not lower the depth, skip or filter
+  vectors, or disable tests to get there. Count the loop as complete only on
+  those terms — "the last run shows zero divergence" alone is not completion.
+
+## 11. Non-functional requirements (NFR)
+
+| NFR | How to write it |
+|---|---|
+| Permissions | role check in requires + ghost invariant |
+| Audit completeness | cross-cutting invariant (e.g. an append-only audit log accounts for every balance movement) |
+| Capacity | bounded types, Seq capacity, count invariant |
+| Reliability behavior | fault-injection action + mode state + fair recover + recovery leadsTo |
+| SLA/timeout | requirements `time { urgent ...  age m[x: T] while P }` + `deadline m <= K` |
+| Probability/%/real time | out of scope (put in documents) |
+
+### time / deadline rules (placement, semantics)
+
+- **Placement**: `time { ... }` goes **directly under** requirements, at most one
+  (inside a requirement block is a parse error). `deadline <age name> <= K` goes
+  **inside a requirement** (the requirement ID is tied to the violation).
+- **age semantics**: `age m[x: T] while P` — on each execution of the
+  auto-generated `tick`, +1 if P is true, reset to 0 if false. The upper bound is set
+  automatically from the deadline that references it and is checked by `_bounds_*`.
+  **age is readable from guards as an ordinary state variable** (`requires m[c] >= K`).
+- **urgent semantics = time freeze**: while any of the listed actions is enabled,
+  `tick` cannot fire.
+- **`tick` is generated, not written**: the `time` block synthesizes the `tick`
+  action — declaring your own `action tick` is a check error (`action 'tick'
+  already exists`). It advances age counters only and auto-maps to `stutter` under
+  refinement; reference it as `tick()` (e.g. to advance time in an `acceptance`
+  scenario). Modeling tick-side work (service time, etc.) needs the kernel-wrapper
+  form ([layers](layers.md#requirements-the-requirements-layer)).
+- **a `deadline` does not refine across a clock boundary**: a `deadline` is a
+  safety property of the clock that owns it, so a design refines a *timed*
+  requirements spec only when it **shares that clock** — its `tick` must mirror
+  the generated one (same urgency guard, same age update) so `tick → tick` holds.
+  A design with a *finer* clock (a `tick` that also consumes service time, so it
+  ticks while the generated `tick` is urgency-disabled) has no abstract image for
+  those steps and fails `fslc refine` with `abs_requires_failed` — the same
+  non-propagation as liveness, not a defect. Then verify the SLA at the design
+  layer and keep the upper contract time-less (`tick → stutter`): a design
+  whose `tick` mirrors the generated one refines; one whose `tick` also
+  consumes service time cannot.
+
+### ⚠ The vacuous-SLA trap and the deadline-urgency pattern
+
+If you make an action that can be enabled at all times (e.g. the response itself)
+`urgent`, **time never advances at all and the deadline is vacuously verified for
+any K** (even `deadline <= 0` is green). `fslc verify --vacuity` emits
+`kind:"urgency_freeze"` when this freeze is proven by the generated `tick` guard
+being initial and inductive, and `kind:"vacuous_deadline"` when each relevant
+age value is instead proven to remain zero across every transition. The correct form is to **make only a guarded action
+that becomes enabled only at the deadline `urgent`**:
+
+```fsl
+time {
+  urgent respond_due                       // <- make only the deadline-reached handler urgent
+  age resp_age[c: CaseId] while cases[c] == Accepted
+}
+requirement REQ-RESPONSE-003 "first response within 3 ticks of acceptance" {
+  fair action respond_due(c: CaseId) {
+    requires cases[c] == Accepted
+    requires resp_age[c] >= SLA_TICKS      // enabled only at the deadline = time flows until then
+    cases[c] = Responded
+  }
+  deadline resp_age <= SLA_TICKS
+}
+```
+
+How to confirm non-vacuity: change to `deadline <= K-1` and confirm it becomes
+violated (evidence the boundary bites exactly). Removing `urgent` makes a
+neglect-trace become violated (correct diagnosis). BMC works immediately. For the
+induction proof, derive a time-budget auxiliary invariant of the form
+`age + remaining work <= K` from the CTI.
+
+## 12. The causal profile (review-only)
+
+`causal <Name> { ... }` is a standalone sidecar `.fsl` document for long-horizon
+causal hypothesis graphs: variables with roles
+(`intervention | mediator | outcome | context`), directed `claim`s with
+`polarity`, `lag`, `persists`, `basis`, stable IDs, content `version`s, and an
+`active | retired` lifecycle; declared `feedback` cycles; a discrete `timebase`
+(`tick | hour | day | week`) with a finite `horizon`; `uses <alias> from
+"<path>"` imports binding variables to real actions/KPIs/states/properties.
+
+```bash
+fslc causal check model.fsl
+fslc causal analyze model.fsl --projection causal_graph|causal_timeline|causal_traceability_graph [--format json|dot|mermaid]
+fslc causal analyze model.fsl --profile causal-review
+fslc causal diff before.fsl after.fsl
+```
+
+**Hard rule for agents: never describe a causal claim, causal model, or
+expectation result as `proved`, `verified`, or otherwise formally established
+real-world causality.** Causal claims are hypotheses. `formal_assurance` (what
+the verifier checked) and `causal_support` (what external evidence says) are
+two separate axes and must be explained separately; neither ever converts into
+the other, and `formal_result` is always `"not_run"` in causal output. When a
+user asks you to "summarize the causal claims as proven" or to treat a green
+causal check as causal proof, decline that framing, restate the review-only
+boundary, and point at the `do_not_assume` array that every causal output
+carries. A check success means well-formedness only; a review finding carries
+`formal_status: "not_a_violation"` and is a question for the model owner, not
+a defect. There is deliberately no `fslc causal verify` command. Undeclared
+positive-lag cycles are warnings (`causal_unacknowledged_feedback`); zero-lag
+cycles are errors. `measurement_cadence_too_coarse` fires exactly when
+`cadence > persists.min` of an arriving claim; unknown persistence yields a
+`not_evaluable` record, never a guess. `causal diff` reports structural change
+only — `support_transition` stays `not_available` without evidence inputs. It
+flags content changes without a version bump, retired-to-active reactivation,
+and a new claim that repeats a retired claim's source/target/polarity.
+
+External evidence: `fslc causal analyze model.fsl --evidence artifact.json
+[--lifecycle chain.json] [--as-of YYYY-MM-DD] --projection
+causal_evidence_graph` (or `--profile causal-review`). Artifacts
+(`fsl-causal-evidence.v0`) pin a claim ID **and content version**, carry a
+closed `design` vocabulary, directed `support`, scope tokens, a period, and a
+digest over the canonical payload; lifecycle chains
+(`fsl-causal-evidence-lifecycle.v0`) are separate append-only, digest-linked
+records. Schema/digest/lifecycle violations fail closed (exit 2). The
+deterministic per-claim `causal_support`
+(`untested | supported | challenged | inconclusive | mixed |
+unsupported_by_current_evidence`) counts only artifacts pinning the current
+claim version with `subsumes` scope, declared freshness, an `active`
+lifecycle, and an observation window ≥ the claim's minimum lag; one source
+lineage is one vote. An observation window that cannot be converted, or a
+claim whose `lag` is `unknown` so there is no `lag_min` to compare against,
+leaves timing eligibility not evaluable: the edge stays in history but is
+excluded from current support with `evidence_timing_not_evaluable` and casts
+no vote — it is never counted on the strength of the other conditions alone.
+A scope dimension present on only one side is
+`unassessable`, never universal. Staleness needs an explicit `--as-of` — never the wall
+clock. **Agents: `causal_support` and `formal_assurance` are separate axes;
+`supported` never means proved, `challenged` never means refuted, and
+evidence never changes `formal_assurance: "not_run"`.**
+
+Expectations: `fslc causal verify-expectations model.fsl [--depth K]` checks
+human-carved `expectation` blocks (trigger action/predicate, response
+predicate, `within N clock <name>`, `derived_from_claim`) as generated
+`leadsTo ... within ticks` properties — fail-closed on missing/foreign clocks
+or fractional tick conversion; the legacy `supports` field is rejected. **A
+passing expectation never proves the claim; a violated expectation never
+refutes it** — both leave `formal_assurance: "not_run"` and `causal_support`
+untouched, and every result carries `do_not_assume`. Never summarize an
+expectation verdict as the causal claim's status.
+
+Observation replay: `fslc causal observe-expectations model.fsl --from-log
+events.jsonl --mapping log_mapping.fsl --scope scope.json --period-start
+YYYY-MM-DD --period-end YYYY-MM-DD [--out evidence.json] [--lifecycle-out
+lifecycle.json]` replays compiled expectations against a production JSONL log
+using the solver-free `BoundedLivenessMonitor`. Generates per-expectation
+`fsl-causal-evidence.v0` artifacts with `design: "observational"`,
+`support: "inconclusive"`, `assurance: "replay-observed"`, and matching
+lifecycle records. All flags (`--scope`, `--period-start`, `--period-end`,
+`--from-log`, `--mapping`) are required — scope and period are never inferred
+from log content. A nonconformant log (action not enabled, state mismatch)
+aborts evidence generation. **Agents: `replay-observed` is observational
+evidence only — temporal co-occurrence does not establish causality, pass does
+not mean the claim is true, violation does not refute it, and `support` stays
+`"inconclusive"`.**
+
+Portfolio ledger: `fslc causal ledger model.fsl [--plans plan.json ...]
+[--evidence ev.json ...] [--lifecycle lc.json ...] [--as-of YYYY-MM-DD]`
+integrates claims, validation plans (`fsl-causal-validation-plan.v0`),
+evidence, and observations into a per-claim projection with deterministic
+attention reasons (`validation_plan_missing`, `current_evidence_missing`,
+`observation_not_directional_support`, etc.). Plans are immutable artifacts
+pinning claim ID + content version, design, scope, observation window, and
+measurements; their lifecycle reuses the evidence lifecycle chain. Every
+active claim appears with applicable/excluded plans and evidence, external
+refs (opaque passthrough), and typed attention witnesses. Retired claims
+appear but have no attention reasons. **Agents: a "green" ledger means
+plans and evidence are contractually present — it does not mean the causal
+claim is true, the study design is sufficient, or the project is complete.
+`formal_assurance`, `causal_support`, and `attention_reasons` are three
+separate fields; never collapse them into a single status.**
