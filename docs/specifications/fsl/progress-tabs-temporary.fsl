@@ -1,0 +1,197 @@
+// Confirmed release behavior: initial-read failure permits warned temporary play.
+// First recovery binds temporary operations once, then uses normal commit logic.
+// Existing storage behavior is sourced from progressStore.ts / playerController.ts.
+// ASSUME-1: finite analysis scope: two tabs and two representative achievements.
+// ASSUME-2: at most one successful reset, so old/new epochs never wrap or alias.
+// ASSUME-3: a commit action is one complete IndexedDB read/apply/write transaction.
+// Browser scheduling inside callbacks, in-flight additions, Drive, locale and
+// corrupt/future formats are outside this model. Notification delivery is optional.
+// ASSUME-4: a successful first recovery read binds temporary operations to the
+// then-current epoch. A later reset must invalidate them as normal. Recovery read
+// and commit are separate actions so another tab can reset between them.
+// Reload can lose unsaved achievements, as accepted by the warning-only policy.
+spec ProgressTabsTemporary {
+  type Tab = 0..1
+  type Box = 0..1
+  type Cell = 0..3
+  enum Mode { Loading, Stored, Temporary }
+  enum Event { Start, Read, Solve, WriteOk, WriteFail, Refresh, Reset, Reload }
+  state {
+    storageId: Option<Tab>,
+    localId: Map<Tab, Option<Tab>>,
+    mode: Map<Tab, Mode>,
+    matchesEpoch: Map<Tab, Bool>,
+    warning: Map<Tab, Bool>,
+    pending: Map<Cell, Bool>,
+    confirmed: Map<Cell, Bool>,
+    disk: Map<Box, Bool>,
+    currentAccepted: Map<Box, Bool>,
+    resetDone: Bool,
+    event: Event,
+    actor: Tab
+  }
+  @requirement("MODEL-TABS-001", "Two tabs start without having read shared storage")
+  init {
+    storageId = none
+    forall t: Tab {
+      localId[t] = none
+      mode[t] = Loading
+      matchesEpoch[t] = false
+      warning[t] = false
+    }
+    forall c: Cell { pending[c] = false confirmed[c] = false }
+    forall b: Box { disk[b] = false currentAccepted[b] = false }
+    resetDone = false
+    event = Start
+    actor = 0
+  }
+  // SRC: src/infra/progressStore.ts:68-111 (single readwrite transaction).
+  // Changed policy: failure enters Temporary instead of leaving play blocked.
+  @requirement("REQ-TABS-001", "First successful reads share one storage identity; failed reads enable warned temporary play")
+  action read(t: Tab, ok: Bool) {
+    requires mode[t] == Loading
+    if ok {
+      storageId = if storageId == none then some(t) else storageId
+      localId[t] = if storageId == none then some(t) else storageId
+      mode[t] = Stored
+      matchesEpoch[t] = true
+      warning[t] = false
+      forall c: Cell { if c / 2 == t { confirmed[c] = disk[c % 2] } }
+    } else {
+      mode[t] = Temporary
+      warning[t] = true
+    }
+    event = Read
+    actor = t
+  }
+  // SRC: src/state/playerController.ts:81-88; temporary acceptance is proposed.
+  @requirement("REQ-TABS-002", "Both stored and warned temporary sessions can retain an achievement in memory")
+  action solve(t: Tab, b: Box) {
+    requires mode[t] != Loading
+    pending[t * 2 + b] = true
+    if mode[t] == Stored and matchesEpoch[t] { currentAccepted[b] = true }
+    event = Solve
+    actor = t
+  }
+  // SRC: src/infra/progressStore.ts:86-111; src/state/playerController.ts:90-115.
+  // An unread tab never submits its placeholder as a replacement document.
+  @requirement("REQ-TABS-003", "Apply pending operations to the latest shared state, rejecting an obsolete epoch")
+  action commit(t: Tab, ok: Bool) {
+    requires mode[t] == Stored
+    requires exists b: Box { pending[t * 2 + b] }
+    if ok {
+      forall b: Box { disk[b] = disk[b] or (matchesEpoch[t] and pending[t * 2 + b]) }
+      forall c: Cell { if c / 2 == t {
+        confirmed[c] = disk[c % 2] or (matchesEpoch[t] and pending[c])
+        pending[c] = false
+      } }
+      matchesEpoch[t] = true
+      warning[t] = false
+      event = WriteOk
+    } else {
+      warning[t] = true
+      event = WriteFail
+    }
+    actor = t
+  }
+  // SRC: src/state/playerController.ts:49-79; src/hooks/useProgress.ts:49-75.
+  // This may occur by a notification, focus, or manual retry; none is assumed fair.
+  @requirement("REQ-TABS-004", "Refresh preserves current pending operations and discards obsolete-epoch operations")
+  action refresh(t: Tab, ok: Bool) {
+    requires mode[t] != Loading
+    if ok {
+      if mode[t] == Temporary {
+        storageId = if storageId == none then some(t) else storageId
+        localId[t] = if storageId == none then some(t) else storageId
+        mode[t] = Stored
+        forall b: Box { currentAccepted[b] = currentAccepted[b] or pending[t * 2 + b] }
+      }
+      forall c: Cell { if c / 2 == t {
+        confirmed[c] = disk[c % 2]
+        pending[c] = (mode[t] == Temporary or matchesEpoch[t]) and pending[c]
+      } }
+      warning[t] = (mode[t] == Temporary or matchesEpoch[t]) and (exists b: Box { pending[t * 2 + b] })
+      matchesEpoch[t] = true
+    } else { warning[t] = true }
+    event = Refresh
+    actor = t
+  }
+  // SRC: src/state/playerController.ts:122-149; src/domain/playerState.ts:44-47.
+  @requirement("REQ-TABS-005", "A successful reset invalidates other tabs' old operations")
+  action reset(t: Tab, ok: Bool) {
+    requires mode[t] == Stored
+    // Analysis bound only: not a proposed one-reset product restriction.
+    requires not resetDone
+    requires matchesEpoch[t]
+    if ok {
+      forall b: Box {
+        disk[b] = false
+        currentAccepted[b] = false
+      }
+      forall c: Cell { if c / 2 == t { confirmed[c] = false pending[c] = false } }
+      forall other: Tab { matchesEpoch[other] = other == t }
+      resetDone = true
+      warning[t] = false
+    } else { warning[t] = true }
+    event = Reset
+    actor = t
+  }
+  // Reload is always a browser operation; it does not imply successful recovery.
+  @requirement("MODEL-TABS-002", "Reload drops this tab's memory without modifying shared storage")
+  action reload(t: Tab) {
+    mode[t] = Loading
+    localId[t] = none
+    matchesEpoch[t] = false
+    warning[t] = false
+    forall c: Cell { if c / 2 == t { pending[c] = false confirmed[c] = false } }
+    event = Reload
+    actor = t
+  }
+  @requirement("REQ-TABS-001", "Temporary play always has an explicit data-loss warning")
+  invariant TemporaryIsWarned { forall t: Tab { mode[t] == Temporary => warning[t] } }
+  @requirement("REQ-TABS-001", "All initialized tabs refer to the same saved identity")
+  invariant SharedIdentity {
+    forall t: Tab { mode[t] == Stored => (storageId != none and localId[t] == storageId) }
+  }
+  @requirement("MODEL-TABS-003", "Unread or temporary tabs have no confirmed storage identity")
+  invariant NoProvisionalIdentity { forall t: Tab { mode[t] != Stored => localId[t] == none } }
+  @requirement("MODEL-TABS-006", "A tab awaiting its first read has no accepted pending operations")
+  invariant LoadingHasNoPending {
+    forall t: Tab { forall b: Box { mode[t] == Loading => not pending[t * 2 + b] } }
+  }
+  @requirement("REQ-TABS-003", "One tab cannot erase another tab's committed achievements")
+  trans NoLostCommitWithoutReset {
+    resetDone == old(resetDone) => (forall b: Box { old(disk[b]) => disk[b] })
+  }
+  @requirement("REQ-TABS-005", "Only achievements accepted in the current epoch can be committed")
+  invariant NoStaleResurrection { forall b: Box { disk[b] => currentAccepted[b] } }
+  @requirement("MODEL-TABS-004", "A current pending operation has a source in this epoch")
+  invariant CurrentPendingHasSource {
+    forall t: Tab { forall b: Box {
+      (mode[t] == Stored and matchesEpoch[t] and pending[t * 2 + b]) => currentAccepted[b]
+    } }
+  }
+  @requirement("REQ-TABS-002", "A failed write never drops pending operations")
+  trans WriteFailureRetainsPending {
+    event == WriteFail => (forall c: Cell { pending[c] == old(pending[c]) })
+  }
+  @requirement("REQ-TABS-004", "The first recovery read retains all temporary achievements")
+  trans FirstRecoveryRetainsPending {
+    forall t: Tab {
+      (event == Refresh and actor == t and old(mode[t]) == Temporary) =>
+        (forall c: Cell where c / 2 == t { pending[c] == old(pending[c]) })
+    }
+  }
+  @requirement("REQ-TABS-001", "Temporary play cannot change shared progress")
+  trans TemporaryCannotWrite {
+    forall t: Tab {
+      (actor == t and old(mode[t]) == Temporary) => (forall b: Box { disk[b] == old(disk[b]) })
+    }
+  }
+  @requirement("MODEL-TABS-005", "Both tabs can independently commit distinct achievements")
+  reachable BothAchievements { disk[0] and disk[1] }
+  @requirement("MODEL-TABS-005", "A temporary tab can play while another tab commits")
+  reachable MixedModes { mode[0] == Temporary and pending[0] and mode[1] == Stored and disk[1] }
+  @requirement("MODEL-TABS-005", "An old pending operation can coexist with a reset")
+  reachable ResetRace { resetDone and not matchesEpoch[0] and pending[0] and not disk[0] }
+}

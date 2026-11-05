@@ -21,6 +21,7 @@ function settingsProps(
     headingId: "settings-heading",
     locale: "en",
     storageState: "ready",
+    storageInitialized: true,
     storageMessage: "Progress is stored locally.",
     serviceWorkerState: "ready",
     serviceWorkerMessage: "Offline launch is ready.",

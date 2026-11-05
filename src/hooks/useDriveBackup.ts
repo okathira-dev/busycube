@@ -61,7 +61,8 @@ export function useDriveBackup(progress: ProgressController) {
   const [failure, setFailure] = useState<DriveFailure | null>(null);
 
   const sync = useCallback(async (): Promise<DriveStageSyncResult> => {
-    if (!clientId) return { synced: false, remoteDevice: false };
+    if (!clientId || !progress.initialized)
+      return { synced: false, remoteDevice: false };
     try {
       setFailure(null);
       let token = accessToken;

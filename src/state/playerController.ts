@@ -53,7 +53,15 @@ export class PlayerController {
       state.revision < this.confirmed.revision
     )
       return;
-    if (this.initialized && state.epoch !== this.confirmed.epoch)
+    if (!this.initialized)
+      // Before the first read, operations belong to this page's temporary session.
+      // Bind them once to the loaded epoch; later epoch changes must discard them.
+      this.pending = this.pending.map((operation) =>
+        operation.kind === "locale"
+          ? operation
+          : { ...operation, epoch: state.epoch },
+      );
+    else if (state.epoch !== this.confirmed.epoch)
       this.pending = this.pending.filter(
         (operation) => operation.kind === "locale",
       );
@@ -79,15 +87,22 @@ export class PlayerController {
     return task;
   };
   dispatch(operation: PlayerOperation): Promise<boolean> {
-    if (!this.initialized) return Promise.resolve(false);
+    if (
+      !this.initialized &&
+      this.snapshot.status === "loading" &&
+      operation.kind !== "locale"
+    )
+      return Promise.resolve(false);
     if (operation.kind !== "locale" && operation.epoch !== this.confirmed.epoch)
       return Promise.resolve(false);
     this.pending.push(operation);
     this.publish();
+    if (!this.initialized) return Promise.resolve(false);
     return this.flush();
   }
   flush = (): Promise<boolean> => {
     const task = this.queue.then(async () => {
+      if (!this.initialized) return false;
       const batch = [...this.pending];
       if (!batch.length) return this.snapshot.status === "ready";
       try {

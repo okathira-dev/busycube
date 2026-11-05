@@ -91,12 +91,12 @@ export const messages = {
     storageReady: "このブラウザに進捗を保存しています。",
     storageLoading: "進捗を読み込んでいます…",
     storageUnavailable:
-      "進捗を保存できません。このタブを閉じるまで一時的に遊べます。",
+      "進捗を保存できていません。プレイは続けられますが、新しい進捗はこのタブを閉じたり再読み込みすると失われます。再試行して保存してください。",
     storageCorrupt:
-      "保存データを読み取れません。自動では上書きしていません。必要なら進捗を初期化してください。",
+      "保存データを読み取れません。上書きせず一時的にプレイできますが、新しい進捗はこのタブを閉じたり再読み込みすると失われます。再試行するか、設定を確認してください。",
     storageFuture:
-      "新しい版で作られた進捗です。この版では上書きせず読み取り専用にします。",
-    storageRetry: "保存を再試行",
+      "保存データは新しい版で作られています。上書きせず一時的にプレイできますが、新しい進捗はこのタブを閉じたり再読み込みすると失われます。アプリを更新して再試行してください。",
+    storageRetry: "再試行",
     storageOpenSettings: "設定を開く",
     localProgress: "この端末の進捗",
     exportProgress: "進捗を書き出す",
@@ -229,11 +229,11 @@ export const messages = {
     storageReady: "Progress is stored in this browser.",
     storageLoading: "Loading progress…",
     storageUnavailable:
-      "Progress cannot be saved. You can keep playing temporarily until this tab closes.",
+      "Progress is not being saved. You can keep playing, but new progress will be lost if you close or reload this tab. Retry to save it.",
     storageCorrupt:
-      "Stored data cannot be read and has not been overwritten. Reset progress if you want to recover.",
+      "Stored data cannot be read and has not been overwritten. You can play temporarily, but new progress will be lost if you close or reload this tab. Retry or check settings.",
     storageFuture:
-      "This progress was created by a newer version. It remains read-only here.",
+      "Stored progress was created by a newer version and has not been overwritten. You can play temporarily, but new progress will be lost if you close or reload this tab. Update the app and retry.",
     storageRetry: "Retry storage",
     storageOpenSettings: "Open settings",
     localProgress: "Progress on this device",

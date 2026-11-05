@@ -51,6 +51,7 @@ interface Props {
   headingId: string;
   locale: Locale;
   storageState: StorageState;
+  storageInitialized: boolean;
   storageMessage: string;
   serviceWorkerState: ServiceWorkerState;
   serviceWorkerMessage: string;
@@ -91,6 +92,7 @@ export function SettingsView({
   headingId,
   locale,
   storageState,
+  storageInitialized,
   storageMessage,
   serviceWorkerState,
   serviceWorkerMessage,
@@ -248,7 +250,7 @@ export function SettingsView({
               variant="outlined"
               startIcon={<FileDownloadOutlined />}
               onClick={onExport}
-              disabled={storageState === "loading"}
+              disabled={!storageInitialized}
             >
               {copy.exportProgress}
             </Button>
@@ -337,6 +339,7 @@ export function SettingsView({
                 startIcon={<CloudSyncOutlined />}
                 loading={driveBusy}
                 onClick={onDriveSync}
+                disabled={!storageInitialized}
               >
                 {copy.driveSync}
               </Button>

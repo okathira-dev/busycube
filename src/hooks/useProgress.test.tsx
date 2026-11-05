@@ -103,3 +103,24 @@ it("does not initialize or overwrite after a read failure", async () => {
   });
   expect(result.current.initialized).toBe(true);
 });
+
+it("saves a language selected while the first read is still pending", async () => {
+  const store = memoryStore();
+  const read = store.read;
+  let finish!: () => void;
+  const held = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  store.read = async (locale) => {
+    await held;
+    return read(locale);
+  };
+  const { result } = renderHook(() => useProgress("ja", store));
+  act(() => result.current.setLocale("en"));
+  expect(result.current.settings.locale).toBe("en");
+  await act(async () => {
+    finish();
+  });
+  await waitFor(() => expect(result.current.storageState).toBe("ready"));
+  expect((await store.read("ja")).settings.locale).toBe("en");
+});

@@ -157,6 +157,7 @@ export function App() {
   }[drive.state];
 
   const exportProgress = () => {
+    if (!progress.initialized) return;
     const blob = new Blob([JSON.stringify(progress.document, null, 2)], {
       type: "application/json",
     });
@@ -466,6 +467,7 @@ export function App() {
               headingId={headingIds.settings}
               locale={locale}
               storageState={progress.storageState}
+              storageInitialized={progress.initialized}
               storageMessage={storageMessage}
               serviceWorkerState={serviceWorker.state}
               serviceWorkerMessage={serviceWorkerMessage}

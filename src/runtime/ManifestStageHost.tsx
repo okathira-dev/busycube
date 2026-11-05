@@ -343,7 +343,7 @@ export function ManifestStageHost({
         >
           {uiText(locale, "stageCrashed")}
         </Alert>
-      ) : !progress.initialized || !module || !signal ? (
+      ) : progress.storageState === "loading" || !module || !signal ? (
         <div className="stage-loading" role="status">
           <CircularProgress aria-hidden="true" size={28} />
           <span className="sr-only">{uiText(locale, "stageLoading")}</span>

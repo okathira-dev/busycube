@@ -100,3 +100,98 @@ test("reopens IndexedDB after an initial open failure", async ({ page }) => {
   await page.reload();
   await expect(page.locator(".stage-state")).toHaveText("1/1");
 });
+
+test("recovers temporary clears without losing another tab's saved progress", async ({
+  page,
+  context,
+}) => {
+  await page.addInitScript(() => {
+    const open = indexedDB.open.bind(indexedDB);
+    Reflect.set(
+      window,
+      "testStorageBlocked",
+      sessionStorage.getItem("test-storage-recovered") !== "1",
+    );
+    indexedDB.open = (...args: Parameters<IDBFactory["open"]>) => {
+      if (
+        args[0] === "busycube-player-v2" &&
+        Reflect.get(window, "testStorageBlocked")
+      )
+        throw new DOMException(
+          "Controlled initial read failure",
+          "UnknownError",
+        );
+      return open(...args);
+    };
+  });
+  await page.goto("/?locale=en&stage=S-000");
+  await expect(page.getByRole("alert")).toContainText("close or reload");
+  await expect(page.locator(".stage-loading")).toHaveCount(0);
+  await page.getByRole("button", { name: /^Pointing hand:/ }).click();
+  await expect(page.locator(".stage-state")).toHaveText("1/1");
+  await page
+    .getByRole("button", { name: "Retry storage", exact: true })
+    .click();
+  await expect(page.locator(".stage-state")).toHaveText("1/1");
+  await expect(
+    page.getByRole("button", { name: "Retry storage", exact: true }),
+  ).toBeEnabled();
+
+  const other = await context.newPage();
+  await other.goto("/?locale=en&stage=S-010");
+  await other.getByRole("button", { name: /^Mouse:/ }).click();
+  await expect(other.locator(".stage-state")).toHaveText("1/3");
+  await page.evaluate(() => {
+    Reflect.set(window, "testStorageBlocked", false);
+    sessionStorage.setItem("test-storage-recovered", "1");
+  });
+  await page
+    .getByRole("button", { name: "Retry storage", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Retry storage", exact: true }),
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator(".stage-state")).toHaveText("1/1");
+  await other.reload();
+  await expect(other.locator(".stage-state")).toHaveText("1/3");
+  await other.goto("/?locale=en&stage=S-000");
+  await expect(other.locator(".stage-state")).toHaveText("1/1");
+});
+
+test("retains a failed write while another tab saves and merges both on retry", async ({
+  page,
+  context,
+}) => {
+  await page.addInitScript(() => {
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args) {
+      if (this.name === "state" && Reflect.get(window, "testWriteBlocked"))
+        throw new DOMException(
+          "Controlled quota failure",
+          "QuotaExceededError",
+        );
+      return put.apply(this, args);
+    };
+  });
+  await page.goto("/?locale=en&stage=S-000");
+  await page.getByRole("button", { name: /^Pointing hand:/ }).waitFor();
+  await page.evaluate(() => Reflect.set(window, "testWriteBlocked", true));
+  await page.getByRole("button", { name: /^Pointing hand:/ }).click();
+  await expect(page.getByRole("alert")).toContainText("close or reload");
+  const other = await context.newPage();
+  await other.goto("/?locale=en&stage=S-010");
+  await other.getByRole("button", { name: /^Mouse:/ }).click();
+  await expect(other.locator(".stage-state")).toHaveText("1/3");
+  await page.evaluate(() => Reflect.set(window, "testWriteBlocked", false));
+  await page
+    .getByRole("button", { name: "Retry storage", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Retry storage", exact: true }),
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator(".stage-state")).toHaveText("1/1");
+  await other.reload();
+  await expect(other.locator(".stage-state")).toHaveText("1/3");
+});

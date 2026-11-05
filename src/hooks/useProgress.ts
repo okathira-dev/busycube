@@ -65,7 +65,7 @@ export function useProgress(
     window.addEventListener("focus", refresh);
     window.addEventListener("pageshow", refresh);
     document.addEventListener("visibilitychange", refresh);
-    void controller.refresh();
+    void controller.retry();
     return () => {
       controller.notify = undefined;
       channel?.close();
