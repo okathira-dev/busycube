@@ -20,3 +20,7 @@ files; the fixture verifier checks their format and license contract.
 Modification notice: in 2026, the Busycube project created these WOFF2 subsets
 from the upstream OTF files by removing unused glyphs and tables. No glyph
 designs were added or redrawn. The subsets remain licensed under SIL OFL 1.1.
+
+The product also uses these existing digit ranges for the fixed additions in
+`../product-problems.json`. The original POC-011 expressions remain in `../data.ts`;
+replacing the product questions does not change their recorded PoC results.

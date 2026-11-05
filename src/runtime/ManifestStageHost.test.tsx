@@ -1,9 +1,17 @@
 // @vitest-environment jsdom
 
 import Inventory2Outlined from "@mui/icons-material/Inventory2Outlined";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { StrictMode } from "react";
 import { createProgressDocument } from "../domain/progress";
 import type { ProgressController } from "../hooks/useProgress";
+import { StageProblemGiftBox } from "../ui/GiftBox";
 import { ManifestStageHost } from "./ManifestStageHost";
 import type {
   StageIdFormat,
@@ -36,18 +44,154 @@ function createStage(id: StageIdFormat, name: string) {
 }
 
 const progress: ProgressController = {
-  document: createProgressDocument("en"),
+  document: createProgressDocument(),
   storageState: "ready",
   setLocale: vi.fn(),
   solve: vi.fn(),
   hasMarker: vi.fn(() => false),
   mark: vi.fn(),
-  replaceDocument: vi.fn(),
+  settings: { locale: "en" },
+  epoch: "epoch",
+  initialized: true,
+  mergeProgress: vi.fn(async () => true),
   retryStorage: vi.fn(async () => true),
   reset: vi.fn(async () => true),
 };
 
 describe("ManifestStageHost navigation preload", () => {
+  afterEach(() => cleanup());
+  it.each([
+    ["ja", "widely", "none", false],
+    ["ja", "widely", "required", true],
+    ["en", "limited", "none", true],
+  ] as const)(
+    "shows the preview badge for %s/%s/%s only when provisional",
+    (locale, baseline, permission, provisional) => {
+      window.scrollTo = vi.fn();
+      const current = createStage("S-993", "Preview fixture");
+      render(
+        <ManifestStageHost
+          manifest={{ ...current.manifest, platform: { baseline, permission } }}
+          displayCode="Fixture"
+          locale={locale}
+          progress={progress}
+          services={{}}
+          onBack={vi.fn()}
+        />,
+      );
+      expect(
+        screen.queryByText(locale === "ja" ? "暫定版" : "Preview", {
+          exact: true,
+        }) !== null,
+      ).toBe(provisional);
+    },
+  );
+  it("keeps stage actions live after StrictMode replay and aborts them on departure", async () => {
+    window.scrollTo = vi.fn();
+    const current = createStage("S-994", "Lifetime fixture");
+    const loaded = await current.manifest.load();
+    let observed: AbortSignal | undefined;
+    const action = vi.fn();
+    const manifest: StageManifest = {
+      ...current.manifest,
+      load: async () => ({
+        ...loaded,
+        Component: ({ signal }) => {
+          observed = signal;
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                if (!signal.aborted) action();
+              }}
+            >
+              Kick fixture
+            </button>
+          );
+        },
+      }),
+    };
+    const view = render(
+      <StrictMode>
+        <ManifestStageHost
+          manifest={manifest}
+          displayCode="D-000"
+          locale="en"
+          progress={progress}
+          services={{}}
+          onBack={vi.fn()}
+        />
+      </StrictMode>,
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Kick fixture" }),
+    );
+    expect(action).toHaveBeenCalledOnce();
+    expect(observed?.aborted).toBe(false);
+    view.unmount();
+    expect(observed?.aborted).toBe(true);
+  });
+  it("initializes replay history after persistent progress loads, while keeping this attempt separate", async () => {
+    window.scrollTo = vi.fn();
+    const current = createStage("S-995", "Replay fixture");
+    const manifest: StageManifest = {
+      ...current.manifest,
+      load: async (): Promise<StageModule> => ({
+        id: "S-995",
+        probe: () => "available",
+        boxes: {
+          B01: {
+            icon: Inventory2Outlined,
+            label: { ja: "履歴", en: "History" },
+          },
+        },
+        Component: (props) => {
+          const box = props.boxes.B01;
+          if (!box) throw new Error("Missing fixture box");
+          return (
+            <StageProblemGiftBox
+              box={box}
+              locale={props.locale}
+              onClick={box.solve}
+            />
+          );
+        },
+      }),
+    };
+    const initial = { ...progress, storageState: "loading" as const };
+    const properties = {
+      manifest,
+      displayCode: "D-000",
+      locale: "en" as const,
+      services: {},
+      onBack: vi.fn(),
+    };
+    const view = render(
+      <ManifestStageHost {...properties} progress={initial} />,
+    );
+    expect(screen.getByText("Loading stage…")).toBeTruthy();
+    const loaded = {
+      ...progress,
+      document: {
+        ...progress.document,
+        stages: { "S-995": { solvedBoxIds: ["B01"] } },
+      },
+    };
+    view.rerender(<ManifestStageHost {...properties} progress={loaded} />);
+    await waitFor(() =>
+      expect(
+        view.container
+          .querySelector(".problem-gift .gift-box")
+          ?.getAttribute("data-box-state"),
+      ).toBe("closed"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^History:/ }));
+    expect(
+      view.container
+        .querySelector(".problem-gift .gift-box")
+        ?.getAttribute("data-box-state"),
+    ).toBe("open");
+  });
   it("loads only the stage whose previous or next action has begun", async () => {
     window.scrollTo = vi.fn();
     const current = createStage("S-997", "Current stage");

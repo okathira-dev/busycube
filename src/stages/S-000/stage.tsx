@@ -13,9 +13,9 @@ type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
  * S-000
  *
  * 目的: 最初のギフトボックスを通常のUI操作で開き、箱を直接操作する基本ルールを理解する。
- * 最初の一手: 画面中央の「クリックする箱」へポインターを合わせてクリックする。
+ * 最初の一手: 画面中央の指先アイコンが付いた箱をクリックする。
  * 箱ごとの解法:
- * - B01「クリックする箱」: 箱自身をクリックし、`StageProblemGiftBox`の`onClick`が呼ばれた時点で開く。
+ * - B01: 指先アイコンが付いた箱をクリックする。箱の`onClick`が呼ばれると開く。keyboardからの同等のactivateでも開く。
  * 使用API: HTML button相当のクリック操作とReactの`onClick` handler。
  * 権限・privacy: 権限、端末情報、入力内容、外部通信を使用せず、開箱状態だけを通常進捗として扱う。
  * 対応環境: buttonをクリックまたは同等のkeyboard操作でactivateできる一般的なbrowser。

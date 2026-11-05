@@ -1,0 +1,25 @@
+.acoustic-signal {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 4rem;
+  opacity: 0.45;
+}
+.acoustic-signal svg {
+  font-size: inherit;
+}
+.acoustic-signal[data-active="true"] {
+  opacity: 1;
+  color: #22d3ee;
+}
+.acoustic-signal[data-active="true"] span {
+  animation: s360-pulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes s360-pulse {
+  from {
+    transform: scaleY(0.4);
+  }
+  to {
+    transform: scaleY(1.2);
+  }
+}

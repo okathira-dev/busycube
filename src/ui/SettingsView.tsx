@@ -51,6 +51,7 @@ interface Props {
   headingId: string;
   locale: Locale;
   storageState: StorageState;
+  storageInitialized: boolean;
   storageMessage: string;
   serviceWorkerState: ServiceWorkerState;
   serviceWorkerMessage: string;
@@ -62,7 +63,7 @@ interface Props {
   driveFailureMessage: string;
   onExport(): void;
   onPrepareImport(file: File): Promise<ProgressImportResult>;
-  onMergeImport(document: ProgressDocument): void;
+  onMergeImport(document: ProgressDocument): Promise<boolean>;
   onReset(): Promise<boolean>;
   onApplyUpdate(): void;
   onDriveSync(): void;
@@ -91,6 +92,7 @@ export function SettingsView({
   headingId,
   locale,
   storageState,
+  storageInitialized,
   storageMessage,
   serviceWorkerState,
   serviceWorkerMessage,
@@ -161,8 +163,11 @@ export function SettingsView({
       onDriveRemoveReplica(current.replica);
     }
     if (current?.kind === "import") {
-      onMergeImport(current.document);
-      setImportNotice({ severity: "success", message: copy.importSuccess });
+      const saved = await onMergeImport(current.document);
+      setImportNotice({
+        severity: saved ? "success" : "warning",
+        message: saved ? copy.importSuccess : copy.storageUnavailable,
+      });
     }
   };
 
@@ -245,7 +250,7 @@ export function SettingsView({
               variant="outlined"
               startIcon={<FileDownloadOutlined />}
               onClick={onExport}
-              disabled={storageState === "loading"}
+              disabled={!storageInitialized}
             >
               {copy.exportProgress}
             </Button>
@@ -334,6 +339,7 @@ export function SettingsView({
                 startIcon={<CloudSyncOutlined />}
                 loading={driveBusy}
                 onClick={onDriveSync}
+                disabled={!storageInitialized}
               >
                 {copy.driveSync}
               </Button>
@@ -412,6 +418,7 @@ export function SettingsView({
             {copy.privacyAndDocuments}
           </Typography>
           <Typography color="text.secondary">{copy.privacy}</Typography>
+          <Typography color="text.secondary">{copy.contactsNotice}</Typography>
           <Stack direction="row" sx={{ flexWrap: "wrap", gap: 2 }}>
             <Link href={`./privacy/index.html?locale=${locale}`}>
               {copy.privacyPolicy}

@@ -56,6 +56,11 @@ export default defineConfig({
         rolldownOptions: {
           input: {
             index: resolve(root, "index.html"),
+            "share-target-receiver": resolve(
+              root,
+              "share-target",
+              "receive.html",
+            ),
             poc: resolve(root, "poc", "index.html"),
             "poc-offline-beacon-receiver": resolve(
               root,

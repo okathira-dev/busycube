@@ -3,80 +3,60 @@
   justify-items: center;
   gap: 1rem;
 }
-.s900-stage > p {
-  max-width: 50rem;
-  margin: 0;
-  color: #d8cfdf;
-  text-align: center;
-}
-.s900-actions button,
-.s900-reel {
-  border: 1px solid #806ba1;
-  border-radius: 0.55rem;
-  padding: 0.6rem 0.75rem;
-  color: #f7f3ff;
-  background: #2a203b;
-  font: inherit;
-  cursor: pointer;
-}
-.s900-workbench {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: min(100%, 46rem);
-  gap: 1rem;
-}
-.s900-reels,
-.s900-slots {
+.s900-reels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
-  margin: 0;
+  width: min(100%, 44rem);
+  gap: 1rem;
+}
+.s900-reel {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #806ba1;
+  border-radius: 0.6rem;
+  background: #20182c;
+}
+.s900-reel video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #090611;
+}
+.s900-reel button {
+  display: flex;
+  gap: 0.5rem;
+}
+.s900-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(100%, 28rem);
+  gap: 0.5rem;
   padding: 0;
-  border: 0;
+  margin: 0;
   list-style: none;
-}
-.s900-reel,
-.s900-slots li {
-  min-height: 4.5rem;
-  border: 1px solid #8b4055;
-  border-radius: 0.75rem;
-}
-.s900-reel:nth-child(1) {
-  background: #51202d;
-}
-.s900-reel:nth-child(2) {
-  background: #51371d;
-}
-.s900-reel:nth-child(3) {
-  background: #1d4c45;
-}
-.s900-reel:nth-child(4) {
-  background: #26395c;
 }
 .s900-slots li {
   display: grid;
+  min-height: 3rem;
   place-items: center;
+  border: 1px dashed #9c7091;
+  border-radius: 0.5rem;
   color: #fbcfe8;
-  background: #2a1720;
-  font:
-    700 1.1rem ui-monospace,
-    monospace;
+  font-size: 1.5rem;
 }
 .s900-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.6rem;
+  gap: 1rem;
 }
 .s900-video {
   width: min(100%, 40rem);
-  max-height: 22rem;
-  border: 2px solid #77475b;
-  border-radius: 0.85rem;
+  border: 1px solid #77475b;
+  border-radius: 0.6rem;
   background: #090611;
 }
-@media (max-width: 620px) {
-  .s900-workbench {
+@media (max-width: 440px) {
+  .s900-reels {
     grid-template-columns: 1fr;
   }
 }

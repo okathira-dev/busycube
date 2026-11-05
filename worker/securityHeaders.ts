@@ -4,7 +4,7 @@ export const contentSecurityPolicy = [
   "object-src 'none'",
   "frame-ancestors 'self'",
   "script-src 'self' https://accounts.google.com https://static.cloudflareinsights.com",
-  "connect-src 'self' https://accounts.google.com https://www.googleapis.com",
+  "connect-src 'self' https://accounts.google.com https://www.googleapis.com https://utctime.app https://timeapi.io",
   "img-src 'self' data: blob:",
   "media-src 'self' data: blob:",
   "font-src 'self' data:",

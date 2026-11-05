@@ -35,7 +35,7 @@ export const messages = {
     termsOfService: "利用規約",
     thirdPartyLicenses: "第三者ライセンス（同梱本文）",
     progress: "開いた箱",
-    continueStage: "次の未クリア",
+    continueStage: "続きから",
     allStagesSolved: "すべて開きました",
     searchStages: "型番・ステージ名で検索",
     progressFilter: "進捗",
@@ -61,7 +61,9 @@ export const messages = {
     japanese: "日本語",
     english: "English",
     privacy:
-      "権限は必要な箱を操作したときだけ求めます。カメラやマイクの生データは保存・送信しません。",
+      "権限は必要な箱を操作したときだけ求めます。ゲーム自身はカメラやマイクの生データを保存・送信しません。ブラウザーやOSの組み込み機能によるデータの扱いは、各提供元の方針と設定に従います。",
+    contactsNotice:
+      "連絡先を使う場合は、実在の連絡先ではなく架空の連絡先で遊んでください。作成した連絡先は、遊び終えたら端末の連絡先アプリから削除してください。",
     aboutBody:
       "画面の中だけでなく、タブ、端末、権限、ファイルなども手掛かりになるパズルです。",
     aboutPlayTitle: "遊び方",
@@ -89,12 +91,12 @@ export const messages = {
     storageReady: "このブラウザに進捗を保存しています。",
     storageLoading: "進捗を読み込んでいます…",
     storageUnavailable:
-      "進捗を保存できません。このタブを閉じるまで一時的に遊べます。",
+      "進捗を保存できていません。プレイは続けられますが、新しい進捗はこのタブを閉じたり再読み込みすると失われます。再試行して保存してください。",
     storageCorrupt:
-      "保存データを読み取れません。自動では上書きしていません。必要なら進捗を初期化してください。",
+      "保存データを読み取れません。上書きせず一時的にプレイできますが、新しい進捗はこのタブを閉じたり再読み込みすると失われます。再試行するか、設定を確認してください。",
     storageFuture:
-      "新しい版で作られた進捗です。この版では上書きせず読み取り専用にします。",
-    storageRetry: "保存を再試行",
+      "保存データは新しい版で作られています。上書きせず一時的にプレイできますが、新しい進捗はこのタブを閉じたり再読み込みすると失われます。アプリを更新して再試行してください。",
+    storageRetry: "再試行",
     storageOpenSettings: "設定を開く",
     localProgress: "この端末の進捗",
     exportProgress: "進捗を書き出す",
@@ -172,7 +174,7 @@ export const messages = {
     termsOfService: "Terms of service",
     thirdPartyLicenses: "Third-party licenses (bundled texts)",
     progress: "Opened boxes",
-    continueStage: "Next unopened stage",
+    continueStage: "Continue",
     allStagesSolved: "All boxes are open",
     searchStages: "Search by model or stage name",
     progressFilter: "Progress",
@@ -198,7 +200,9 @@ export const messages = {
     japanese: "日本語",
     english: "English",
     privacy:
-      "Permissions are requested only after you interact with a box that needs them. Raw camera and microphone data is never stored or sent.",
+      "Permissions are requested only after you interact with a box that needs them. The game itself does not store or transmit raw camera or microphone data. Data handled by built-in browser and OS features follows each provider's policies and settings.",
+    contactsNotice:
+      "Use fictional contacts instead of real contacts when playing. Delete any contacts you created from your device's contacts app when you finish.",
     aboutBody:
       "The clues extend beyond the page into tabs, devices, permissions, files, and the browser itself.",
     aboutPlayTitle: "How to play",
@@ -225,11 +229,11 @@ export const messages = {
     storageReady: "Progress is stored in this browser.",
     storageLoading: "Loading progress…",
     storageUnavailable:
-      "Progress cannot be saved. You can keep playing temporarily until this tab closes.",
+      "Progress is not being saved. You can keep playing, but new progress will be lost if you close or reload this tab. Retry to save it.",
     storageCorrupt:
-      "Stored data cannot be read and has not been overwritten. Reset progress if you want to recover.",
+      "Stored data cannot be read and has not been overwritten. You can play temporarily, but new progress will be lost if you close or reload this tab. Retry or check settings.",
     storageFuture:
-      "This progress was created by a newer version. It remains read-only here.",
+      "Stored progress was created by a newer version and has not been overwritten. You can play temporarily, but new progress will be lost if you close or reload this tab. Update the app and retry.",
     storageRetry: "Retry storage",
     storageOpenSettings: "Open settings",
     localProgress: "Progress on this device",

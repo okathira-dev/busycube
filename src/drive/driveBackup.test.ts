@@ -29,39 +29,33 @@ describe("Drive replica backup sync", () => {
       calls.push([input, init]);
       if (calls.length === 1) return jsonResponse({ files: [] });
       if (calls.length === 2) {
-        return jsonResponse(replica("file-1", "busycube-progress-local.json"));
+        return jsonResponse(
+          replica("file-1", "busycube-progress-v2-local.json"),
+        );
       }
       return jsonResponse({});
     });
-    const local = createProgressDocument("ja", "local");
+    const local = createProgressDocument("local");
 
     const result = await syncDriveBackup("token", local, fetcher);
 
     expect(result.created).toBe(true);
     expect(String(calls[0]?.[0])).toContain("spaces=appDataFolder");
-    expect(calls[1]?.[1]?.body).toContain("busycube-progress-local.json");
+    expect(calls[1]?.[1]?.body).toContain("busycube-progress-v2-local.json");
     expect(calls[2]?.[1]?.method).toBe("PATCH");
   });
 
   it("merges every device replica before updating this device", async () => {
-    const local = solveBox(
-      createProgressDocument("ja", "local"),
-      "S-000",
-      "B01",
-    );
-    const remote = solveBox(
-      createProgressDocument("en", "remote"),
-      "S-020",
-      "B01",
-    );
+    const local = solveBox(createProgressDocument("local"), "S-000", "B01");
+    const remote = solveBox(createProgressDocument("remote"), "S-020", "B01");
     let call = 0;
     const fetcher: typeof fetch = vi.fn(async () => {
       call += 1;
       if (call === 1) {
         return jsonResponse({
           files: [
-            replica("local-file", "busycube-progress-local.json"),
-            replica("remote-file", "busycube-progress-remote.json"),
+            replica("local-file", "busycube-progress-v2-local.json"),
+            replica("remote-file", "busycube-progress-v2-remote.json"),
           ],
         });
       }
@@ -77,16 +71,38 @@ describe("Drive replica backup sync", () => {
       "S-020": { solvedBoxIds: ["B01"] },
     });
     expect(result.remoteInstallationId).toBe("remote");
+    expect(result.document.sourceStorageId).toBe("local");
+    expect(result.document.sourceStorageId).toBe(local.sourceStorageId);
   });
 
+  it.each([undefined, null, "", "  "])(
+    "rejects missing installation identity (%s) without uploading",
+    async (sourceStorageId) => {
+      const broken = replica("missing-id", "busycube-progress-v2-missing.json");
+      const fetcher: typeof fetch = vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ files: [broken] }))
+        .mockResolvedValueOnce(
+          jsonResponse({
+            ...createProgressDocument("remote"),
+            sourceStorageId,
+          }),
+        );
+      await expect(
+        syncDriveBackup("token", createProgressDocument("local"), fetcher),
+      ).rejects.toMatchObject({ code: "corrupt" });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    },
+  );
+
   it("retries the complete merge after an ETag conflict", async () => {
-    const local = createProgressDocument("ja", "local");
+    const local = createProgressDocument("local");
     let call = 0;
     const fetcher: typeof fetch = vi.fn(async () => {
       call += 1;
       if (call === 1 || call === 4) {
         return jsonResponse({
-          files: [replica("local-file", "busycube-progress-local.json")],
+          files: [replica("local-file", "busycube-progress-v2-local.json")],
         });
       }
       if (call === 2 || call === 5)
@@ -104,7 +120,7 @@ describe("Drive replica backup sync", () => {
   });
 
   it("does not upload after a corrupt replica", async () => {
-    const broken = replica("broken-file", "busycube-progress-broken.json");
+    const broken = replica("broken-file", "busycube-progress-v2-broken.json");
     const fetcher: typeof fetch = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ files: [broken] }))
@@ -113,7 +129,7 @@ describe("Drive replica backup sync", () => {
       );
 
     await expect(
-      syncDriveBackup("token", createProgressDocument("en", "local"), fetcher),
+      syncDriveBackup("token", createProgressDocument("local"), fetcher),
     ).rejects.toEqual(
       expect.objectContaining({
         code: "corrupt",
@@ -129,8 +145,8 @@ describe("Drive replica backup sync", () => {
       .mockResolvedValueOnce(
         jsonResponse({
           files: [
-            replica("one", "busycube-progress-one.json"),
-            replica("two", "busycube-progress-two.json"),
+            replica("one", "busycube-progress-v2-one.json"),
+            replica("two", "busycube-progress-v2-two.json"),
           ],
         }),
       )

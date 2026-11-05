@@ -9,13 +9,11 @@ import {
   useState,
   useTransition,
 } from "react";
-import {
-  mergeProgressDocuments,
-  type ProgressDocument,
-} from "./domain/progress";
+import type { ProgressDocument } from "./domain/progress";
 import { countSolvedBoxes } from "./domain/stageRuntime";
 import { useDelayedVisibility } from "./hooks/useDelayedVisibility";
 import { useDriveBackup } from "./hooks/useDriveBackup";
+import { useNavigationJourney } from "./hooks/useNavigationJourney";
 import { useProgress } from "./hooks/useProgress";
 import { useServiceWorker } from "./hooks/useServiceWorker";
 import { detectLocale, type Locale, messages, productCopy } from "./i18n";
@@ -99,8 +97,9 @@ export function App() {
   const progress = useProgress(initialLocale());
   const serviceWorker = useServiceWorker();
   const drive = useDriveBackup(progress);
-  const locale = progress.document.settings.locale;
+  const locale = progress.settings.locale;
   const [route, setRoute] = useState(currentRoute);
+  const arrival = useNavigationJourney(route.stageId);
   const [catalogueRestore, setCatalogueRestore] = useState<{
     stageId: StageId;
     scrollY?: number;
@@ -158,6 +157,7 @@ export function App() {
   }[drive.state];
 
   const exportProgress = () => {
+    if (!progress.initialized) return;
     const blob = new Blob([JSON.stringify(progress.document, null, 2)], {
       type: "application/json",
     });
@@ -175,9 +175,7 @@ export function App() {
     prepareProgressImport(file, progress.document);
 
   const mergeImportedProgress = (imported: ProgressDocument) => {
-    progress.replaceDocument((current) =>
-      mergeProgressDocuments(current, imported),
-    );
+    return progress.mergeProgress(imported, progress.epoch);
   };
 
   const driveFailureMessage =
@@ -205,6 +203,9 @@ export function App() {
     // 戻る・進むではReact側の操作関数を通らないため、URLを正として画面を同期する。
     const syncRoute = (event: PopStateEvent) => {
       const nextRoute = currentRoute();
+      // 本文内リンクの履歴移動では同じ挑戦を保持する。
+      if (nextRoute.view === route.view && nextRoute.stageId === route.stageId)
+        return;
       const historyRestore = event.state?.busycube?.catalogueReturn as
         | { stageId: StageId; scrollY?: number }
         | undefined;
@@ -225,7 +226,7 @@ export function App() {
     };
     window.addEventListener("popstate", syncRoute);
     return () => window.removeEventListener("popstate", syncRoute);
-  }, []);
+  }, [route]);
 
   // pushState自身はpopstateを発火しないため、共有可能なURLとReactの状態を同時に更新する。
   const openStage = useCallback(
@@ -408,15 +409,21 @@ export function App() {
         >
           {view === "stages" && selectedManifest ? (
             <ManifestStageHost
-              key={`${selectedManifest.id}:${stageAttemptId}`}
+              key={`${selectedManifest.id}:${stageAttemptId}:${progress.epoch}`}
               manifest={selectedManifest}
               displayCode={selectedCatalogueStage?.displayCode ?? ""}
               locale={locale}
               progress={progress}
               services={{
+                arrival,
+                progressEpoch: progress.epoch,
+                storageId: progress.initialized
+                  ? progress.document.sourceStorageId
+                  : undefined,
                 drive: { configured: drive.configured, sync: drive.sync },
               }}
               onBack={showStageList}
+              onLocaleChange={changeLocale}
               previousStage={previousCatalogueStage?.manifest}
               previousDisplayCode={previousCatalogueStage?.displayCode}
               onPrevious={
@@ -460,6 +467,7 @@ export function App() {
               headingId={headingIds.settings}
               locale={locale}
               storageState={progress.storageState}
+              storageInitialized={progress.initialized}
               storageMessage={storageMessage}
               serviceWorkerState={serviceWorker.state}
               serviceWorkerMessage={serviceWorkerMessage}

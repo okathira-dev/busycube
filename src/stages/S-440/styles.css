@@ -1,0 +1,27 @@
+.s440-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.75rem, 4vw, 2rem);
+}
+.s440-file {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}
+.s440-file > svg,
+.s440-diagram > img {
+  width: clamp(3rem, 16vw, 6rem);
+  height: clamp(3rem, 16vw, 6rem);
+}
+.s440-diagram > svg {
+  width: 2rem;
+  height: 2rem;
+  color: #c4b5fd;
+}
+.s440-cleanup {
+  max-width: 26rem;
+  font-size: 0.8rem;
+  color: #c3b6d4;
+  text-align: center;
+}

@@ -1,12 +1,33 @@
-.light-meter {
-  width: min(22rem, 90%);
-  height: 1rem;
-  overflow: hidden;
-  border: 1px solid #66567e;
-  border-radius: 999px;
+.stage-view.s110-camera-host {
+  background: var(--s110-light);
+  color: var(--s110-ink);
 }
-.light-meter span {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, #171329, #fff1a8);
+.s110-camera-host .stage-view__header h2,
+.s110-camera-host .stage-view__header p,
+.s110-camera-host .back-button,
+.s110-camera-host .stage-state {
+  color: var(--s110-ink);
+}
+.s110-camera-host .stage-state {
+  border-color: var(--s110-ink);
+}
+.s110-camera {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #d8cfeb;
+  border-radius: 0.6rem;
+  color: #ffffff;
+  background: #20172e;
+}
+.s110-boxes .problem-gift {
+  padding: 1rem;
+  border: 1px solid #d8cfeb;
+  border-radius: 0.8rem;
+  color: #ffffff;
+  background: #20172e;
+}
+.s110-boxes .problem-gift__clue {
+  color: #ffffff;
 }

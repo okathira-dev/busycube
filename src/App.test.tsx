@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   progress: {
     document: {
       schemaVersion: 1 as const,
-      installationId: "test",
+      sourceStorageId: "test",
       stages: {},
       settings: { locale: "en" as const },
     },
@@ -20,7 +20,10 @@ const mocks = vi.hoisted(() => ({
     solve: vi.fn(),
     hasMarker: vi.fn(() => false),
     mark: vi.fn(),
-    replaceDocument: vi.fn(),
+    settings: { locale: "en" },
+    epoch: "epoch",
+    initialized: true,
+    mergeProgress: vi.fn(async () => true),
     retryStorage: vi.fn(async () => true),
     reset: vi.fn(async () => true),
   },
@@ -60,7 +63,15 @@ describe("App shell", () => {
     mocks.progress.storageState = "ready";
     window.history.replaceState({}, "", "/?locale=en");
     window.scrollTo = vi.fn();
-    document.head.innerHTML = '<meta name="description" content="">';
+    let description = document.querySelector<HTMLMetaElement>(
+      'meta[name="description"]',
+    );
+    if (!description) {
+      description = document.createElement("meta");
+      description.name = "description";
+      document.head.append(description);
+    }
+    description.content = "";
   });
 
   it("uses link navigation and updates page metadata", async () => {
@@ -93,5 +104,21 @@ describe("App shell", () => {
     expect(screen.getByRole("heading", { name: "The first box" })).toBeTruthy();
     expect(screen.getByRole("status").textContent).toContain("Loading stage");
     expect(screen.queryByRole("heading", { name: "Box room" })).toBeNull();
+  });
+
+  it("switches language from a stage while preserving its route and fragment", () => {
+    mocks.progress.storageState = "loading";
+    mocks.progress.setLocale.mockClear();
+    window.history.replaceState({}, "", "/?locale=en&stage=S-000#clue");
+    render(<App />);
+
+    fireEvent.mouseDown(screen.getByRole("combobox", { name: "Language" }));
+    fireEvent.click(screen.getByRole("option", { name: "日本語" }));
+
+    const url = new URL(window.location.href);
+    expect(url.searchParams.get("locale")).toBe("ja");
+    expect(url.searchParams.get("stage")).toBe("S-000");
+    expect(url.hash).toBe("#clue");
+    expect(mocks.progress.setLocale).toHaveBeenCalledWith("ja");
   });
 });

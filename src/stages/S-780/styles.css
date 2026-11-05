@@ -1,0 +1,13 @@
+.s780-wallet {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 2rem;
+  border: 1px solid #a16207;
+  border-radius: 1rem;
+  color: #fde68a;
+  background: #1c1720;
+}
+.s780-wallet > span:last-child {
+  font-family: monospace;
+}

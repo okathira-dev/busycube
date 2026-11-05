@@ -273,6 +273,11 @@ try {
   await makeSegment(b03Segments[1], 1, "qr", qrPath);
   await makeSegment(b03Segments[2], 5, "moving");
   await concatSegments(b03Segments, join(assetRoot, "qr-frame-input.webm"));
+  // A genuine truncated WebM header, without a decodable video track.
+  await writeFile(
+    join(assetRoot, "incomplete-input.webm"),
+    (await readFile(join(assetRoot, "dark-frame-input.webm"))).subarray(0, 64),
+  );
   for (const name of ["dark-frame-input.webm", "qr-frame-input.webm"]) {
     const bytes = await readFile(join(assetRoot, name));
     if (!bytes.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])))

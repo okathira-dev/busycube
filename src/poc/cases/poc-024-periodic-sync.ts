@@ -32,7 +32,7 @@ async function readState(): Promise<{
   return new Promise((resolve, reject) => {
     const request = database.transaction(STORE).objectStore(STORE).get("state");
     request.onsuccess = () =>
-      resolve(request.result?.value ?? { phase: 0, care: [], events: 0 });
+      resolve(request.result ?? { phase: 0, care: [], events: 0 });
     request.onerror = () =>
       reject(request.error ?? new Error("state read failed"));
   });
@@ -45,7 +45,7 @@ async function writeCare(kind: "water" | "light"): Promise<void> {
     const store = transaction.objectStore(STORE);
     const read = store.get("state");
     read.onsuccess = () => {
-      const state = read.result?.value ?? { phase: 0, care: [], events: 0 };
+      const state = read.result ?? { phase: 0, care: [], events: 0 };
       const care = new Set<string>(state.care);
       care.add(kind);
       store.put({
@@ -86,6 +86,28 @@ export function mount(root: PocRoot): () => void {
         type: "module",
       },
     )) as CareRegistration;
+    const worker = registration.installing ?? registration.waiting;
+    if (!registration.active && worker && worker.state !== "activated") {
+      await new Promise<void>((resolve, reject) => {
+        const finish = (error?: Error) => {
+          clearTimeout(timeout);
+          worker.removeEventListener("statechange", changed);
+          if (error) reject(error);
+          else resolve();
+        };
+        const changed = () => {
+          if (worker.state === "activated") finish();
+          if (worker.state === "redundant")
+            finish(new Error("Worker became redundant"));
+        };
+        const timeout = setTimeout(
+          () => finish(new Error("Worker activation timed out")),
+          5000,
+        );
+        worker.addEventListener("statechange", changed);
+        changed();
+      });
+    }
     return registration;
   };
   const registerPeriodic = async () => {

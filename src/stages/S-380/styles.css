@@ -1,0 +1,23 @@
+.s380-account {
+  max-width: 100%;
+}
+.s380-account input {
+  width: min(18rem, 100%);
+  box-sizing: border-box;
+  border: 1px solid #a797c4;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: #f7f3ff;
+  background: #251c37;
+  font: inherit;
+}
+.s380-account input:focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: 2px;
+}
+.s380-puzzle .permission-note {
+  max-width: 32rem;
+}
+.s380-puzzle[data-pending="conditional"] .s380-account input {
+  border-color: #34d399;
+}

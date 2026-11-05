@@ -1,7 +1,7 @@
 import { defineStageLocale } from "../locale";
 
 export const locale = defineStageLocale({
-  B01: { ja: "マウスの箱", en: "Mouse box" },
-  B02: { ja: "タッチの箱", en: "Touch box" },
-  B03: { ja: "ペンの箱", en: "Pen box" },
+  B01: { ja: "マウス", en: "Mouse" },
+  B02: { ja: "触れる指先", en: "Touching finger" },
+  B03: { ja: "鉛筆", en: "Pencil" },
 });

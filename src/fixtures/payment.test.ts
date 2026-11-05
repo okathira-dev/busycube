@@ -44,6 +44,13 @@ describe("S-780 fictional Payment Handler fixtures", () => {
 
     expect(new Set(apps.map((app) => app.name)).size).toBe(2);
     expect(new Set(apps.map((app) => app.short_name)).size).toBe(2);
+    expect(apps[1]?.name).toBe("Busycube Wallet");
+    expect(
+      await readFile(
+        new URL("wallet-diamond/wallet-icon.svg", paymentRoot),
+        "utf8",
+      ),
+    ).toBe(await readFile(new URL("../icon.svg", paymentRoot), "utf8"));
     for (const app of apps) {
       expect(app.serviceworker).toEqual({
         src: "./payment-handler-sw.js",

@@ -1,9 +1,41 @@
 .analog-clock {
-  display: grid;
-  place-items: center;
-  width: 11rem;
-  aspect-ratio: 1;
-  border: 0.5rem solid currentColor;
+  position: relative;
+  display: block;
+  width: 14rem;
+  height: 14rem;
+}
+.analog-clock span {
+  position: absolute;
+  bottom: 50%;
+  left: calc(50% - 0.15rem);
+  width: 0.3rem;
+  border-radius: 999px;
+  transform-origin: 50% 100%;
+}
+.analog-clock__hour {
+  height: 3.5rem;
+  background: #f7f3ff;
+}
+.analog-clock__minute {
+  height: 5rem;
+  background: #d8cfdf;
+}
+.analog-clock .analog-clock__second {
+  width: 0.12rem;
+  left: calc(50% - 0.06rem);
+  height: 5.5rem;
+  background: #fb7185;
+}
+.analog-clock::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 0.3rem);
+  left: calc(50% - 0.3rem);
+  width: 0.6rem;
+  height: 0.6rem;
   border-radius: 50%;
-  font-variant-numeric: tabular-nums;
+  background: #f7f3ff;
+}
+.analog-clock[data-ready="false"] {
+  opacity: 0.2;
 }

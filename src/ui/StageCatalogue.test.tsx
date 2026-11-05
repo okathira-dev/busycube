@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { StageCatalogue } from "./StageCatalogue";
 import type { CatalogueStage } from "./stageCatalogueModel";
 
@@ -41,7 +41,7 @@ describe("StageCatalogue preload", () => {
     );
 
     const continueButton = screen.getByRole("button", {
-      name: /Next unopened stage/,
+      name: /Continue/,
     });
     fireEvent.pointerEnter(continueButton);
     fireEvent.focus(continueButton);
@@ -58,6 +58,52 @@ describe("StageCatalogue preload", () => {
 });
 
 describe("StageCatalogue accessible names", () => {
+  it.each(["ja", "en"] as const)(
+    "marks P and L groups and cards as preview in %s",
+    (locale) => {
+      const label = locale === "ja" ? "暫定版" : "Preview";
+      const stages: CatalogueStage[] = [
+        stage,
+        {
+          ...stage,
+          manifest: { ...stage.manifest, id: "S-998" },
+          accessKind: "baseline-permission",
+          displayCode: "P-001",
+        },
+        {
+          ...stage,
+          manifest: { ...stage.manifest, id: "S-997" },
+          accessKind: "limited",
+          displayCode: "L-001",
+        },
+      ];
+      render(
+        <StageCatalogue
+          headingId="stage-heading"
+          heading="Box room"
+          progressLabel="Progress"
+          solvedCount={0}
+          totalBoxCount={3}
+          locale={locale}
+          stages={stages}
+          progressStages={{}}
+          restore={null}
+          onOpen={vi.fn()}
+          onPreload={vi.fn()}
+        />,
+      );
+      expect(screen.getAllByText(label, { exact: true })).toHaveLength(4);
+      for (const item of stages) {
+        const card = screen.getByRole("button", {
+          name: new RegExp(item.displayCode),
+        });
+        expect(within(card).queryByText(label, { exact: true }) !== null).toBe(
+          item.accessKind !== "baseline-direct",
+        );
+      }
+    },
+  );
+
   it.each([
     ["ja", "試験ステージ"],
     ["en", "Test stage"],

@@ -1,14 +1,20 @@
-.timeline-clue {
-  width: 20rem;
-  max-width: 90%;
-  height: 2.5rem;
-  border-bottom: 2px solid #6b5b85;
+.timing-meter {
+  position: relative;
+  width: 4rem;
+  height: min(20rem, 45vh);
+  border: 2px solid #6b5b85;
+  background: #181329;
 }
-.timeline-clue span {
-  display: block;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
+.timing-meter__fill {
+  position: absolute;
+  inset: 0;
   background: #fbbf24;
-  box-shadow: 0 0 1.5rem #fbbf2488;
+  transform-origin: bottom;
+}
+.timing-meter__target {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5%;
+  border: 2px solid #f7f3ff;
+  background: #f7f3ff44;
 }

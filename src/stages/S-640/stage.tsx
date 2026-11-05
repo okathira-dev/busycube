@@ -22,22 +22,22 @@ import { locale } from "./locale";
  * S-640
  *
  * 目的: 8個の固定byte列を誤ったlegacy encodingで表示したmojibakeから、元encodingの正しい文字列を復元する。
- * 最初の一手: B01の`cafÃ© franÃ§ais`がUTF-8 bytesをWindows-1252表示した結果だと見抜き、共通欄へ`café français`と入力する。
+ * 最初の一手: B01の`cafÃ© franÃ§ais`がUTF-8 bytesをWindows-1252表示した結果だと見抜き、その問題の欄へ`café français`と入力する。
  * 箱ごとの解法:
- * - B01「文字コードの箱 1」: UTF-8→Windows-1252のmojibakeへ、正解`café français`を完全一致で入力すると開く。
- * - B02「文字コードの箱 2」: KOI8-R→Windows-1251のmojibakeへ、正解`русский ящик`を完全一致で入力すると開く。
- * - B03「文字コードの箱 3」: KOI8-U→IBM866のmojibakeへ、正解`український код`を完全一致で入力すると開く。
- * - B04「文字コードの箱 4」: Macintosh→x-mac-cyrillicのmojibakeへ、正解`åbn æsken`を完全一致で入力すると開く。
- * - B05「文字コードの箱 5」: Windows-1255→ISO-8859-7のmojibakeへ、正解`תיבת קוד`を完全一致で入力すると開く。
- * - B06「文字コードの箱 6」: Windows-874→Windows-1252のmojibakeへ、正解`กล่อง รหัส`を完全一致で入力すると開く。
- * - B07「文字コードの箱 7」: ISO-8859-2→Macintoshのmojibakeへ、正解`český kód`を完全一致で入力すると開く。
- * - B08「文字コードの箱 8」: GBK→Big5のmojibakeへ、正解`编码 宝箱`を完全一致で入力すると開く。
+ * - B01「箱」: UTF-8→Windows-1252のmojibakeへ、正解`café français`を完全一致で入力すると開く。
+ * - B09「箱」: KOI8-R→Windows-1251のmojibakeへ、正解`матрёшка`を完全一致で入力すると開く。
+ * - B10「箱」: KOI8-U→IBM866のmojibakeへ、正解`пампушка`を完全一致で入力すると開く。
+ * - B11「箱」: Macintosh→x-mac-cyrillicのmojibakeへ、正解`smørrebrød`を完全一致で入力すると開く。
+ * - B12「箱」: Windows-1255→ISO-8859-7のmojibakeへ、正解`חנוכה`を完全一致で入力すると開く。
+ * - B13「箱」: Windows-874→Windows-1252のmojibakeへ、正解`ต้มยำกุ้ง`を完全一致で入力すると開く。
+ * - B14「箱」: ISO-8859-2→Macintoshのmojibakeへ、正解`svíčková`を完全一致で入力すると開く。
+ * - B15「箱」: GBK→Big5のmojibakeへ、正解`月饼`を完全一致で入力すると開く。
  * 使用API: Encoding StandardのTextDecoder対応を前提に検証済みの固定byte/encoding fixtureとHTML text input。
- * 権限・privacy: 権限を要求せず、Git管理済みfixtureと共通回答値だけを扱う。入力回答は入場中のmemoryにだけ保持し、保存・送信しない。
+ * 権限・privacy: 権限を要求せず、Git管理済みfixtureと各問題の回答値だけを扱う。入力回答は入場中のmemoryにだけ保持し、保存・送信しない。
  * 対応環境: TextDecoderとfixtureで使うUTF/legacy encoding label、各scriptのfont描画を実装するbrowser。
  */
 function S640Stage(props: Props) {
-  const [answer, setAnswer] = useState("");
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const boxIdAt = (index: number) => {
     const boxId = manifest.boxIds[index];
     if (!boxId) throw new RangeError(`No S-640 box for fixture index ${index}`);
@@ -45,48 +45,43 @@ function S640Stage(props: Props) {
   };
   return (
     <div className="puzzle parallel-puzzle">
-      <div className="problem-row problem-row--wrap">
-        {encodingFixtures.map((_fixture, index) => {
-          const boxId = boxIdAt(index);
-          return (
-            <StageProblemGiftBox
-              key={boxId}
-              box={props.boxes[boxId]}
-              locale={props.locale}
-            />
-          );
-        })}
-      </div>
       <section className="encoding-group">
-        <h2>{stageText(props.locale, locale.mojibake)}</h2>
         <div className="encoding-question-grid">
           {encodingFixtures.map((fixture, index) => {
             const boxId = boxIdAt(index);
             return (
               <article key={boxId} className="parallel-question-card">
-                <strong>{boxId}</strong>
-                <code>{encodingQuestionText(fixture)}</code>
+                <StageProblemGiftBox
+                  box={props.boxes[boxId]}
+                  locale={props.locale}
+                  showIcon={false}
+                />
+                <code id={`${boxId}-question`}>
+                  {encodingQuestionText(fixture)}
+                </code>
+                <label className="parallel-answer">
+                  <span id={`${boxId}-answer`} className="sr-only">
+                    {stageText(props.locale, locale.decoded)}
+                  </span>
+                  <input
+                    aria-labelledby={`${boxId}-question ${boxId}-answer`}
+                    value={answers[boxId] ?? ""}
+                    onChange={(event) => {
+                      const next = event.currentTarget.value;
+                      setAnswers((current) => ({ ...current, [boxId]: next }));
+                      if (
+                        !props.signal.aborted &&
+                        fixture.expectedText === next
+                      )
+                        props.boxes[boxId].solve();
+                    }}
+                  />
+                </label>
               </article>
             );
           })}
         </div>
       </section>
-      <label className="parallel-answer">
-        {stageText(props.locale, locale.decoded)}
-        <input
-          value={answer}
-          onChange={(event) => {
-            const next = event.currentTarget.value;
-            setAnswer(next);
-            const index = encodingFixtures.findIndex(
-              (fixture) => fixture.expectedText === next,
-            );
-            if (index < 0) return;
-            props.boxes[boxIdAt(index)].solve();
-          }}
-          aria-label={stageText(props.locale, locale.sharedAnswer)}
-        />
-      </label>
     </div>
   );
 }
@@ -98,40 +93,40 @@ export const stage = defineStageModule(manifest, {
       color: "#818cf8",
       label: locale.B01,
     },
-    [manifest.box.B02]: {
+    [manifest.box.B09]: {
       icon: VisibilityOffOutlined,
       color: "#6366f1",
-      label: locale.B02,
+      label: locale.B09,
     },
-    [manifest.box.B03]: {
+    [manifest.box.B10]: {
       icon: VisibilityOffOutlined,
       color: "#4f46e5",
-      label: locale.B03,
+      label: locale.B10,
     },
-    [manifest.box.B04]: {
+    [manifest.box.B11]: {
       icon: VisibilityOffOutlined,
       color: "#4338ca",
-      label: locale.B04,
+      label: locale.B11,
     },
-    [manifest.box.B05]: {
+    [manifest.box.B12]: {
       icon: VisibilityOffOutlined,
       color: "#818cf8",
-      label: locale.B05,
+      label: locale.B12,
     },
-    [manifest.box.B06]: {
+    [manifest.box.B13]: {
       icon: VisibilityOffOutlined,
       color: "#6366f1",
-      label: locale.B06,
+      label: locale.B13,
     },
-    [manifest.box.B07]: {
+    [manifest.box.B14]: {
       icon: VisibilityOffOutlined,
       color: "#4f46e5",
-      label: locale.B07,
+      label: locale.B14,
     },
-    [manifest.box.B08]: {
+    [manifest.box.B15]: {
       icon: VisibilityOffOutlined,
       color: "#4338ca",
-      label: locale.B08,
+      label: locale.B15,
     },
   },
   probe: () =>

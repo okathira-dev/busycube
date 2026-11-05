@@ -3,24 +3,35 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  intro: {
-    ja: "アドレスバーで同じページのURLを変え、ブラウザ自身に一語だけを示させてください。",
-    en: "Change this page's URL in the address bar and let the browser point to exactly one word.",
+  B01: { ja: "リンク", en: "Link" },
+  B02: { ja: "虫眼鏡", en: "Search" },
+  searchWord: { ja: "複写機", en: "pyranine" },
+  urlSentence: {
+    ja: "半透明であるため重ね塗りされた文字を読みやすく、また蛍光色で目立つ。",
+    en: "Different compounds, such as rhodamines (Rhodamine 6GD, Rhodamine B) are used for other colours.",
   },
-  fragmentLabel: { ja: "この断片を使う", en: "Use this fragment" },
-  wordLabel: { ja: "この語を使う", en: "Use this word" },
-  fragmentHelp: {
-    ja: "URLの末尾へ貼り付けて移動します。",
-    en: "Paste it at the end of this page's URL and navigate.",
+  searchSentence: {
+    ja: "このうち特に黄色などの淡い色は、複写機のコピーに写りにくい性質があるが、これは複写機の読み取り機能や濃度設定にも左右される。",
+    en: "A typical highlighter is fluorescent yellow, with the colour coming from pyranine.",
   },
-  wordHelp: {
-    ja: "一語だけが示されるfragmentを自分で組み立てます。",
-    en: "Build a fragment that points to only this word.",
+  passage1: {
+    ja: "蛍光ペン（けいこうペン、英: highlighter）は、フェルトペンのうち、半透明の蛍光性インク（水性蛍光顔料インクなど）を用いたものである。",
+    en: "A highlighter, also called a fluorescent pen, is a type of writing device used to bring attention to sections of text by marking them with a vivid, translucent colour.",
   },
-  revealed: {
-    ja: "ブラウザが隠れた一節を見つけました。",
-    en: "The browser found a hidden passage.",
+  passage2: {
+    ja: "他の一般筆記用具で記した文字ないし印刷文字の上から、重要な語句などに重ねてラインを引く用途に用いるラインマーカーの一種である。",
+    en: "Highlighters are available in multiple forms, including some that have a retractable felt tip or an eraser on the end opposite the felt.",
   },
-  B01: { ja: "読めない断片", en: "Encoded fragment" },
-  B02: { ja: "一語の断片", en: "One-word fragment" },
+  passage3: {
+    ja: "蛍光ペンの色には主に、黄色、黄緑色、オレンジ色、ピンク色、水色（空色）、紫色などがある。",
+    en: "Many highlighters come in bright, often fluorescent and vibrant colours.",
+  },
+  source: {
+    ja: "出典: ウィキペディア「蛍光ペン」（抜粋・配置変更）",
+    en: "Source: Wikipedia, “Highlighter” (excerpted and rearranged)",
+  },
+  license: {
+    ja: "CC BY-SA 4.0",
+    en: "CC BY-SA 4.0",
+  },
 });

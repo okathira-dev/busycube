@@ -1,0 +1,39 @@
+.s600-field {
+  position: relative;
+  width: min(100%, 34rem);
+  aspect-ratio: 560 / 420;
+}
+.s600-diagram {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.s600-layer {
+  fill: #c084fc0b;
+  stroke: #8a7d9d;
+  stroke-width: 1.5;
+}
+.s600-uncertainty {
+  stroke: #c084fc;
+  stroke-width: 4;
+  fill: none;
+}
+.s600-marker {
+  stroke: #e9d5ff;
+  stroke-width: 3;
+  fill: #a855f7;
+}
+.s600-reading[data-qualified="false"] .s600-marker {
+  fill: #211a35;
+  stroke-dasharray: 3 3;
+}
+.s600-box {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(0.65);
+}
+
+@media (max-width: 480px) {
+  .s600-box {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}

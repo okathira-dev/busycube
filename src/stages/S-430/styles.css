@@ -1,0 +1,36 @@
+.s430-player > video {
+  width: min(100%, 28rem);
+  border: 1px solid #796799;
+  border-radius: 0.75rem;
+}
+.s430-player > progress {
+  width: min(100%, 28rem);
+  accent-color: #c084fc;
+}
+.s430-track {
+  color: #d8cfdf;
+  font-size: 1.25rem;
+}
+.s430-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.s430-box {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}
+.s430-unavailable {
+  max-width: 7rem;
+  font-size: 0.75rem;
+  color: #c3b6d4;
+}
+.s430-box[data-available="false"] {
+  opacity: 0.55;
+}
+@media (max-width: 420px) {
+  .s430-actions {
+    gap: 0.7rem;
+  }
+}

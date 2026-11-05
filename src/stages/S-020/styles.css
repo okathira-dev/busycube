@@ -1,12 +1,23 @@
 .resize-ruler {
+  position: relative;
   width: min(28rem, 90%);
-  height: 1rem;
-  overflow: hidden;
-  border: 1px solid #6b5b85;
-  border-radius: 999px;
+  height: 2rem;
 }
-.resize-ruler__fill {
+.resize-ruler meter {
   display: block;
+  width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #60a5fa, #a78bfa);
+}
+.resize-ruler__target {
+  position: absolute;
+  inset-block: 0;
+  border: 2px solid #ffd166;
+  background: #ffd16633;
+  pointer-events: none;
+}
+.resize-ruler__optimum {
+  position: absolute;
+  inset-block: -0.25rem;
+  border-left: 2px solid #ffd166;
+  pointer-events: none;
 }

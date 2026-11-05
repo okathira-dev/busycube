@@ -1,0 +1,12 @@
+// UI review conditions for the confirmed temporary-play recovery behavior.
+compose ProgressRecoveryReview {
+  use ProgressRecovery as current from "progress-recovery.fsl"
+  // SRC: src/runtime/ManifestStageHost.tsx:346
+  @requirement("REQ-RECOVERY-003", "An initial read failure must not keep a loading spinner")
+  invariant FailureStopsWaiting {
+    (not current.initialized and current.status != Loading) => not current.spinner
+  }
+  // SRC: src/ui/SettingsView.tsx:251; src/App.tsx:159
+  @requirement("REQ-RECOVERY-005", "Unread placeholder data must not be exported as progress")
+  invariant NoPlaceholderExport { not current.exportedPlaceholder }
+}

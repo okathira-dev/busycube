@@ -86,24 +86,11 @@
 }
 
 .stage-catalogue__marker {
-  width: 72px;
-  height: 72px;
+  width: 264px;
+  height: 264px;
   justify-self: end;
-  border: 2px dashed #413550;
-  border-radius: 0.5rem;
-  opacity: 0.35;
-}
-
-.stage-catalogue__marker--active {
-  border: 8px solid #fff;
-  background: conic-gradient(
-    #00ffff 0 25%,
-    #ff00ff 0 50%,
-    #ffff00 0 75%,
-    #000 0
-  );
-  box-shadow: 0 0 0 6px #000;
-  opacity: 1;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 .stage-card {

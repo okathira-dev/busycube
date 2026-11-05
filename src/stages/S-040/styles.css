@@ -2,3 +2,8 @@
   font-size: clamp(6rem, 25vw, 10rem);
   line-height: 1;
 }
+.absence-target {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}

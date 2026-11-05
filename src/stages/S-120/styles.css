@@ -5,3 +5,15 @@
   border-radius: 50%;
   transition: transform 80ms linear;
 }
+.s120-ring-space {
+  display: grid;
+  place-items: center;
+  width: 12rem;
+  height: 12rem;
+}
+.s120-microphone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}

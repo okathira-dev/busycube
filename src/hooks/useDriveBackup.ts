@@ -61,7 +61,8 @@ export function useDriveBackup(progress: ProgressController) {
   const [failure, setFailure] = useState<DriveFailure | null>(null);
 
   const sync = useCallback(async (): Promise<DriveStageSyncResult> => {
-    if (!clientId) return { synced: false, remoteDevice: false };
+    if (!clientId || !progress.initialized)
+      return { synced: false, remoteDevice: false };
     try {
       setFailure(null);
       let token = accessToken;
@@ -71,9 +72,13 @@ export function useDriveBackup(progress: ProgressController) {
         setAccessToken(token);
       }
       setState("syncing");
-      const localInstallationId = progress.document.installationId;
+      const epoch = progress.epoch;
+      const localInstallationId = progress.document.sourceStorageId;
       const result = await syncDriveBackup(token, progress.document);
-      progress.replaceDocument(() => result.document);
+      if (!(await progress.mergeProgress(result.document, epoch))) {
+        setState("idle");
+        return { synced: false, remoteDevice: false };
+      }
       const remoteDevice = Boolean(
         result.remoteInstallationId &&
           result.remoteInstallationId !== localInstallationId,

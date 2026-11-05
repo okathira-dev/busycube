@@ -1,6 +1,6 @@
 import type { StageLocaleText } from "../locale";
 
 export const stageName = {
-  ja: "映像の手触り",
-  en: "Touching the timeline",
+  ja: "ビデオプレイヤー",
+  en: "Video player",
 } satisfies StageLocaleText;

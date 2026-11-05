@@ -1,100 +1,150 @@
-import "./styles.css";
 import NotificationsOutlined from "@mui/icons-material/NotificationsOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
-import { manifest } from "./manifest";
-
-type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useEffect, useState } from "react";
 import { statusText } from "../../ui/statusLocale";
 import { stageText } from "../locale";
 import { locale } from "./locale";
+import { manifest } from "./manifest";
+import {
+  consumeNotificationClick,
+  prepareNotificationAttempt,
+} from "./notificationReceipt";
+
+type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
+
+function readyWorker(signal: AbortSignal) {
+  return new Promise<ServiceWorkerRegistration>((resolve, reject) => {
+    const finish = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", abort);
+    };
+    const abort = () => {
+      finish();
+      reject(signal.reason);
+    };
+    const timer = setTimeout(() => {
+      finish();
+      reject(new Error("Service worker not ready"));
+    }, 15_000);
+    signal.addEventListener("abort", abort, { once: true });
+    if (signal.aborted) {
+      abort();
+      return;
+    }
+    navigator.serviceWorker.ready.then(
+      (registration) => {
+        finish();
+        resolve(registration);
+      },
+      (error) => {
+        finish();
+        reject(error);
+      },
+    );
+  });
+}
 
 /**
  * S-090
  *
- * 目的: page内buttonだけで完結せず、OS/browserの通知面からBusycubeへ戻ってきたnavigationを確認する。
- * 最初の一手: 「外から呼ぶ」を押して通知を許可し、表示されたBusycube通知を標準の通知UIから開く。
+ * 目的: ベルの箱で発行した通知をOS/browserの通知面から開き、実Service Worker通知クリックを確認する。
+ * 最初の一手: ベルの箱を押して通知を許可し、ページ外の通知を開く。
  * 箱ごとの解法:
- * - B01「通知の箱」: Service Workerが表示した通知をclickして`?stage=S-090&notification=1`へ戻り、入場時URLの`notification` parameterが厳密に`1`なら開く。判定後はparameterをURLから除く。
- * 使用API: Notifications APIのpermissionと`showNotification()`、Service Workerのnotification click処理、URL API、History API。
- * 権限・privacy: 通知権限だけを明示操作後に要求し、通知には固定title・stage説明・iconだけを載せる。通知内容やpermission結果を外部送信しない。
- * 対応環境: Notification APIとService Worker通知を実装し、OS/browserの通知clickからclientを開けるsecure context。
+ * - B02「ベル」: 箱を押して発行した今回の通知を開く。trusted notificationclickを受けたService Workerが今回nonceのpending記録をclickedへ更新し、そのtransaction完了後の復帰URLから同じ記録を一度だけ消費すると開く。URLだけの入力や通知の表示だけでは開かない。
+ * 使用API: Notifications permission/showNotification、Service Worker notificationclick/clients、IndexedDB、crypto.randomUUID、URL/History。
+ * 権限・privacy: 箱の明示操作で通知権限を要求する。短い固定本文と一時nonce/言語だけを通知へ渡し、端末情報や通知本文を保存・送信しない。保存する試行記録は最大一件で、達成時に削除する。
+ * 対応環境: secure contextでService Worker通知とIndexedDBを提供するbrowser。通知はページ外から戻るため離脱後も残し、次の発行または実クリックで置換/閉鎖する。
  */
 function S090Stage(props: Props) {
-  const problem = props.boxes[manifest.box.B01];
-  const [status, setStatus] = useState<NotificationPermission | "unavailable">(
-    Notification.permission,
+  const problem = props.boxes[manifest.box.B02];
+  const busy = useRef(false);
+  const [status, setStatus] = useState<string>(() =>
+    typeof Notification === "undefined"
+      ? "unavailable"
+      : Notification.permission,
   );
-
   useEffect(() => {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("notification") === "1") {
-      problem.solve();
+    const url = new URL(location.href);
+    const nonce = url.searchParams.get("notification-receipt");
+    if (url.searchParams.has("notification")) {
       url.searchParams.delete("notification");
-      window.history.replaceState({}, "", url);
+      history.replaceState(history.state, "", url);
     }
-  }, [problem.solve]);
-
-  const sendNotification = async () => {
-    // Permission and notification creation stay inside this click handler because
-    // browsers require a user gesture and surprise prompts would violate the UX policy.
+    if (!nonce) return;
+    void consumeNotificationClick(nonce, props.signal)
+      .then((clicked) => {
+        if (props.signal.aborted) return;
+        if (clicked) problem.solve();
+        else setStatus("invalid");
+        const current = new URL(location.href);
+        if (current.searchParams.get("notification-receipt") === nonce) {
+          current.searchParams.delete("notification-receipt");
+          history.replaceState(history.state, "", current);
+        }
+      })
+      .catch(() => {
+        if (!props.signal.aborted) setStatus("error");
+      });
+  }, [problem.solve, props.signal]);
+  const notify = async () => {
+    if (busy.current || props.signal.aborted) return;
+    if (typeof Notification === "undefined" || !navigator.serviceWorker) {
+      setStatus("unavailable");
+      return;
+    }
+    busy.current = true;
     try {
       const permission = await Notification.requestPermission();
       if (props.signal.aborted) return;
       setStatus(permission);
       if (permission !== "granted") return;
-      const registration = await navigator.serviceWorker.ready;
+      setStatus("waiting");
+      const registration = await readyWorker(props.signal);
+      const nonce = crypto.randomUUID();
+      await prepareNotificationAttempt(nonce, props.signal);
       if (props.signal.aborted) return;
-      const tag = "busycube-stage-S-090";
       await registration.showNotification("Busycube", {
         body: stageText(props.locale, locale.outsideBody),
         icon: "/icon.svg",
-        tag,
+        tag: "busycube-stage-S-090",
+        data: { stage: "S-090", nonce, locale: props.locale },
       });
-      if (props.signal.aborted) {
-        const notifications = await registration.getNotifications({ tag });
-        for (const notification of notifications) notification.close();
-      }
+      if (!props.signal.aborted) setStatus("granted");
     } catch {
-      if (!props.signal.aborted) setStatus("unavailable");
+      if (!props.signal.aborted) setStatus("error");
+    } finally {
+      busy.current = false;
     }
   };
-
   return (
     <div className="puzzle puzzle--centered">
-      <div className="bell-clue" aria-hidden="true">
-        ♢
-      </div>
-      <button
-        type="button"
-        className="stage-action"
-        onClick={() => void sendNotification()}
-      >
-        {stageText(props.locale, locale.callOutside)}
-      </button>
+      <StageProblemGiftBox
+        box={problem}
+        locale={props.locale}
+        onClick={() => void notify()}
+      />
       <p role="status">{statusText(props.locale, status)}</p>
-      <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
-    [manifest.box.B01]: {
+    [manifest.box.B02]: {
       icon: NotificationsOutlined,
       color: "#f472b6",
-      label: locale.B01,
+      label: locale.B02,
     },
   },
   probe: () =>
     safeCapabilityProbe(() =>
-      "Notification" in window && "serviceWorker" in navigator
+      "Notification" in window &&
+      "serviceWorker" in navigator &&
+      "indexedDB" in window
         ? "permission-required"
         : "unsupported",
     ),

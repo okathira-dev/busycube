@@ -38,11 +38,11 @@ Before authoring a layer, read and follow the corresponding skill:
 - Cross-cutting dialect concerns — DB migration compatibility (`dbsystem`,
   `fslc db`), Functional DDD / async effects (`domain`, `fslc domain`), AI
   tool-boundary and agent contracts plus statistical evidence (`ai_component`/
-  `agent`, `fslc ai`): `../fsl/SKILL.md` → "Advanced features". These sit
+  `agent`, `fslc ai`): `../fsl/references/advanced.md`. These sit
   outside the business→requirements→design progression and are not stage-gated
   by this skill.
-- Syntax, verifier commands, JSON repair protocol: `../fsl/SKILL.md` and
-  `../fsl/reference.md`
+- Syntax, verifier commands, JSON repair protocol: `../fsl/SKILL.md`, then its
+  topic-specific references as needed
 
 Load only the skills needed for the current stage. Do not duplicate their syntax
 rules in this skill.
@@ -68,33 +68,55 @@ rules in this skill.
    externally observable behavior; design speaks in internal mechanics.
 4. Verify each layer before depending on it:
    - `fslc check <file>`
+   - `fslc lint <file>` (no findings)
    - `fslc verify <file> --depth 8`
    - `fslc verify <file> --engine induction`
+   Read the results with `../fsl-verify/SKILL.md`: several outcomes exit 0
+   without passing (warnings, `not_evaluated` seams, `diff` findings, `mutate`
+   survivors).
 5. Connect layers downward. Each handoff is a **refinement seam (a contract), not a
    plain baton pass** — the seam itself is verified, and a green chain is exactly as
    strong as the soundness of these seams:
    - requirements implements/refines business (`implements`, reported under the
      `implements` field of the requirements `verify` JSON)
    - design refines requirements with an explicit mapping (`fslc refine`)
-   - implementation conforms through generated tests or event-log replay
-   - gate the whole chain at once with `fslc chain` when a manifest exists
+   - implementation conforms through generated tests or event-log replay. A
+     generated suite counts only once it has executed tests against the wired
+     Adapter: unwired tests fail by default, and `--allow-unwired` makes them skip
+     (exit 0 with nothing run), so "the generated tests are green" is never the
+     conformance evidence by itself — check the executed count
+   - gate the whole chain at once with `fslc chain` when a manifest exists; give
+     `[impl]` a JUnit `report` so an all-skipped or empty run is `indeterminate`,
+     not `passed`. `evidence = "exit_code"` (flagged `exit_code_only`) is for
+     non-test commands and is never the implementation-conformance anchor
+   - **testgen layer selection:** run `fslc testgen` on the spec at the **same
+     layer granularity as the implementation** (design `spec` for design-aligned
+     code). From upper layers, reuse **`forbidden` negatives only** — they stay
+     sound under refinement; upper **positive** scenarios can falsely fail a
+     sound refinement (see `../fsl/references/impl.md` §9).
 6. Report proof categories separately. Never collapse "model is verified",
    "design refines requirements", and "implementation conforms" into one claim.
+   Use the completion report format in `../fsl-verify/SKILL.md`.
 
 ## Stage Gates
 
 | Stage | Deliverable | Required checks |
 |---|---|---|
 | Business | `business` spec with policies, KPIs, goals | check, verify, induction |
-| Requirements | `requirements` spec with REQ IDs, acceptance, forbidden, NFRs | check, verify, induction, scenarios; implements/refines business when present |
+| Requirements | `requirements` spec with REQ IDs, acceptance, forbidden, NFRs | check, verify, induction, scenarios; when `implements` is present, assert `implements.result == "refines"` in the JSON (or gate with `fslc chain`) — a failed seam exits 1 with top-level `refinement_failed` or `impl_violated` |
 | Design | kernel `spec` plus mapping to requirements | check, verify, induction, refine |
-| Implementation | Adapter or event log connected to real behavior | testgen pytest or replay; do not claim conformance before this |
-| Review/change | proposal spec or before/after contract | verify each side, refine against frozen contract, optional mutate/vacuity |
+| Implementation | Adapter or event log connected to real behavior | testgen run with ≥ 1 executed test against the wired Adapter (chain `[impl]` with `report` → `passed`, not `indeterminate`), or replay; do not claim conformance before this |
+| Review/change | proposal spec or before/after contract | verify each side, refine against frozen contract, `fslc diff --forbid behavior_removed` between before and after when they share state and action names, optional mutate/vacuity |
 
 For every layer, also run:
 
-- `fslc verify <file> --strict-tags` (traceability — untagged declarations and
-  unreferenced requirement IDs)
+- `fslc verify <file> --strict-tags --requirements ids.txt` (traceability —
+  untagged declarations and unreferenced requirement IDs; `ids.txt` holds one
+  requirement ID per line, not a comma list)
+- `fslc lint <file>` (ID form — exits 1 on a non-canonical `"REQ-1: text"`
+  string tag, which `--strict-tags` accepts silently, and on an ID outside the
+  active policy. The canonical link is `@requirement("REQ-SCOPE-001", "text")`,
+  or process `covers` in the business/requirements dialects)
 - `fslc explain <file> --readable` (renders the spec as a readable digest; this is
   the spec's documentation, not a separate report)
 
@@ -109,14 +131,17 @@ For high-risk contracts, add the more expensive checks:
   the stated interpretation.
 - A green requirements layer means the requirements model is internally
   consistent; if `implements` is green, it also preserves the business contract's
-  checked safety obligations.
+  checked safety obligations. "Green" here means `implements.result == "refines"` in the JSON — a failed seam exits 1 with
+  top-level `refinement_failed` or `impl_violated`, not a silent exit 0.
 - A green design layer means the design model is internally consistent.
 - A green `refine` means lower-layer observable behavior conforms to the upper
   contract for checked safety behavior.
 - Liveness/progress does not automatically propagate through refinement. Verify
   response properties at each layer that owns progress.
-- A green `testgen` pytest run or `replay` result is the implementation-conformance
-  anchor. Without an Adapter or log, the implementation is not yet checked.
+- A `testgen` run that executed tests against the wired Adapter, or a `replay`
+  result, is the implementation-conformance anchor. A green run alone is not:
+  an `--allow-unwired` suite is green with every test skipped. Without an
+  Adapter or log, the implementation is not yet checked.
 
 ## Human Decision Gates
 
@@ -128,6 +153,11 @@ Stop and ask for a product/business/design decision before changing behavior whe
   lower layer
 - a refinement mapping or stutter correspondence is not obvious from the source
 - an implementation Adapter must decide how to project real state into FSL state
+- an implementation-conformance run (generated tests, conformance vectors, or
+  replay) diverges from a spec whose `acceptance` / `forbidden` the owner has
+  not confirmed against intent, so the divergence may be the spec's error
+  rather than the implementation's (see `../fsl/references/impl.md` §9, "Using
+  conformance as an implementation loop for an AI agent")
 
 Representation-only modeling choices, such as finite domain sizes for model
 checking, may be chosen by the agent. Label them separately from product

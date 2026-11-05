@@ -3,6 +3,6 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  B01: { ja: "見ない時間の箱", en: "Hidden-time box" },
-  B02: { ja: "長い不在の箱", en: "Long-absence box" },
+  B01: { ja: "斜線入りの目", en: "Crossed-out eye" },
+  B02: { ja: "斜線入りの目", en: "Crossed-out eye" },
 });

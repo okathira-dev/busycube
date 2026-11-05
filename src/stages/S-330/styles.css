@@ -1,13 +1,30 @@
-.wake-light {
-  width: 5rem;
-  height: 5rem;
-  border-radius: 50%;
-  background: #473f2a;
-  transition:
-    background 180ms ease,
-    box-shadow 180ms ease;
+.s330-wait {
+  width: 9rem;
+  height: 9rem;
 }
-.wake-light[data-active="true"] {
-  background: #facc15;
-  box-shadow: 0 0 3rem #facc1588;
+.s330-track {
+  fill: none;
+  stroke: #4d4265;
+  stroke-width: 5;
+}
+.s330-progress {
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  fill: none;
+  stroke: #facc15;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.s330-light {
+  fill: #473f2a;
+  transition: fill 180ms ease;
+}
+.s330-puzzle[data-holding="true"] .s330-light {
+  fill: #facc15;
+  filter: drop-shadow(0 0 8px #facc1588);
+}
+.s330-release {
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
 }

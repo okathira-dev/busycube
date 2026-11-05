@@ -3,7 +3,8 @@ import { stageName } from "./name";
 
 export const locale = defineStageLocale({
   stageName,
-  answer: { ja: "あいだ", en: "between" },
-  sentence: { ja: "ひかりの[あいだ]にしるし。", en: "amber [between] signal" },
-  B01: { ja: "選択範囲の箱", en: "Selection box" },
+  answer: { ja: "ひみつ", en: "secret" },
+  sentenceStart: { ja: "合言葉は［", en: "The password is [" },
+  sentenceEnd: { ja: "］。", en: "]." },
+  B01: { ja: "点線の四角", en: "Dotted square" },
 });

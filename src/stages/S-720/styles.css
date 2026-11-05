@@ -89,6 +89,10 @@
 .patch-node--transform span {
   font-size: 2rem;
 }
+.patch-transform-symbol > svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
 .patch-node--transform-a-1,
 .patch-node--transform-b-1 {
   top: 55px;
@@ -142,6 +146,7 @@
 }
 .patch-port--in {
   left: -12px;
+  border-radius: 0.25rem;
 }
 .patch-port--out {
   right: -12px;
@@ -149,6 +154,39 @@
 .patch-port--active {
   border-color: #ffd166;
   box-shadow: 0 0 1rem #ffd166;
+}
+.patch-port--in[data-ready="true"] {
+  border-color: #a3e635;
+  box-shadow: 0 0 0.5rem #a3e63588;
+}
+.patch-port:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+.patch-processing > svg {
+  animation: patch-process 1.2s linear infinite;
+}
+.patch-error {
+  max-width: 100%;
+  color: #fda4af;
+}
+.patch-error summary {
+  cursor: pointer;
+  text-align: center;
+}
+.patch-error p {
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+}
+@keyframes patch-process {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .patch-processing > svg {
+    animation-duration: 4s;
+  }
 }
 .patchbay-controls {
   display: flex;

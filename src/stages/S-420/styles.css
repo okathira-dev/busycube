@@ -1,0 +1,21 @@
+.s420-inputs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  max-width: 100%;
+}
+.s420-entry {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  font-size: 1.8rem;
+}
+.s420-verdict {
+  color: #f7d68a;
+  font-size: 1.3rem;
+}

@@ -1,0 +1,143 @@
+// Current recovery behavior, including warned temporary play before the first read.
+// ASSUME-1: one tab, one representative achievement, one completed public call
+// per action. No reset, concurrent calls, external writes, locale, or Drive.
+// ASSUME-2: read/write outcomes are environment inputs, not eventual success.
+// ASSUME-3: reload discards memory as documented; conservation is per page life.
+// ASSUME-4: stage module is loaded and available; UI flags project source predicates.
+// No wall-clock deadline, old format migration, or browser latency is modeled.
+spec ProgressRecovery {
+  enum Status { Loading, Ready, Unavailable, Corrupt, Future }
+  enum Outcome { Success, AccessFailure, InvalidData, NewerData }
+  state {
+    initialized: Bool,
+    status: Status,
+    disk: Bool,
+    visible: Bool,
+    pending: Bool,
+    accepted: Bool,
+    temporaryAccepted: Bool,
+    playEnabled: Bool,
+    spinner: Bool,
+    retryOffered: Bool,
+    exportEnabled: Bool,
+    exportedPlaceholder: Bool
+  }
+  // SRC: src/state/playerController.ts:23; src/runtime/ManifestStageHost.tsx:346
+  @requirement("MODEL-RECOVERY-001", "An unread placeholder is not loaded progress")
+  init {
+    initialized = false
+    status = Loading
+    disk = false
+    visible = false
+    pending = false
+    accepted = false
+    temporaryAccepted = false
+    playEnabled = false
+    spinner = true
+    retryOffered = false
+    exportEnabled = false
+    exportedPlaceholder = false
+  }
+  // SRC: src/state/playerController.ts:63; src/infra/progressStore.ts:57
+  // SRC: src/runtime/ManifestStageHost.tsx:346; src/ui/SettingsView.tsx:251
+  @requirement("MODEL-RECOVERY-002", "Complete the initial storage read with an environment outcome")
+  action read(outcome: Outcome) {
+    requires status == Loading
+    if outcome == Success {
+      initialized = true
+      status = Ready
+      visible = disk or pending
+      playEnabled = true
+      spinner = false
+      retryOffered = false
+    } else {
+      status = if outcome == AccessFailure then Unavailable else if outcome == InvalidData then Corrupt else Future
+      playEnabled = true
+      spinner = false
+      retryOffered = true
+    }
+    exportEnabled = outcome == Success
+  }
+  // SRC: src/state/playerController.ts:81-116; src/domain/playerState.ts:36
+  @requirement("REQ-RECOVERY-004", "Accepted achievements remain visible after write failure")
+  action solve(ok: Bool) {
+    requires playEnabled
+    accepted = true
+    temporaryAccepted = temporaryAccepted or not initialized
+    visible = true
+    if initialized and ok {
+      disk = true
+      pending = false
+      status = Ready
+      retryOffered = false
+    } else {
+      pending = true
+      if initialized { status = Unavailable }
+      retryOffered = true
+    }
+  }
+  // SRC: src/state/playerController.ts:118; src/ui/ProgressStorageAlert.tsx:36
+  @requirement("REQ-RECOVERY-002", "The retry button rereads storage then flushes pending operations")
+  action retry(ok: Bool) {
+    requires status != Loading and status != Ready
+    if ok {
+      initialized = true
+      disk = disk or pending
+      visible = disk or pending
+      pending = false
+      status = Ready
+      playEnabled = true
+      spinner = false
+      retryOffered = false
+      exportEnabled = true
+    } else { status = Unavailable }
+  }
+  // SRC: src/App.tsx:159; src/ui/SettingsView.tsx:251
+  @requirement("MODEL-RECOVERY-003", "Export uses the current document when the button is enabled")
+  action export() {
+    requires exportEnabled
+    exportedPlaceholder = exportedPlaceholder or not initialized
+  }
+  // SRC: src/state/playerController.ts:23; docs/specifications/progress-schema.md:27
+  @requirement("MODEL-RECOVERY-004", "Reload keeps committed data and drops page memory")
+  action reload() {
+    initialized = false
+    status = Loading
+    visible = false
+    pending = false
+    accepted = false
+    temporaryAccepted = false
+    playEnabled = false
+    spinner = true
+    retryOffered = false
+    exportEnabled = false
+    exportedPlaceholder = false
+  }
+  // SRC: src/runtime/ManifestStageHost.tsx:346
+  @requirement("REQ-RECOVERY-001", "Play is enabled after the first read attempt, including failure")
+  invariant PlayAfterReadAttempt { playEnabled == (status != Loading) }
+  // SRC: src/ui/ProgressStorageAlert.tsx:36
+  @requirement("REQ-RECOVERY-002", "Initial failure offers an explicit retry")
+  invariant InitialFailureHasRetry { (not initialized and status != Loading) => retryOffered }
+  // SRC: src/state/playerController.ts:41,107
+  @requirement("REQ-RECOVERY-004", "Every accepted achievement is held in memory during this page life")
+  invariant AcceptedNotLost { accepted => visible }
+  // SRC: src/state/playerController.ts:41,95
+  @requirement("MODEL-RECOVERY-005", "Loaded progress is committed data plus pending operations")
+  invariant VisibleIsHeldData { initialized => (visible == (disk or pending)) }
+  // SRC: src/state/playerController.ts:82
+  @requirement("MODEL-RECOVERY-006", "Achievements are accepted only when play is enabled")
+  invariant PendingRequiresPlayableState { pending => playEnabled }
+  @requirement("REQ-RECOVERY-005", "Unread placeholder data cannot be exported")
+  invariant NoPlaceholderExport { not exportedPlaceholder }
+  @requirement("REQ-RECOVERY-003", "A completed read attempt stops the loading spinner")
+  invariant FailureStopsWaiting { status != Loading => not spinner }
+  @requirement("MODEL-RECOVERY-007", "An initial access failure is reachable")
+  reachable InitialFailure { not initialized and status == Unavailable }
+  @requirement("MODEL-RECOVERY-007", "A save failure can retain an unsaved achievement")
+  reachable UnsavedAchievement { initialized and pending and status == Unavailable }
+  @requirement("MODEL-RECOVERY-007", "A committed achievement can be observed without pending writes")
+  reachable PersistedAchievement { initialized and disk and visible and not pending }
+  @requirement("MODEL-RECOVERY-007", "A temporary achievement can be saved by retrying the initial read")
+  reachable RecoveredTemporary { temporaryAccepted and initialized and disk and not pending }
+}

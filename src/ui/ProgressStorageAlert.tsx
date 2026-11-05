@@ -1,6 +1,7 @@
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import { useState } from "react";
 import type { StorageState } from "../hooks/useProgress";
 import type { Locale } from "../i18n";
 import { messages } from "../i18n";
@@ -22,6 +23,15 @@ export function ProgressStorageAlert({
   onRetry,
 }: Props) {
   const copy = messages[locale];
+  const [retrying, setRetrying] = useState(false);
+  const retry = async () => {
+    setRetrying(true);
+    try {
+      await onRetry();
+    } finally {
+      setRetrying(false);
+    }
+  };
   if (state === "ready" || state === "loading") return null;
 
   return (
@@ -30,11 +40,14 @@ export function ProgressStorageAlert({
       severity={state === "unavailable" ? "error" : "warning"}
       action={
         <Stack direction="row" sx={{ gap: 0.5 }}>
-          {state === "unavailable" && (
-            <Button color="inherit" size="small" onClick={() => void onRetry()}>
-              {copy.storageRetry}
-            </Button>
-          )}
+          <Button
+            color="inherit"
+            size="small"
+            loading={retrying}
+            onClick={() => void retry()}
+          >
+            {copy.storageRetry}
+          </Button>
           <Button color="inherit" size="small" onClick={onOpenSettings}>
             {copy.storageOpenSettings}
           </Button>

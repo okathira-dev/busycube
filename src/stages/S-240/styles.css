@@ -1,6 +1,11 @@
-.clipboard-token {
-  padding: 0.7rem 1rem;
-  border: 1px dashed #75658d;
-  border-radius: 0.5rem;
-  color: #e9ddff;
+.s240-share {
+  width: 5rem;
+  height: 5rem;
+}
+.s240-install {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #bfb3d1;
 }

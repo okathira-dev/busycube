@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>◇ Wallet</title>
+    <title>Busycube Wallet</title>
     <style>
       :root { color-scheme: dark; font-family: system-ui, sans-serif; }
       body { margin: 0; min-width: 18rem; background: #18140a; color: #fef3c7; }
       main { display: grid; gap: 1rem; padding: 1.25rem; }
-      #wallet-symbol { font-size: 2.5rem; line-height: 1; text-align: center; }
+      #wallet-icon { width: 64px; height: 64px; justify-self: center; } #wallet-name { margin: 0; text-align: center; font-size: 1.2rem; }
       .amount { border: 1px solid #a16207; border-radius: .7rem; padding: .8rem; }
       .actions { display: flex; gap: .65rem; flex-wrap: wrap; }
       button { min-width: 3.25rem; min-height: 3.25rem; border: 1px solid #facc15; border-radius: 50%; background: #422006; color: inherit; font-size: 1.5rem; cursor: pointer; }
@@ -18,7 +18,7 @@
   </head>
   <body>
     <main>
-      <div id="wallet-symbol" aria-hidden="true">◇</div>
+      <img id="wallet-icon" src="./wallet-icon.svg" width="64" height="64" alt="" /><h1 id="wallet-name">Busycube Wallet</h1>
       <div class="amount" id="amount">決済要求を待っています…</div>
       <div class="actions" id="actions" hidden>
         <button type="button" data-action="approve" aria-label="承認">✓</button>

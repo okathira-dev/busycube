@@ -1,0 +1,8 @@
+.pressure-reading {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+.pressure-reading > svg {
+  font-size: 5rem;
+}

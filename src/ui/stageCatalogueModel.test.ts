@@ -1,4 +1,5 @@
 import type { StageManifest } from "../runtime/stageContract";
+import { manifest as networkManifest } from "../stages/S-630/manifest";
 import {
   buildCatalogueStages,
   findNextIncompleteStage,
@@ -44,7 +45,15 @@ describe("stage catalogue presentation model", () => {
     ]);
   });
 
-  it("continues a partial stage before an unstarted stage", () => {
+  it("places connection-type collection in the limited category", () => {
+    expect(buildCatalogueStages([networkManifest])[0]).toMatchObject({
+      accessKind: "limited",
+      displayCode: "L-001",
+      manifest: { id: "S-630" },
+    });
+  });
+
+  it("continues the first incomplete stage in catalogue order", () => {
     const catalogue = buildCatalogueStages(stages);
     expect(
       findNextIncompleteStage(catalogue, {
@@ -53,4 +62,19 @@ describe("stage catalogue presentation model", () => {
       })?.manifest.id,
     ).toBe("S-020");
   });
+});
+
+it("chooses an earlier untouched stage before a later partial stage", () => {
+  const a: StageManifest = {
+    ...networkManifest,
+    id: "S-001",
+    boxIds: ["B01"],
+    platform: { baseline: "widely", permission: "none" },
+  };
+  const b: StageManifest = { ...a, id: "S-002", boxIds: ["B01", "B02"] };
+  expect(
+    findNextIncompleteStage(buildCatalogueStages([a, b]), {
+      "S-002": { solvedBoxIds: ["B01"] },
+    })?.manifest.id,
+  ).toBe("S-001");
 });

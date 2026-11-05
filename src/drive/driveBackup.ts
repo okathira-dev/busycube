@@ -6,7 +6,7 @@ import {
 
 const apiRoot = "https://www.googleapis.com/drive/v3";
 const uploadRoot = "https://www.googleapis.com/upload/drive/v3";
-const replicaPrefix = "busycube-progress-";
+const replicaPrefix = "busycube-progress-v2-";
 const maxSyncAttempts = 3;
 
 export type DriveBackupErrorCode = "http" | "corrupt" | "future" | "conflict";
@@ -46,8 +46,8 @@ type DownloadedReplica = {
   readonly eTag: string | null;
 };
 
-function replicaName(installationId: string): string {
-  return `${replicaPrefix + installationId}.json`;
+function replicaName(sourceStorageId: string): string {
+  return `${replicaPrefix + sourceStorageId}.json`;
 }
 
 async function authorizedFetch(
@@ -194,8 +194,8 @@ function mergeReplicaDocuments(
   let remoteInstallationId: string | null = null;
   for (const replica of replicas) {
     const remote = parseReplica(replica);
-    if (remote.installationId !== local.installationId) {
-      remoteInstallationId ??= remote.installationId;
+    if (remote.sourceStorageId !== local.sourceStorageId) {
+      remoteInstallationId ??= remote.sourceStorageId;
     }
     document = mergeProgressDocuments(document, remote);
   }
@@ -225,7 +225,7 @@ export async function syncDriveBackup(
   local: ProgressDocument,
   fetcher: Fetcher = fetch,
 ): Promise<DriveSyncResult> {
-  const ownName = replicaName(local.installationId);
+  const ownName = replicaName(local.sourceStorageId);
   for (let attempt = 0; attempt < maxSyncAttempts; attempt += 1) {
     const replicas = await findReplicas(fetcher, accessToken);
     const downloaded = await Promise.all(

@@ -1,174 +1,141 @@
-import "./styles.css";
 import UsbOutlined from "@mui/icons-material/UsbOutlined";
+import { useEffect, useRef, useState } from "react";
 import { safeCapabilityProbe } from "../../domain/stageRuntime";
 import {
   defineStageModule,
   type StageComponentProps,
 } from "../../runtime/stageContract";
 import { StageProblemGiftBox } from "../../ui/GiftBox";
-import { manifest } from "./manifest";
-
-type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
-
-import { useEffect, useRef, useState } from "react";
 import { statusText } from "../../ui/statusLocale";
 import { stageText } from "../locale";
 import { locale } from "./locale";
+import { manifest } from "./manifest";
 
-type PeripheralStatus =
-  | "idle"
-  | "waiting"
-  | "read"
-  | "cancelled"
-  | "unavailable";
-
-interface BusyUsbEndpoint {
-  direction: "in" | "out";
-  endpointNumber: number;
-  type: "bulk" | "interrupt" | "isochronous";
-}
-
-interface BusyUsbAlternate {
-  endpoints: readonly BusyUsbEndpoint[];
-}
-
-interface BusyUsbInterface {
-  interfaceNumber: number;
-  alternate: BusyUsbAlternate;
-}
-
-interface BusyUsbConfiguration {
-  interfaces: readonly BusyUsbInterface[];
-}
-
-interface BusyUsbDevice {
-  configuration: BusyUsbConfiguration | null;
+type Props = StageComponentProps<(typeof manifest.boxIds)[number]>;
+export interface UsbDevice {
+  opened: boolean;
   open(): Promise<void>;
   close(): Promise<void>;
-  selectConfiguration(value: number): Promise<void>;
-  claimInterface(interfaceNumber: number): Promise<void>;
-  transferIn(
-    endpointNumber: number,
-    length: number,
-  ): Promise<{ data?: DataView }>;
 }
-
-interface BusyUsb {
-  requestDevice(options: {
-    filters: readonly object[];
-  }): Promise<BusyUsbDevice>;
-}
-
-interface UsbNavigator extends Navigator {
-  usb: BusyUsb;
+export interface Usb {
+  requestDevice(options: { filters: object[] }): Promise<UsbDevice>;
 }
 
 /**
  * S-300
  *
- * 目的: 利用者が選んだUSB deviceのIN endpointを発見・claimし、実際のbulk/interrupt転送からdataを受信する。
- * 最初の一手: 「USBから受け取る」を押してdata送信可能なUSB deviceを選び、必要ならdevice側を操作してIN dataを送る。
+ * 目的: WebUSBの標準chooserで選んだ機器を実際にopenする。
+ * 最初の一手: USBの箱を押し、browserがアクセスを許す機器をchooserで選ぶ。
  * 箱ごとの解法:
- * - B01「USB転送の箱」: deviceをopenしconfiguration 1を選択、最初のbulkまたはinterrupt IN endpointのinterfaceをclaimし、64 byteの`transferIn()`結果が1 byte以上なら開く。
- * 使用API: WebUSBの`requestDevice()`、USBDevice open/configuration/interface claim、endpoint情報、`transferIn()`、close。
- * 権限・privacy: device accessはbutton操作とbrowser pickerで要求し、受信dataはbyte長だけを判定する。payload・device descriptorを保存・表示・送信しない。
- * 対応環境: secure contextでWebUSBを実装し、browser access可能なbulk/interrupt IN endpoint付きUSB deviceを接続できる環境。
+ * - B01「USB」: 選んだ機器の実USBDevice.openが成功し、openedがtrueになると開く。機器選択だけでは開かない。確認後すぐcloseし、configuration選択/interface claim/endpoint発見/任意転送は行わない。
+ * 使用API: navigator.usb.requestDevice({filters: []})、USBDevice.open/opened/close。
+ * 権限・privacy: 明示操作でbrowser標準chooserを開く。機器情報/descriptorを保存・表示・送信せず、データ転送を要求しない。
+ * 対応環境: secure contextのWebUSBと、browserがアクセスを許可するUSB機器。browserの保護・制限を迂回しない。
  */
 function S300Stage(props: Props) {
   const problem = props.boxes[manifest.box.B01];
-  const [status, setStatus] = useState<PeripheralStatus>("idle");
-  const cleanupRef = useRef<() => void>(() => undefined);
-
+  const [status, setStatus] = useState("");
+  const active = useRef(false);
+  const current = useRef<AbortController | null>(null);
+  const busy = useRef(false);
+  const solved = useRef(false);
   useEffect(() => {
-    const cleanup = () => cleanupRef.current();
-    props.signal.addEventListener("abort", cleanup, { once: true });
+    active.current = true;
+    const dispose = () => {
+      active.current = false;
+      current.current?.abort();
+    };
+    props.signal.addEventListener("abort", dispose, { once: true });
     return () => {
-      props.signal.removeEventListener("abort", cleanup);
-      cleanup();
+      props.signal.removeEventListener("abort", dispose);
+      dispose();
     };
   }, [props.signal]);
-
-  const receive = async () => {
-    cleanupRef.current();
+  const start = async () => {
+    if (
+      busy.current ||
+      solved.current ||
+      !active.current ||
+      props.signal.aborted
+    )
+      return;
+    const usb = Reflect.get(navigator, "usb") as Usb | undefined;
+    if (!usb || typeof usb.requestDevice !== "function") {
+      setStatus("unavailable");
+      return;
+    }
+    current.current?.abort();
+    const controller = new AbortController();
+    current.current = controller;
+    const alive = () =>
+      active.current &&
+      !props.signal.aborted &&
+      !controller.signal.aborted &&
+      current.current === controller;
+    busy.current = true;
+    let close = () => {};
     try {
-      const usb = (navigator as unknown as UsbNavigator).usb;
       const device = await usb.requestDevice({ filters: [] });
-      if (props.signal.aborted) return;
-      await device.open();
-      cleanupRef.current = () => void device.close().catch(() => undefined);
-      if (props.signal.aborted) {
-        cleanupRef.current();
-        return;
-      }
-      if (!device.configuration) await device.selectConfiguration(1);
-      if (props.signal.aborted) {
-        cleanupRef.current();
-        return;
-      }
-      const selected = device.configuration?.interfaces
-        .flatMap((usbInterface) =>
-          usbInterface.alternate.endpoints.map((endpoint) => ({
-            endpoint,
-            interfaceNumber: usbInterface.interfaceNumber,
-          })),
-        )
-        .find(
-          ({ endpoint }) =>
-            endpoint.direction === "in" &&
-            (endpoint.type === "interrupt" || endpoint.type === "bulk"),
-        );
-      if (!selected) throw new Error("No IN endpoint");
-      await device.claimInterface(selected.interfaceNumber);
-      if (props.signal.aborted) {
-        cleanupRef.current();
-        return;
-      }
+      if (!alive()) return;
+      let opening = true;
+      let closePending: Promise<void> | undefined;
+      close = () => {
+        if (opening || !device.opened) return;
+        if (!closePending)
+          closePending = device
+            .close()
+            .catch(() => {})
+            .finally(() => {
+              closePending = undefined;
+            });
+      };
+      controller.signal.addEventListener("abort", close, { once: true });
       setStatus("waiting");
-      const result = await device.transferIn(
-        selected.endpoint.endpointNumber,
-        64,
-      );
-      if (!result.data?.byteLength) throw new Error("Empty USB transfer");
-      if (props.signal.aborted) return;
-      setStatus("read");
+      try {
+        await device.open();
+      } finally {
+        opening = false;
+      }
+      if (!alive()) return;
+      if (!device.opened) throw new Error("USB open not observed");
+      close();
+      solved.current = true;
+      setStatus("opened");
       problem.solve();
-      cleanupRef.current();
     } catch (error) {
-      // A failure can occur after open, so the catch path must also close hardware.
-      cleanupRef.current();
-      if (props.signal.aborted) return;
-      setStatus(
-        error instanceof DOMException && error.name === "NotFoundError"
-          ? "cancelled"
-          : "unavailable",
-      );
+      if (alive())
+        setStatus(
+          error instanceof DOMException
+            ? error.name === "NotFoundError" || error.name === "AbortError"
+              ? "cancelled"
+              : error.name === "SecurityError" ||
+                  error.name === "NotAllowedError"
+                ? "denied"
+                : error.name === "NotSupportedError"
+                  ? "unavailable"
+                  : "error"
+            : "error",
+        );
+    } finally {
+      close();
+      if (current.current === controller) busy.current = false;
     }
   };
-
   return (
     <div className="puzzle puzzle--centered">
-      <div
-        className="usb-wire"
-        data-active={status === "read"}
-        aria-hidden="true"
-      >
-        <span />
-      </div>
-      <button
-        type="button"
-        className="stage-action"
-        onClick={() => void receive()}
-      >
-        {stageText(props.locale, locale.receiveUsb)}
-      </button>
+      <StageProblemGiftBox
+        box={problem}
+        locale={props.locale}
+        onClick={() => void start()}
+      />
       <p className="interaction-status" role="status">
-        {statusText(props.locale, status)}
+        {status === "opened"
+          ? stageText(props.locale, locale.opened)
+          : statusText(props.locale, status)}
       </p>
-      <StageProblemGiftBox box={problem} locale={props.locale} />
     </div>
   );
 }
-
 export const stage = defineStageModule(manifest, {
   boxes: {
     [manifest.box.B01]: {

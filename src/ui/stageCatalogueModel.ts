@@ -53,8 +53,5 @@ export function findNextIncompleteStage(
       new Set(progressStages[stage.manifest.id]?.solvedBoxIds ?? []),
     ),
   }));
-  return (
-    withState.find(({ state }) => state === "partial")?.stage ??
-    withState.find(({ state }) => state === "untouched")?.stage
-  );
+  return withState.find(({ state }) => state !== "solved")?.stage;
 }

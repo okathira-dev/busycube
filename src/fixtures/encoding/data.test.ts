@@ -9,6 +9,18 @@ import {
 } from "./data";
 
 describe("S-640 encoding PoC fixture", () => {
+  it("publishes the agreed eight cultural words, including the two-character mooncake", () => {
+    expect(encodingFixtures.map((fixture) => fixture.expectedText)).toEqual([
+      "café français",
+      "матрёшка",
+      "пампушка",
+      "smørrebrød",
+      "חנוכה",
+      "ต้มยำกุ้ง",
+      "svíčková",
+      "月饼",
+    ]);
+  });
   it("has eight mojibake questions and two decoder positions per question", () => {
     expect(encodingFixtures).toHaveLength(8);
     expect(encodingFixturePositions).toHaveLength(16);
@@ -28,9 +40,9 @@ describe("S-640 encoding PoC fixture", () => {
 
     for (const fixture of encodingFixtures) {
       expect([...(fixture.expectedText ?? "")].length).toBeGreaterThanOrEqual(
-        3,
+        2,
       );
-      expect(fixture.expectedText).toContain(" ");
+      expect(fixture.presentedText).not.toBe(fixture.expectedText);
     }
   });
 
@@ -50,7 +62,7 @@ describe("S-640 encoding PoC fixture", () => {
     }
   });
 
-  it("keeps each ordered decoder pair unambiguous", () => {
+  it("keeps the configured decoder pairs decodable", () => {
     for (const position of encodingFixturePositions) {
       expect(validLabelsForPosition(position)).toContain(
         position.expectedLabel,

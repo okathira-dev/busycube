@@ -24,12 +24,15 @@ import {
 import type { ProgressController } from "../hooks/useProgress";
 import { type Locale, messages } from "../i18n";
 import { preloadOnActivation } from "../ui/activationIntent";
+import { LanguageSelect } from "../ui/LanguageSelect";
 import { uiText } from "../ui/locale";
+import { StagePreviewBadge } from "../ui/StagePreviewBadge";
 import { preloadInBackground } from "./preload";
-import type {
-  StageManifest,
-  StageModule,
-  StageServices,
+import {
+  deriveStageAccessKind,
+  type StageManifest,
+  type StageModule,
+  type StageServices,
 } from "./stageContract";
 import "./ManifestStageHost.css";
 
@@ -44,6 +47,7 @@ interface Props {
   progress: ProgressController;
   services: StageServices;
   onBack(): void;
+  onLocaleChange?(locale: Locale): void;
   onPrevious?(): void;
   onNext?(): void;
 }
@@ -148,6 +152,7 @@ export function ManifestStageHost({
   progress,
   services,
   onBack,
+  onLocaleChange,
   onPrevious,
   onNext,
 }: Props) {
@@ -156,11 +161,24 @@ export function ManifestStageHost({
   );
   const [loadError, setLoadError] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [abortController] = useState(() => new AbortController());
-  const signal = abortController.signal;
+  const [signal, setSignal] = useState<AbortSignal | null>(null);
   const { solved, solvedCount } = stageProgress(manifest, progress);
   // 入場前のクリアと今回のクリアを分け、再訪時にも箱の開封演出を成立させる。
-  const [solvedBeforeEntry] = useState(() => new Set(solved));
+  const [solvedBeforeEntry, setSolvedBeforeEntry] =
+    useState<ReadonlySet<string> | null>(() =>
+      progress.storageState === "loading" ? null : new Set(solved),
+    );
+  useEffect(() => {
+    if (solvedBeforeEntry === null && progress.storageState !== "loading")
+      setSolvedBeforeEntry(
+        new Set(progress.document.stages[manifest.id]?.solvedBoxIds ?? []),
+      );
+  }, [
+    manifest.id,
+    progress.document.stages,
+    progress.storageState,
+    solvedBeforeEntry,
+  ]);
   const [solvedThisAttempt, setSolvedThisAttempt] = useState<
     ReadonlySet<string>
   >(() => new Set());
@@ -195,10 +213,12 @@ export function ManifestStageHost({
     };
   }, [attempt, manifest]);
 
-  useEffect(() => {
-    // ステージ配下のlistener・timer・streamを離脱時に一括して停止する契約。
-    return () => abortController.abort();
-  }, [abortController]);
+  useLayoutEffect(() => {
+    // StrictModeのcleanup/setupでも、停止済みsignalを次の生存期間へ渡さない。
+    const controller = new AbortController();
+    setSignal(controller.signal);
+    return () => controller.abort();
+  }, []);
 
   const solve = useCallback(
     (boxId: string) => {
@@ -231,7 +251,7 @@ export function ManifestStageHost({
             id: boxId,
             definition,
             state: deriveProblemBoxVisualState(
-              solvedBeforeEntry.has(boxId),
+              solvedBeforeEntry?.has(boxId) ?? false,
               solvedThisAttempt.has(boxId),
             ),
             solve,
@@ -263,15 +283,30 @@ export function ManifestStageHost({
 
   return (
     <section className="stage-view" aria-labelledby={activeStageHeadingId}>
-      <Button
-        className="back-button"
-        startIcon={<ArrowBackOutlined />}
-        onClick={onBack}
-      >
-        {copy.back}
-      </Button>
+      <div className="stage-view__toolbar">
+        <Button
+          className="back-button"
+          startIcon={<ArrowBackOutlined />}
+          onClick={onBack}
+        >
+          {copy.back}
+        </Button>
+        {onLocaleChange && (
+          <LanguageSelect
+            locale={locale}
+            label={copy.language}
+            onChange={onLocaleChange}
+          />
+        )}
+      </div>
       <header className="stage-view__header">
-        <p>{displayCode}</p>
+        <div className="stage-view__identity">
+          <p>{displayCode}</p>
+          <StagePreviewBadge
+            accessKind={deriveStageAccessKind(manifest.platform)}
+            locale={locale}
+          />
+        </div>
         <h2 id={activeStageHeadingId} ref={headingRef} tabIndex={-1}>
           {manifest.name[locale]}
         </h2>
@@ -308,7 +343,7 @@ export function ManifestStageHost({
         >
           {uiText(locale, "stageCrashed")}
         </Alert>
-      ) : progress.storageState === "loading" || !module ? (
+      ) : progress.storageState === "loading" || !module || !signal ? (
         <div className="stage-loading" role="status">
           <CircularProgress aria-hidden="true" size={28} />
           <span className="sr-only">{uiText(locale, "stageLoading")}</span>

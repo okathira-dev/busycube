@@ -121,6 +121,9 @@
         </table>
       </details>
       <h2>安全な最小試験</h2>
+      <p><a href="./time-sync/index.html">S-400: 外部時刻（30秒同期・フォールバック）</a></p>
+      <p><a href="./background-fetch/index.html">S-960: ダウンロード（Background Fetchの完走・キャンセル）</a></p>
+      <p><a href="./content-index/index.html">S-970: オフラインコンテンツ（Android ChromeのContent Index・削除イベント）</a></p>
       <details class="poc-accordion" name="poc-probe">
         <summary>POC-002: offline Beacon 郵便</summary>
         <p>まずworkerを登録する。次に「投函」を押すと、native <code>sendBeacon()</code> がsame-origin POSTを送った後、full-document receiverへ遷移する。receiptはworkerだけがIndexedDBへ書く。server停止中の実行は最後の外部条件確認で行う。</p>
@@ -210,13 +213,13 @@
           <article class="poc-card">
             <h3>B01: 文脈付きfragment</h3>
             <p>句読点を含むfragmentを組み立て、対象語を直接入力欄へ送らずに探す。</p>
-            <code class="fragment-recipe" data-fragment-recipe="#:~:text=ink%27s%20cobalt%2C,-."></code>
+            <code class="fragment-recipe" data-fragment-recipe="#:~:text=ink%27s%20cobalt%2C,-%E2%80%9D%20beside"></code>
             <div id="fragment-assembly-a" class="fragment-hidden" hidden="until-found">The archivist wrote, “ink's cobalt,” beside the first sealed drawer.</div>
           </article>
           <article class="poc-card">
             <h3>B02: 単語＋suffix</h3>
             <p>空白を含む単語とピリオドsuffixで、同じ単語の別出現を避ける。</p>
-            <code class="fragment-recipe" data-fragment-recipe="#:~:text=%20ember,-."></code>
+            <code class="fragment-recipe" data-fragment-recipe="#:~:text=ember,-."></code>
             <div id="fragment-assembly-b" class="fragment-hidden" hidden="until-found">A single ember. rests under the second marker, never repeated elsewhere.</div>
           </article>
         </div>
@@ -301,7 +304,7 @@
         <button type="button" id="run-decoder">TextDecoder fixture を読む</button>
         <button type="button" id="run-encoding">S-640 fixture を検証する</button>
         <section aria-labelledby="encoding-preview-heading">
-          <h2 id="encoding-preview-heading">S-640 問題プレビュー</h2>
+          <h2 id="encoding-preview-heading">S-640 最新問題プレビュー（2026-10-26確定）</h2>
           <p>開発用の全候補表。各byte列を16種類すべてのlabelでfatal <code>TextDecoder</code>復号し、結果と正答を並べる。製品ステージ用の操作UIではない。</p>
           <h3>使用する label</h3>
           <ul class="encoding-labels" id="encoding-labels" aria-busy="true"></ul>
@@ -319,8 +322,8 @@
           <section class="video-recovery-runtime" aria-labelledby="video-recovery-runtime-heading">
             <h4 id="video-recovery-runtime-heading">実frame変換と二値照合</h4>
             <p>各buttonは入力videoの全24 frameを順に読む。T1/T2/T3を実行後、再符号化済みの期待videoとは色値でなく白黒二値matrixを比較する。出力videoを擬似生成せず、frame parityと変換結果を先に検証する。</p>
-            <button type="button" data-video-recovery-route="t1">T1 → alphaを検証</button>
-            <button type="button" data-video-recovery-route="t2">T2 → alphaを検証</button>
+            <button type="button" data-video-recovery-route="t1">T1の復旧結果を検証</button>
+            <button type="button" data-video-recovery-route="t2">T2の復旧結果を検証</button>
             <button type="button" data-video-recovery-route="alpha">T3 → T2 → alphaを検証</button>
             <button type="button" data-video-recovery-route="beta">T1 → T3 → T2 → T1 → betaを検証</button>
             <canvas id="video-recovery-canvas" width="360" height="360" aria-label="最後に実行した映像復元変換のframe出力"></canvas>
@@ -328,16 +331,16 @@
           </section>
           <div class="video-recovery-grid">
             <article class="video-recovery-card">
-              <h4>T1: 左右交換 → alpha</h4>
+              <h4>T1: 左右交換</h4>
               <video id="recovery-source-t1" controls muted preload="metadata" aria-label="T1入力動画"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="No captions" /></video>
               <p><code>T1</code>後の期待出力:</p>
-              <video id="recovery-alpha-t1" controls muted preload="metadata" aria-label="T1復元alpha QR動画"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="No captions" /></video>
+              <video id="recovery-alpha-t1" controls muted preload="metadata" aria-label="T1復元QR動画"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="No captions" /></video>
             </article>
             <article class="video-recovery-card">
-              <h4>T2: 時間方向乗算 → alpha</h4>
+              <h4>T2: 時間方向乗算</h4>
               <video id="recovery-source-t2" controls muted preload="metadata" aria-label="T2入力動画"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="No captions" /></video>
               <p><code>T2</code>後の期待出力:</p>
-              <video id="recovery-alpha-t2" controls muted preload="metadata" aria-label="T2復元alpha QR動画"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="No captions" /></video>
+              <video id="recovery-alpha-t2" controls muted preload="metadata" aria-label="T2復元QR動画"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="No captions" /></video>
             </article>
             <article class="video-recovery-card">
               <h4>T3 → T2: alpha</h4>
@@ -367,26 +370,33 @@
         <div id="poc-popover" popover="auto"><p>native popover fixture</p><button type="button" id="run-invoker-second">別sourceから開く</button><button type="button" id="hide-invoker">Popoverを閉じる</button></div>
         <output class="media-status" id="invoker-status" aria-live="polite">未実行</output>
       </details>
-      <details class="poc-accordion poc-lazy-case" name="poc-probe" data-poc="009">
+      <details class="poc-accordion poc-lazy-case" name="poc-probe" data-poc="009" id="poc-009">
         <summary>POC-009: cross-window / cross-origin Drag and Drop</summary>
-        <p>3種類のsourceを比較します。ページ内の画像はそのまま、保存用画像はOSファイルとして、iframeの画像は別windowを開いて、親documentのdrop targetへ実際にdragしてください。custom element、synthetic DragEvent、file input選択では成功にしません。</p>
+        <p>S-510の標準挙動を比較します。ブラウザが画像ドラッグに付けるtext/uri-listと実Fileをそのまま読みます。URLの追加・独自marker・開始通知・時間制限は使いません。下の判定プレビューは「対象Web URL＋実Fileの内容一致」を要求します。比較条件は手動の記録名で、ソースを識別した証拠ではありません。</p>
         <div class="poc-two-column">
           <div>
             <p><strong>ページ内画像（そのままdrag）</strong></p>
             <img src="../drag-page.png" alt="ページ内D&D fixture" draggable="true" width="240" height="120" style="display:block;max-width:100%;height:auto;cursor:grab">
-            <p><strong>保存してOSからdrag</strong></p>
+            <p><strong>中央画像（画像単体を別画面で開けばOK、保存ファイルだけならNGとなるか比較）</strong></p>
             <img src="../drag-file.png" alt="保存用D&D fixture" draggable="false" width="240" height="120" style="display:block;max-width:100%;height:auto;cursor:not-allowed">
             <a href="../drag-file.png" download="busycube-poc-drag-file.png">保存用PNGをダウンロード</a>
-            <button type="button" data-dnd-open>source iframeをフォーカスする</button>
+            <a href="../drag-file.png" target="_blank" rel="noopener">保存用画像だけを別画面で開く</a>
             <button type="button" data-dnd-open-window>別window sourceを開く</button>
-            <iframe class="poc-source-frame" data-dnd-source title="sandbox drag source" loading="lazy" sandbox="allow-scripts" srcdoc="<!doctype html><html><body style='background:#111;color:#eee;font:16px system-ui'><p>この画像を親のdrop targetへdrag</p><img src='../drag-window.png' alt='BUSYCUBE DnD marker' draggable='true' style='display:block;margin:auto;max-height:12rem;max-width:100%'></body></html>"></iframe>
+            <iframe class="poc-source-frame" data-dnd-source title="同一ページのsandbox画像" loading="lazy" sandbox="allow-scripts" src="../poc-dnd-image.html"></iframe>
           </div>
           <div>
-            <div class="poc-drop-target" data-dnd-target>ここへ実dragしてください</div>
+            <label>比較条件 <select data-dnd-case><option value="page-image">ページ内画像</option><option value="disabled-image">ページ内のドラッグ禁止画像</option><option value="external-image">別画面で開いた中央画像</option><option value="saved-file">保存した中央画像の実File</option><option value="same-page-iframe">同一ページのiframe</option><option value="external-window-iframe">別窓の同じiframe</option></select></label>
+            <div class="poc-drop-target" data-dnd-target>ここへ実dragしてください（URI・Filesを問わず観測）</div>
             <button type="button" data-dnd-reset>結果をreset</button>
           </div>
         </div>
         <output class="media-status" data-poc-status aria-live="polite">未実行</output>
+        <output data-dnd-preview aria-live="polite" style="display:block;white-space:pre-wrap">判定待ち</output>
+        <p>比較手順：①左画像をそのままドロップ ②中央画像を別画面で開いてドロップ ③別窓iframeの画像をドロップ ④中央画像を保存し、エクスプローラーから同じ欄へドロップ。④は画像内容が一致してもWeb URLがなければ受付NGになります。自動テストの成功をOS実ドラッグの確認とは扱いません。</p>
+        <p>別窓の画像をドロップした後、「ログをコピー」で下の内容をチャットへ貼ってください。比較条件は別窓ボタンで自動選択されます。ドロップできない場合も、その状態を添えてログを貼ってください。</p>
+        <button type="button" data-dnd-copy>ログをコピー</button>
+        <output data-dnd-copy-status aria-live="polite"></output>
+        <textarea data-dnd-log readonly rows="18" aria-label="貼り付け用のDnDデバッグログ" style="display:block;width:100%;box-sizing:border-box"></textarea>
       </details>
       <details class="poc-accordion poc-lazy-case" name="poc-probe" data-poc="012">
         <summary>POC-012: Network Information connection.type</summary>

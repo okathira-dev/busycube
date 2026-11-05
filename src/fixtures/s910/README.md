@@ -12,4 +12,6 @@ node scripts/generate-busycube-s900-s910-fixtures.mjs
 
 The generator verifies FFmpeg probe metadata immediately after encoding. Runtime cue selection remains covered as application logic; normal CI does not revalidate the committed WebM bytes.
 
+The committed asset has millisecond PTS at 15fps. Its visible symbol intervals are [0.400, 1.267), [1.600, 2.400), and [2.733, 3.533). These include the generator’s final inclusive frame and end at the next encoded frame’s PTS. Runtime captions use these intervals with exclusive ends and clip a 0.45-second cue at the end of the current symbol. The nominal generator times are not used as continuous-time display boundaries. The asset was inspected with `ffprobe -v error -select_streams v:0 -show_entries frame=pts_time -of csv=p=0 src/fixtures/s910/assets/caption-stage.webm`; no media regeneration was needed.
+
 As with S-900, the generator normalizes FFmpeg's randomized WebM `TrackUID` after encoding so identical inputs are byte-for-byte reproducible. No separate checksum registry is maintained.

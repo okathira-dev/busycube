@@ -3,6 +3,86 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import jsQR from "jsqr";
 
+for (const locale of ["ja", "en"]) {
+  test(`labels P and L as preview in the catalogue and stage header in ${locale}`, async ({
+    page,
+  }, testInfo) => {
+    const label = locale === "ja" ? "暫定版" : "Preview";
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/?locale=${locale}`);
+    for (const [id, provisional] of [
+      ["S-000", false],
+      ["S-090", true],
+      ["S-630", true],
+    ] as const) {
+      const card = page.locator(`[data-stage-id="${id}"]`);
+      await expect(card.getByText(label, { exact: true })).toHaveCount(
+        provisional ? 1 : 0,
+      );
+    }
+    await expect(
+      page
+        .locator(".stage-catalogue__group .MuiAccordionSummary-root")
+        .getByText(label, { exact: true }),
+    ).toHaveCount(2);
+    for (const [id, provisional] of [
+      ["S-090", true],
+      ["S-630", true],
+      ["S-000", false],
+    ] as const) {
+      await page.goto(`/?locale=${locale}&stage=${id}`);
+      await expect(
+        page.locator(".stage-view__identity").getByText(label, { exact: true }),
+      ).toHaveCount(provisional ? 1 : 0);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      if (id === "S-090" && locale === "ja") {
+        await page.screenshot({
+          path: testInfo.outputPath("preview-stage-mobile.png"),
+          fullPage: true,
+        });
+      }
+    }
+  });
+}
+
+test("switches stage language without leaving or losing the current box state", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/?locale=en&stage=S-000");
+  await page.getByRole("button", { name: /^Pointing hand:/ }).click();
+  await expect(page.locator('.gift-box[data-box-state="open"]')).toHaveCount(1);
+  await page.getByRole("combobox", { name: "Language", exact: true }).click();
+  await page.getByRole("option", { name: "日本語", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "最初の箱", exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/locale=ja&stage=S-000/);
+  await expect(page.locator('.gift-box[data-box-state="open"]')).toHaveCount(1);
+  await page.getByRole("combobox", { name: "Language", exact: true }).click();
+  await page.getByRole("option", { name: "English", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "The first box", exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("combobox", { name: "Language", exact: true }),
+  ).toContainText("English");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath("stage-language-mobile.png"),
+    fullPage: true,
+  });
+});
+
 test("replaces the QR payload in real converted video frames", async ({
   page,
 }) => {
@@ -64,7 +144,7 @@ test("updates the memoized catalogue after language, search and real progress ch
     .fill("S-010");
   await expect(page.locator(".stage-card")).toHaveCount(1);
   await page.locator('[data-stage-id="S-010"] .stage-card__action').click();
-  await page.getByRole("button", { name: /Mouse box/ }).click();
+  await page.getByRole("button", { name: /^Mouse:/ }).click();
   await page.goBack();
   await expect(page.locator('[data-stage-id="S-010"]')).toHaveAttribute(
     "data-progress",
@@ -133,16 +213,18 @@ test("restores progress from IndexedDB after reload", async ({ page }) => {
 
   await page.evaluate(async () => {
     const database = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open("busycube-progress-v1", 1);
+      const request = indexedDB.open("busycube-player-v2", 1);
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
     await new Promise<void>((resolve, reject) => {
-      const transaction = database.transaction("documents", "readwrite");
-      transaction.objectStore("documents").put(
+      const transaction = database.transaction("state", "readwrite");
+      transaction.objectStore("state").put(
         {
           schemaVersion: 1,
-          installationId: "e2e-installation",
+          storageId: "e2e-installation",
+          revision: 1,
+          epoch: "fixture-epoch",
           stages: { "S-000": { solvedBoxIds: ["B01"] } },
           settings: { locale: "en" },
         },
@@ -155,7 +237,7 @@ test("restores progress from IndexedDB after reload", async ({ page }) => {
   });
 
   await page.reload();
-  await expect(page.getByText("Opened boxes: 1 / 204")).toBeVisible();
+  await expect(page.getByText(/Opened boxes: 1 \/ \d+/)).toBeVisible();
 });
 
 test("has no serious or critical automated accessibility violations", async ({
@@ -177,7 +259,9 @@ test("does not download the XR renderer without an immersive device", async ({
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "xr", {
       configurable: true,
-      value: { isSessionSupported: async () => false },
+      value: Object.assign(new EventTarget(), {
+        isSessionSupported: async () => false,
+      }),
     });
   });
   const rendererRequests: string[] = [];
@@ -200,29 +284,40 @@ test("prepares the XR renderer without requesting a session until the user acts"
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "xr", {
       configurable: true,
-      value: {
+      value: Object.assign(new EventTarget(), {
+        sessionRequests: 0,
         isSessionSupported: async () => true,
-        requestSession: async () => {
+        async requestSession() {
+          this.sessionRequests++;
           throw new DOMException("denied", "NotAllowedError");
         },
-      },
+      }),
     });
   });
   const renderer = page.waitForResponse(/\/xrRenderer-[^/]+\.js$/);
   await page.goto("/?stage=S-730&locale=en");
   expect((await renderer).ok()).toBe(true);
-  await expect(
-    page.getByText(
-      "Connect a supported device and enter through the browser XR prompt.",
-      { exact: true },
+  await expect(page.getByRole("status")).toHaveText("Ready");
+  expect(
+    await page.evaluate(
+      () =>
+        (navigator.xr as XRSystem & { sessionRequests: number })
+          .sessionRequests,
     ),
-  ).toBeVisible();
+  ).toBe(0);
   await page
     .getByRole("button", { name: "Enter immersive XR", exact: true })
     .click();
   await expect(
-    page.getByText("XR entry was cancelled or failed.", { exact: true }),
+    page.getByText("XR entry was cancelled or denied.", { exact: true }),
   ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () =>
+        (navigator.xr as XRSystem & { sessionRequests: number })
+          .sessionRequests,
+    ),
+  ).toBe(1);
 });
 
 test("reopens a visited lazy view offline and recovers from an unvisited view", async ({

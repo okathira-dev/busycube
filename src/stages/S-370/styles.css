@@ -1,0 +1,60 @@
+.battery-reading {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}
+.battery-reading__body {
+  position: relative;
+  width: 12rem;
+  height: 5rem;
+  border: 3px solid #d8cfdf;
+  border-radius: 0.7rem;
+  padding: 0.4rem;
+}
+.battery-reading__body::after {
+  content: "";
+  position: absolute;
+  right: -0.7rem;
+  top: 30%;
+  width: 0.5rem;
+  height: 40%;
+  background: #d8cfdf;
+}
+.battery-reading__body span {
+  display: block;
+  height: 100%;
+  border-radius: 0.2rem;
+  background: #34d399;
+  transition: width 0.3s;
+}
+.battery-goal {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+}
+.battery-range {
+  position: relative;
+  width: 5rem;
+  height: 0.7rem;
+  border: 1px solid #d8cfdf;
+}
+.battery-range::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.battery-range[data-high="true"]::before {
+  left: 75%;
+  background: #fbbf24;
+}
+.battery-range[data-high="false"]::before {
+  right: 25%;
+  background: #fbbf24;
+}
+.battery-range::after {
+  content: "";
+  position: absolute;
+  inset-block: -0.25rem;
+  left: 75%;
+  border-left: 2px solid #f7f3ff;
+}

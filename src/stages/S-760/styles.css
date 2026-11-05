@@ -12,6 +12,7 @@
 }
 .s760-card img {
   width: 100%;
+  height: auto;
   border-radius: 1rem;
 }
 .s760-card dl {
@@ -29,6 +30,9 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+.s760-card a {
+  color: #4c1d95;
+}
 
 @media (max-width: 720px) {
   .s760-card {
@@ -37,5 +41,15 @@
   .s760-card img {
     width: 8rem;
     justify-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .s760-card dl {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+  .s760-card dd {
+    margin-bottom: 0.6rem;
   }
 }

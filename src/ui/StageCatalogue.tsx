@@ -19,7 +19,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { memo, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { memo, useLayoutEffect, useMemo, useState } from "react";
 import type { ProgressDocument } from "../domain/progress";
 import { deriveStageProgress } from "../domain/stageRuntime";
 import { messages } from "../i18n";
@@ -27,6 +27,7 @@ import type { StageAccessKind, StageIdFormat } from "../runtime/stageContract";
 import { preloadOnActivation } from "./activationIntent";
 import { GiftBox, type GiftBoxState } from "./GiftBox";
 import { uiText } from "./locale";
+import { StagePreviewBadge } from "./StagePreviewBadge";
 import { type CatalogueStage, stageAccessOrder } from "./stageCatalogueModel";
 import "./StageCatalogue.css";
 
@@ -76,24 +77,9 @@ export const StageCatalogue = memo(function StageCatalogue({
   onPreload,
 }: Props) {
   const copy = messages[locale];
-  const [markerToken, setMarkerToken] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [progressFilter, setProgressFilter] = useState<ProgressFilter>("all");
   const [accessFilter, setAccessFilter] = useState<AccessFilter>("all");
-
-  useEffect(() => {
-    const token = new URL(window.location.href).searchParams.get(
-      "catalogue-round",
-    );
-    if (!token) return;
-    const channel = new BroadcastChannel(`busycube:catalogue-marker:${token}`);
-    const receive = (event: MessageEvent<unknown>) => {
-      if (event.data === `arm:${token}`) setMarkerToken(token);
-    };
-    channel.addEventListener("message", receive);
-    channel.postMessage(`hello:${token}`);
-    return () => channel.close();
-  }, []);
 
   useLayoutEffect(() => {
     if (!restore) return;
@@ -285,16 +271,27 @@ export const StageCatalogue = memo(function StageCatalogue({
               >
                 <Stack
                   direction="row"
-                  sx={{ alignItems: "center", gap: 1, minWidth: 0 }}
+                  sx={{
+                    alignItems: "center",
+                    gap: 1,
+                    minWidth: 0,
+                    flexWrap: "wrap",
+                  }}
                 >
                   <Icon fontSize="small" aria-hidden="true" />
                   <Typography component="h3" sx={{ fontWeight: 700 }}>
                     {uiText(locale, groupLabel[group])}
                   </Typography>
                   <Chip size="small" label={groupStages.length} />
+                  <StagePreviewBadge accessKind={group} locale={locale} />
                 </Stack>
               </AccordionSummary>
               <AccordionDetails sx={{ p: { xs: 1.5, sm: 2 } }}>
+                {group !== "baseline-direct" && (
+                  <Typography color="text.secondary" sx={{ mb: 1.5 }}>
+                    {uiText(locale, "stagePreviewDescription")}
+                  </Typography>
+                )}
                 <ul className="stage-grid">
                   {groupStages.map((stage) => (
                     <li key={stage.manifest.id}>
@@ -318,10 +315,12 @@ export const StageCatalogue = memo(function StageCatalogue({
             <Button onClick={clearFilters}>{copy.clearFilters}</Button>
           </Paper>
         )}
-        <div
-          className={`stage-catalogue__marker ${markerToken ? "stage-catalogue__marker--active" : ""}`}
-          data-busycube-catalogue-marker={markerToken ?? "inactive"}
-          aria-hidden="true"
+        <img
+          className="stage-catalogue__marker"
+          src="/stage-capture-outside.svg"
+          width="264"
+          height="264"
+          alt=""
         />
       </div>
     </section>
@@ -399,6 +398,7 @@ function StageCard({
           <Typography className="stage-card__heading" component="h4">
             {manifest.name[locale]}
           </Typography>
+          <StagePreviewBadge accessKind={stage.accessKind} locale={locale} />
         </CardContent>
       </CardActionArea>
     </Card>

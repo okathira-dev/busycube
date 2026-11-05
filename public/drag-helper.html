@@ -2,20 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Busycube drag source</title>
-  <style>
-    body { margin: 0; background: #111827; color: #f8fafc; font: 14px system-ui, sans-serif; }
-    main { display: grid; gap: 0.75rem; padding: 1rem; }
-    img { width: 240px; height: 120px; object-fit: contain; border: 1px solid #64748b; background: #0f172a; cursor: grab; }
-    small { color: #cbd5e1; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Busycube iframe</title>
+  <style>body{margin:0;background:#181329}img{display:block;width:100%;max-width:240px;height:auto;cursor:grab}</style>
 </head>
 <body>
-  <main>
-    <strong id="heading">Busycube drag source</strong>
-    <small id="description">Drag this image to the Busycube drop zone.</small>
-    <img id="source" draggable="true" src="./drag-window.png" alt="Busycube separate-window source" width="240" height="120">
-  </main>
-<script src="./drag-helper.js" defer></script>
+  <img id="source" draggable="true" src="./stage-drag-window.png" alt="iframe" width="240" height="120">
+  <script src="./drag-helper.js" defer></script>
 </body>
 </html>

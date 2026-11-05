@@ -1,9 +1,28 @@
-.capture-preview {
-  max-width: min(100%, 640px);
+.s190-preview {
   width: min(100%, 28rem);
   aspect-ratio: 16 / 9;
   border: 1px solid #55486a;
   border-radius: 1rem;
   background: #090711;
-  object-fit: cover;
+  object-fit: contain;
+}
+.s190-explore {
+  width: min(100%, 36rem);
+  height: 24rem;
+  overflow: auto;
+  border: 1px solid #55486a;
+  border-radius: 1rem;
+}
+.s190-world {
+  position: relative;
+  width: 1600px;
+  height: 1120px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 79px, #55486a 80px),
+    repeating-linear-gradient(90deg, #171320 0 79px, #55486a 80px);
+}
+.s190-marker {
+  position: absolute;
+  left: 1230px;
+  top: 780px;
 }

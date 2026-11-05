@@ -1,6 +1,72 @@
-.cloud-clue {
-  color: #dbeafe;
-  font-size: clamp(7rem, 28vw, 12rem);
-  line-height: 1;
-  filter: drop-shadow(0 0 2rem #60a5fa66);
+.s140-link {
+  display: block;
+  width: min(100%, 32rem);
+  overflow: visible;
+}
+.s140-link__wire {
+  fill: none;
+  stroke: #9182ad;
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+.s140-link__cloud {
+  fill: #35284f;
+  stroke: #b9a8d4;
+  stroke-width: 3;
+}
+.s140-link__screen {
+  fill: #20182f;
+  stroke: #b9a8d4;
+  stroke-width: 3;
+}
+.s140-link__bar {
+  fill: none;
+  stroke: #b9a8d4;
+  stroke-width: 2;
+}
+.s140-puzzle[aria-busy="true"] .s140-link__wire {
+  animation: s140-transfer 0.8s linear infinite;
+}
+.s140-puzzle[data-matched="true"] .s140-link__screen {
+  stroke: #6ee7b7;
+}
+.s140-puzzle[data-matched="true"] .s140-link__arrival {
+  animation: s140-arrival 1.3s ease-in-out both;
+}
+.s140-settings {
+  color: #cbbce2;
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+}
+.s140-settings:focus-visible {
+  outline: 2px solid #cbbce2;
+}
+@keyframes s140-transfer {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+@keyframes s140-arrival {
+  0% {
+    transform: translate(260px, 0);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(260px, 0);
+    opacity: 1;
+  }
+  55% {
+    transform: translate(130px, -120px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .s140-puzzle[aria-busy="true"] .s140-link__wire,
+  .s140-link__arrival {
+    animation: none;
+  }
 }

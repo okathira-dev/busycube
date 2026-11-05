@@ -93,30 +93,6 @@ function fillTriangle(pixels, points, color) {
   }
 }
 
-const sevenSegmentDigits = {
-  0: ["a", "b", "c", "d", "e", "f"],
-  1: ["b", "c"],
-  2: ["a", "b", "d", "e", "g"],
-  3: ["a", "b", "c", "d", "g"],
-  4: ["b", "c", "f", "g"],
-};
-
-function drawDigit(pixels, digit, x, y, scale, color) {
-  const thickness = 5 * scale;
-  const length = 24 * scale;
-  const segments = {
-    a: [x + thickness, y, length, thickness],
-    b: [x + thickness + length, y + thickness, thickness, length],
-    c: [x + thickness + length, y + thickness * 2 + length, thickness, length],
-    d: [x + thickness, y + thickness * 2 + length * 2, length, thickness],
-    e: [x, y + thickness * 2 + length, thickness, length],
-    f: [x, y + thickness, thickness, length],
-    g: [x + thickness, y + thickness + length, length, thickness],
-  };
-  for (const segment of sevenSegmentDigits[digit] ?? [])
-    fillRect(pixels, ...segments[segment], color);
-}
-
 function addFilmTexture(pixels, frameIndex) {
   for (let y = 12; y < height; y += 24) {
     const shade = (y + frameIndex) % 48 === 0 ? [24, 31, 49] : [18, 24, 40];
@@ -129,32 +105,62 @@ function addFilmTexture(pixels, frameIndex) {
 }
 
 function createS900Frame(segmentId, frameIndex, frameCount) {
-  const pixels = createFrame([10, 14, 27]);
-  addFilmTexture(pixels, frameIndex);
-  const milestones = [40, 100, 220, 340, 460, 600];
-  fillRect(pixels, 40, 176, 560, 8, [58, 67, 88]);
-  for (const marker of milestones) {
-    fillRect(pixels, marker - 2, 145, 4, 70, [91, 103, 130]);
+  const pixels = createFrame([12, 20, 32]);
+  addFilmTexture(pixels, 0);
+  const path = [
+    [70, 75],
+    [200, 120],
+    [330, 165],
+    [440, 215],
+    [550, 270],
+  ];
+  const index = { lead: 0, A: 0, B: 1, C: 2, D: 3 }[segmentId];
+  const p = segmentId === "lead" ? 0 : frameIndex / (frameCount - 1);
+  const time = segmentId === "lead" ? 0 : index + p;
+  for (let section = 0; section < 4; section++) {
+    const [ax, ay] = path[section],
+      [bx, by] = path[section + 1];
+    for (let step = 0; step <= 250; step++) {
+      const t = step / 250;
+      fillCircle(
+        pixels,
+        Math.round(ax + (bx - ax) * t),
+        Math.round(ay + (by - ay) * t) + 17,
+        4,
+        [90, 118, 148],
+      );
+    }
+    fillRect(pixels, bx - 4, by + 25, 8, 310 - by, [45, 64, 87]);
   }
-  for (let digit = 1; digit <= 4; digit += 1) {
-    drawDigit(pixels, digit, milestones[digit] - 18, 54, 1, [199, 208, 226]);
-  }
-  const ranges = {
-    lead: [milestones[0], milestones[1]],
-    A: [milestones[1], milestones[2]],
-    B: [milestones[2], milestones[3]],
-    C: [milestones[3], milestones[4]],
-    D: [milestones[4], milestones[5]],
-  };
-  const [from, to] = ranges[segmentId];
-  const progress = frameCount <= 1 ? 1 : frameIndex / (frameCount - 1);
-  const beadX = Math.round(from + (to - from) * progress);
-  fillRect(pixels, 40, 176, Math.max(0, beadX - 40), 8, [236, 171, 54]);
-  fillCircle(pixels, beadX, 180, 18, [255, 218, 112]);
-  fillCircle(pixels, beadX - 5, 174, 5, [255, 249, 219]);
+  // A turning wheel and its pin make the apparatus continuous across cuts.
+  fillCircle(pixels, 330, 245, 39, [55, 80, 109]);
+  fillCircle(pixels, 330, 245, 27, [12, 20, 32]);
+  const angle = (time * Math.PI) / 2;
+  fillCircle(
+    pixels,
+    Math.round(330 + Math.cos(angle) * 32),
+    Math.round(245 + Math.sin(angle) * 32),
+    6,
+    [111, 211, 204],
+  );
+  const [ax, ay] = path[index],
+    [bx, by] = path[index + 1];
+  const ballX = ax + (bx - ax) * p;
+  const ballY = ay + (by - ay) * p;
+  fillCircle(pixels, Math.round(ballX), Math.round(ballY), 14, [255, 209, 92]);
+  fillCircle(
+    pixels,
+    Math.round(ballX - 4),
+    Math.round(ballY - 5),
+    4,
+    [255, 250, 211],
+  );
+  // The last reel drops the ball into the open gift; no text or order marks.
+  fillRect(pixels, 520, 278, 75, 44, [159, 117, 224]);
+  fillRect(pixels, 552, 278, 10, 44, [255, 212, 115]);
+  fillRect(pixels, 510, 248, 80, 9, [159, 117, 224]);
   return pixels;
 }
-
 const s910Visuals = [
   { id: "circle", start: 0.4, end: 1.2 },
   { id: "triangle", start: 1.55, end: 2.35 },
@@ -312,10 +318,10 @@ try {
 
   const s900Segments = {
     lead: { file: "lead.webm", frames: 8 },
-    A: { file: "a.webm", frames: 15 },
-    B: { file: "b.webm", frames: 15 },
-    C: { file: "c.webm", frames: 15 },
-    D: { file: "d.webm", frames: 15 },
+    A: { file: "a.webm", frames: 30 },
+    B: { file: "b.webm", frames: 30 },
+    C: { file: "c.webm", frames: 30 },
+    D: { file: "d.webm", frames: 30 },
   };
   for (const [id, segment] of Object.entries(s900Segments)) {
     const destination = resolve(s900Root, segment.file);
@@ -350,10 +356,12 @@ try {
     "utf8",
   );
 
-  const s910Asset = resolve(s910Root, "caption-stage.webm");
-  await encodeVideo("s910-caption-stage", 60, createS910Frame, s910Asset);
-  const s910Probe = await inspectVideo(s910Asset);
-  assertVideoProbe(s910Probe, 4);
+  if (!process.argv.includes("--s900-only")) {
+    const s910Asset = resolve(s910Root, "caption-stage.webm");
+    await encodeVideo("s910-caption-stage", 60, createS910Frame, s910Asset);
+    const s910Probe = await inspectVideo(s910Asset);
+    assertVideoProbe(s910Probe, 4);
+  }
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });
 }
