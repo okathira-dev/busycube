@@ -71,7 +71,7 @@ jobs:
           persist-credentials: false
       # No PR dependencies, lifecycle scripts or caches in this privileged job.
       - name: Setup pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
